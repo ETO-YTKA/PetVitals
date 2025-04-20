@@ -41,6 +41,15 @@ fun SignUpScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
         CustomOutlinedTextField(
+            value = uiState.displayName,
+            onValueChange = { viewModel.onDisplayNameChange(it) },
+            label = { Text(text = stringResource(R.string.name)) },
+            leadingIcon = { Icon(painterResource(R.drawable.person_24dp), contentDescription = null) },
+            singleLine = true,
+            isError = uiState.isDisplayNameInvalid
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        CustomOutlinedTextField(
             value = uiState.email,
             onValueChange = { viewModel.onEmailChange(it) },
             label = { Text(text = stringResource(R.string.email)) },

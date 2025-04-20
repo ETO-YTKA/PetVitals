@@ -11,9 +11,11 @@ import javax.inject.Inject
 import kotlin.text.Regex
 
 data class SignUpUiState(
+    val displayName: String = "",
     val email: String = "",
     val password: String = "",
-    val isPasswordHidden: Boolean = false,
+    val isDisplayNameInvalid: Boolean = false,
+    val isPasswordHidden: Boolean = true,
     val isPasswordInvalid: Boolean = false,
     val isEmailInvalid: Boolean = false,
     val signUpButtonEnabled: Boolean = false
@@ -26,6 +28,20 @@ class SignUpViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(SignUpUiState())
     val uiState = _uiState.asStateFlow()
+
+    fun onDisplayNameChange(name: String) {
+        _uiState.update { state ->
+            state.copy(displayName = name)
+        }
+        validateDisplayName(name)
+        updateSignUpButtonState()
+    }
+
+    private fun validateDisplayName(name: String){
+        val pattern = "^[A-Za-z]{2,30}$"
+        val isNameInvalid = !Regex(pattern).containsMatchIn(name)
+        _uiState.update {state -> state.copy(isDisplayNameInvalid = isNameInvalid) }
+    }
 
     fun onPasswordChange(password: String) {
         _uiState.update { state ->
@@ -63,7 +79,11 @@ class SignUpViewModel @Inject constructor(
 
     fun onSignUpClick(navigateTo: (Any) -> Unit) {
         launchCatching {
-            accountService.signUp(email = uiState.value.email, password = uiState.value.password)
+            accountService.signUp(
+                name = uiState.value.displayName,
+                email = uiState.value.email,
+                password = uiState.value.password
+            )
             navigateTo(LogIn)
         }
     }
