@@ -1,6 +1,8 @@
 package com.example.petvitals.ui.components
 
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -17,6 +19,8 @@ fun CustomOutlinedTextField(
     trailingIcon: @Composable (() -> Unit)? = null,
     isError: Boolean = false,
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
     singleLine: Boolean = false,
 ) {
     OutlinedTextField(
@@ -28,6 +32,8 @@ fun CustomOutlinedTextField(
         trailingIcon = trailingIcon,
         isError = isError,
         visualTransformation = visualTransformation,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
         singleLine = singleLine,
         shape = RoundedCornerShape(50.dp)
     )

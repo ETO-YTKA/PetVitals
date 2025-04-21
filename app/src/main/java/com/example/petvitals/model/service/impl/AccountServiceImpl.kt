@@ -51,21 +51,25 @@ class AccountServiceImpl @Inject constructor() : AccountService {
         Firebase.auth.signInWithEmailAndPassword(email, password).await()
     }
 
-    override suspend fun signUp(name: String, email: String, password: String) {
-            val authResult = Firebase.auth.createUserWithEmailAndPassword(email, password).await()
-            val user = authResult.user
+    override suspend fun signUp(
+        name: String,
+        email: String,
+        password: String
+    ) {
+        val authResult = Firebase.auth.createUserWithEmailAndPassword(email, password).await()
+        val user = authResult.user
 
-            if (user == null) {
-                Log.d("SignUpError", "Firebase Authentication user object is null after creation.")
-            } else {
-                val userData = hashMapOf(
-                    "displayName" to name
-                )
+        if (user == null) {
+            Log.d("SignUpError", "Firebase Authentication user object is null after creation.")
+        } else {
+            val userData = hashMapOf(
+                "displayName" to name
+            )
 
-                Firebase.firestore.collection("users")
-                    .document(user.uid)
-                    .set(userData)
-            }
+            Firebase.firestore.collection("users")
+                .document(user.uid)
+                .set(userData)
+        }
     }
 
     override suspend fun signOut() {

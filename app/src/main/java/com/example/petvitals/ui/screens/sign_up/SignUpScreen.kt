@@ -2,6 +2,8 @@ package com.example.petvitals.ui.screens.sign_up
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -13,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -20,6 +23,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.ScreenLayout
+import com.example.petvitals.ui.theme.Dimen
 
 @Composable
 fun SignUpScreen(
@@ -39,28 +43,56 @@ fun SignUpScreen(
             text = stringResource(R.string.sign_up),
             style = MaterialTheme.typography.titleLarge
         )
-        Spacer(modifier = Modifier.height(16.dp))
+
+        Spacer(modifier = Modifier.height(Dimen.spaceLarge))
         CustomOutlinedTextField(
             value = uiState.displayName,
             onValueChange = { viewModel.onDisplayNameChange(it) },
+            modifier = Modifier.width(280.dp),
             label = { Text(text = stringResource(R.string.name)) },
             leadingIcon = { Icon(painterResource(R.drawable.person_24dp), contentDescription = null) },
             singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
             isError = uiState.isDisplayNameInvalid
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        uiState.displayNameErrorMessage?.let { message ->
+            Spacer(modifier = Modifier.height(Dimen.spaceSmall))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        Spacer(modifier = Modifier.height(Dimen.spaceMedium))
         CustomOutlinedTextField(
             value = uiState.email,
             onValueChange = { viewModel.onEmailChange(it) },
+            modifier = Modifier.width(280.dp),
             label = { Text(text = stringResource(R.string.email)) },
             leadingIcon = { Icon(painterResource(R.drawable.mail_24), contentDescription = null) },
             singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
             isError = uiState.isEmailInvalid
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        uiState.emailErrorMessage?.let { message ->
+            Spacer(modifier = Modifier.height(Dimen.spaceSmall))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        Spacer(modifier = Modifier.height(Dimen.spaceSmall))
         CustomOutlinedTextField(
             value = uiState.password,
             onValueChange = { viewModel.onPasswordChange(it) },
+            modifier = Modifier.width(280.dp),
             label = { Text(text = stringResource(R.string.password)) },
             leadingIcon = { Icon(painterResource(R.drawable.password_24), contentDescription = null) },
             trailingIcon = {
@@ -74,7 +106,16 @@ fun SignUpScreen(
             singleLine = true,
             isError = uiState.isPasswordInvalid
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        uiState.passwordErrorMessage?.let { message ->
+            Spacer(modifier = Modifier.height(Dimen.spaceSmall))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        Spacer(modifier = Modifier.height(Dimen.spaceLarge))
         Button(
             onClick = {
                 viewModel.onSignUpClick(navigateTo)

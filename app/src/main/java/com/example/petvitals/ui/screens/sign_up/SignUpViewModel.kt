@@ -1,29 +1,38 @@
 package com.example.petvitals.ui.screens.sign_up
 
+import android.content.Context
 import com.example.petvitals.LogIn
+import com.example.petvitals.R
+import com.example.petvitals.domain.Result
+import com.example.petvitals.domain.SignUpDataValidator
 import com.example.petvitals.model.service.AccountService
 import com.example.petvitals.ui.screens.PetVitalsAppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
-import kotlin.text.Regex
 
 data class SignUpUiState(
     val displayName: String = "",
     val email: String = "",
     val password: String = "",
     val isDisplayNameInvalid: Boolean = false,
-    val isPasswordHidden: Boolean = true,
-    val isPasswordInvalid: Boolean = false,
     val isEmailInvalid: Boolean = false,
+    val isPasswordInvalid: Boolean = false,
+    val isPasswordHidden: Boolean = true,
+    val displayNameErrorMessage: String? = null,
+    val emailErrorMessage: String? = null,
+    val passwordErrorMessage: String? = null,
     val signUpButtonEnabled: Boolean = false
 )
 
 @HiltViewModel
 class SignUpViewModel @Inject constructor(
-    val accountService: AccountService
+    val accountService: AccountService,
+    @ApplicationContext private val context: Context,
+    val dataValidator: SignUpDataValidator
 ) : PetVitalsAppViewModel() {
 
     private val _uiState = MutableStateFlow(SignUpUiState())
@@ -37,10 +46,28 @@ class SignUpViewModel @Inject constructor(
         updateSignUpButtonState()
     }
 
-    private fun validateDisplayName(name: String){
-        val pattern = "^[A-Za-z]{2,30}$"
-        val isNameInvalid = !Regex(pattern).containsMatchIn(name)
-        _uiState.update {state -> state.copy(isDisplayNameInvalid = isNameInvalid) }
+    private fun validateDisplayName(displayName: String){
+        when(val result = dataValidator.validateDisplayName(displayName)) {
+
+            is Result.Error -> {
+                _uiState.update { state -> state.copy(isDisplayNameInvalid = true) }
+
+                when(result.error) {
+                    SignUpDataValidator.DisplayNameError.EMPTY_FIELD -> _uiState.update { state ->
+                        state.copy(displayNameErrorMessage = context.getString(R.string.empty_field_error))
+                    }
+                    SignUpDataValidator.DisplayNameError.TOO_LONG -> _uiState.update { state ->
+                        state.copy(displayNameErrorMessage = context.getString(R.string.display_name_too_long_error))
+                    }
+                }
+            }
+            is Result.Success -> _uiState.update { state ->
+                state.copy(
+                    isDisplayNameInvalid = false,
+                    displayNameErrorMessage = null
+                )
+            }
+        }
     }
 
     fun onPasswordChange(password: String) {
@@ -52,9 +79,39 @@ class SignUpViewModel @Inject constructor(
     }
 
     private fun validatePassword(password: String) {
-        val pattern = "^((?=\\S*?[A-Z])(?=\\S*?[a-z])(?=\\S*?[0-9]).{7,})\\S$"
-        val isPasswordInvalid = !Regex(pattern).containsMatchIn(password)
-        _uiState.update { state -> state.copy(isPasswordInvalid = isPasswordInvalid) }
+        when(val result = dataValidator.validatePassword(password)) {
+
+            is Result.Error -> {
+                _uiState.update { state -> state.copy(isPasswordInvalid = true) }
+
+                when(result.error) {
+                    SignUpDataValidator.PasswordError.EMPTY_FIELD -> _uiState.update { state ->
+                        state.copy(passwordErrorMessage = context.getString(R.string.empty_field_error))
+                    }
+                    SignUpDataValidator.PasswordError.HAS_WHITESPACE -> _uiState.update { state ->
+                        state.copy(passwordErrorMessage = context.getString(R.string.password_whitespace_error))
+                    }
+                    SignUpDataValidator.PasswordError.TOO_SHORT -> _uiState.update { state ->
+                        state.copy(passwordErrorMessage = context.getString(R.string.password_short_error))
+                    }
+                    SignUpDataValidator.PasswordError.NO_DIGIT -> _uiState.update { state ->
+                        state.copy(passwordErrorMessage = context.getString(R.string.password_no_digit_error))
+                    }
+                    SignUpDataValidator.PasswordError.NO_UPPERCASE -> _uiState.update { state ->
+                        state.copy(passwordErrorMessage = context.getString(R.string.password_no_uppercase_error))
+                    }
+                    SignUpDataValidator.PasswordError.NO_LOWERCASE -> _uiState.update { state ->
+                        state.copy(passwordErrorMessage = context.getString(R.string.password_no_lowercase_error))
+                    }
+                }
+            }
+            is Result.Success -> _uiState.update { state ->
+                state.copy(
+                    isPasswordInvalid = false,
+                    passwordErrorMessage = null
+                )
+            }
+        }
     }
 
     fun onEmailChange(email: String) {
@@ -66,9 +123,27 @@ class SignUpViewModel @Inject constructor(
     }
 
     private fun validateEmail(email: String) {
-        val pattern = "^((?!\\.)[\\w\\-_.]*[^.])(@\\w+)(\\.\\w+(\\.\\w+)?[^.\\W])\$"
-        val isEmailInvalid = !Regex(pattern).containsMatchIn(email)
-        _uiState.update { state -> state.copy(isEmailInvalid = isEmailInvalid) }
+        when(val result = dataValidator.validateEmail(email)) {
+
+            is Result.Error -> {
+                _uiState.update { state -> state.copy(isEmailInvalid = true) }
+
+                when(result.error) {
+                    SignUpDataValidator.EmailErrors.EMPTY_FIELD -> _uiState.update { state ->
+                        state.copy(emailErrorMessage = context.getString(R.string.empty_field_error))
+                    }
+                    SignUpDataValidator.EmailErrors.INVALID_EMAIL -> _uiState.update { state ->
+                        state.copy(emailErrorMessage = context.getString(R.string.invalid_email_error))
+                    }
+                }
+            }
+            is Result.Success -> _uiState.update { state ->
+                state.copy(
+                    isEmailInvalid = false,
+                    emailErrorMessage = null
+                )
+            }
+        }
     }
 
     fun onChangeVisibilityClick() {
@@ -90,7 +165,7 @@ class SignUpViewModel @Inject constructor(
 
     private fun updateSignUpButtonState() {
         _uiState.update { state ->
-            state.copy(signUpButtonEnabled = !uiState.value.isEmailInvalid && !uiState.value.isPasswordInvalid )
+            state.copy(signUpButtonEnabled = !uiState.value.isEmailInvalid && !uiState.value.isPasswordInvalid && !uiState.value.isDisplayNameInvalid )
         }
     }
 }

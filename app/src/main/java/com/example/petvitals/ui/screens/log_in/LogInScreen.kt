@@ -3,6 +3,7 @@ package com.example.petvitals.ui.screens.log_in
 import android.widget.Toast
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -13,12 +14,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.ScreenLayout
+import com.example.petvitals.ui.theme.Dimen
 
 @Composable
 fun SignInScreen(
@@ -34,14 +36,19 @@ fun SignInScreen(
             text = stringResource(R.string.log_in),
             style = MaterialTheme.typography.titleLarge
         )
-        Spacer(modifier = Modifier.height(16.dp))
+
+        Spacer(modifier = Modifier.height(Dimen.spaceLarge))
         CustomOutlinedTextField(
             value = uiState.email,
             onValueChange = { viewModel.onEmailChange(it) },
             label = { Text(text = stringResource(R.string.email)) },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
             singleLine = true,
         )
-        Spacer(modifier = Modifier.height(4.dp))
+
+        Spacer(modifier = Modifier.height(Dimen.spaceMedium))
         CustomOutlinedTextField(
             value = uiState.password,
             onValueChange = { viewModel.onPasswordChange(it) },
@@ -49,7 +56,16 @@ fun SignInScreen(
             visualTransformation = PasswordVisualTransformation(),
             singleLine = true,
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        uiState.errorMessage?.let { message ->
+            Spacer(modifier = Modifier.height(Dimen.spaceSmall))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        Spacer(modifier = Modifier.height(Dimen.spaceLarge))
         Button(
             onClick = {
                 viewModel.onLogInClick(navigateTo)
@@ -61,6 +77,7 @@ fun SignInScreen(
         ) {
             Text(text = stringResource(R.string.log_in))
         }
+
         TextButton(
             onClick = { viewModel.onSignUpClick(navigateTo) }
         ) {

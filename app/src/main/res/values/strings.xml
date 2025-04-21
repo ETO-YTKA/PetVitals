@@ -6,4 +6,13 @@
     <string name="password">Password</string>
     <string name="sign_up_new_account">Don\'t have an account? Sign Up</string>
     <string name="name">Name</string>
+    <string name="password_requirements">Use at least 8 characters for your password</string>
+    <string name="password_short_error">Password must contain at least 8 characters</string>
+    <string name="password_whitespace_error">Password cannot contain whitespace</string>
+    <string name="password_no_digit_error">Password must contain at least one digit</string>
+    <string name="password_no_uppercase_error">Password must contain at least one uppercase letter</string>
+    <string name="password_no_lowercase_error">Password must contain at least one lowercase letter</string>
+    <string name="empty_field_error">Field cannot be empty</string>
+    <string name="display_name_too_long_error">The field must not exceed 30 characters</string>
+    <string name="invalid_email_error">Invalid email</string>
 </resources>
