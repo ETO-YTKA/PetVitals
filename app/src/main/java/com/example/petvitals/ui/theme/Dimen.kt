@@ -10,4 +10,7 @@ object Dimen {
     val spaceExtraLarge = 24.dp
     val spaceHuge = 32.dp
     val spaceExtraHuge = 48.dp
+
+    val petIconSize = 150.dp
+    val petIconCornerRadiusPercent = 20
 }

@@ -3,9 +3,11 @@ package com.example.petvitals.ui.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.example.petvitals.ui.theme.Dimen
 
 @Composable
 fun ScreenLayout(
@@ -15,7 +17,7 @@ fun ScreenLayout(
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize().padding(Dimen.spaceMediumLarge)
     ) {
         content()
     }

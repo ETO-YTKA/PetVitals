@@ -10,6 +10,9 @@
     <string name="name">Name</string>
     <string name="password_requirements">Use at least 8 characters for your password</string>
 
+    <!-- PetsScreen -->
+    <string name="add_pet">Add pet</string>
+
     <!-- Errors -->
     <string name="password_short_error">Password must contain at least 8 characters</string>
     <string name="password_whitespace_error">Password cannot contain whitespace</string>

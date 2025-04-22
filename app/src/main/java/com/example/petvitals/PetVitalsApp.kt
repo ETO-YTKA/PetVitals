@@ -2,24 +2,52 @@ package com.example.petvitals
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.petvitals.ui.screens.log_in.SignInScreen
-import com.example.petvitals.ui.screens.hallo.HalloScreen
+import com.example.petvitals.ui.screens.pets.PetsScreen
 import com.example.petvitals.ui.screens.sign_up.SignUpScreen
 import com.example.petvitals.ui.screens.splash.SplashScreen
 import com.example.petvitals.ui.theme.PetVitalsTheme
 import kotlinx.serialization.Serializable
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PetVitalsApp(modifier: Modifier = Modifier) {
     PetVitalsTheme {
         val navController = rememberNavController()
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        val currentBackStackEntry by navController.currentBackStackEntryAsState()
+        val route = currentBackStackEntry?.destination?.route
+        val routesWithoutAppBar = List<String>(3) {
+            SignUp.toString().substringBefore('@')
+            LogIn.toString().substringBefore('@')
+            Splash.toString().substringBefore('@')
+        }
+        var topBarTitle by remember { mutableStateOf<String>("PetVitals") }
+
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                if (!routesWithoutAppBar.contains(route)) {
+                    TopBar(topBarTitle)
+                }
+            }
+        ) { innerPadding ->
             NavHost(
                 navController = navController,
                 startDestination = Splash,
@@ -31,8 +59,11 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
                 composable<SignUp> {
                     SignUpScreen(navigateTo = { route -> navController.navigate(route = route) })
                 }
-                composable<Hallo> {
-                    HalloScreen(restartApp = { route -> navController.navigate(route = route)})
+                composable<Pets> {
+                    PetsScreen(
+                        restartApp = { route -> navController.navigate(route = route) },
+                        topAppBarTitle = { composableTitle -> topBarTitle = composableTitle }
+                    )
                 }
                 composable<Splash> {
                     SplashScreen(navigateTo = { route -> navController.navigate(route = route) })
@@ -42,6 +73,32 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopBar(title: String) {
+    CenterAlignedTopAppBar(
+        title = {
+            Text(
+                text = title,
+                maxLines = 1
+            )
+        },
+        actions = {
+            IconButton(
+                onClick = {}
+            ) {
+                Icon(painterResource(R.drawable.settings_24dp), contentDescription = null)
+            }
+        },
+        navigationIcon = {
+            IconButton(
+                onClick = {}
+            ) {
+                Icon(painterResource(R.drawable.person_24dp), contentDescription = null)
+            }
+        }
+    )
+}
 @Serializable
 object LogIn
 
@@ -52,4 +109,4 @@ object SignUp
 object Splash
 
 @Serializable
-object Hallo
+object Pets

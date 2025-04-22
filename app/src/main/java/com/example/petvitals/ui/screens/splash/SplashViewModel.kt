@@ -1,6 +1,6 @@
 package com.example.petvitals.ui.screens.splash
 
-import com.example.petvitals.Hallo
+import com.example.petvitals.Pets
 import com.example.petvitals.LogIn
 import com.example.petvitals.model.service.AccountService
 import com.example.petvitals.ui.screens.PetVitalsAppViewModel
@@ -13,7 +13,7 @@ class SplashViewModel @Inject constructor(
 ) : PetVitalsAppViewModel() {
 
     fun onAppStart(navigateTo: (Any) -> Unit) {
-        if (accountService.hasUser()) navigateTo(Hallo)
+        if (accountService.hasUser()) navigateTo(Pets)
         else navigateTo(LogIn)
     }
 }

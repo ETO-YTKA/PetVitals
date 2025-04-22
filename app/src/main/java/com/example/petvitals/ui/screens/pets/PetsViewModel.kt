@@ -1,4 +1,4 @@
-package com.example.petvitals.ui.screens.hallo
+package com.example.petvitals.ui.screens.pets
 
 import com.example.petvitals.Splash
 import com.example.petvitals.model.service.AccountService
@@ -9,16 +9,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
-data class HalloUiState(
+data class PetsUiState(
     val displayName: String = ""
 )
 
 @HiltViewModel
-class HalloViewModel @Inject constructor(
+class PetsViewModel @Inject constructor(
     val accountService: AccountService
 ) : PetVitalsAppViewModel() {
 
-    private val _uiState = MutableStateFlow(HalloUiState())
+    private val _uiState = MutableStateFlow(PetsUiState())
     val uiState = _uiState.asStateFlow()
 
     fun initialize(restartApp: (Any) -> Unit) {
