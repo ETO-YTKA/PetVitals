@@ -1,17 +1,22 @@
 package com.example.petvitals.ui.screens.sign_up
 
 import android.content.Context
+import android.util.Log
+import androidx.lifecycle.viewModelScope
 import com.example.petvitals.LogIn
 import com.example.petvitals.R
 import com.example.petvitals.domain.Result
 import com.example.petvitals.domain.SignUpDataValidator
 import com.example.petvitals.model.service.AccountService
 import com.example.petvitals.ui.screens.PetVitalsAppViewModel
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class SignUpUiState(
@@ -25,6 +30,7 @@ data class SignUpUiState(
     val displayNameErrorMessage: String? = null,
     val emailErrorMessage: String? = null,
     val passwordErrorMessage: String? = null,
+    val signUpErrorMessage: String? = null,
     val signUpButtonEnabled: Boolean = false
 )
 
@@ -153,13 +159,28 @@ class SignUpViewModel @Inject constructor(
     }
 
     fun onSignUpClick(navigateTo: (Any) -> Unit) {
-        launchCatching {
-            accountService.signUp(
-                name = uiState.value.displayName,
-                email = uiState.value.email,
-                password = uiState.value.password
-            )
-            navigateTo(LogIn)
+        viewModelScope.launch {
+            try {
+                accountService.signUp(
+                    name = uiState.value.displayName,
+                    email = uiState.value.email,
+                    password = uiState.value.password
+                )
+                navigateTo(LogIn)
+            } catch (e: Exception) {
+                Log.d("SignUpViewModel", e.message.orEmpty())
+                when(e) {
+                    is FirebaseNetworkException -> _uiState.update { state ->
+                        state.copy(signUpErrorMessage = context.getString(R.string.network_error))
+                    }
+                    is FirebaseAuthUserCollisionException -> _uiState.update { state ->
+                        state.copy(signUpErrorMessage = context.getString(R.string.email_already_in_use_error))
+                    }
+                    else -> _uiState.update { state ->
+                        state.copy(signUpErrorMessage = context.getString(R.string.unexpected_error))
+                    }
+                }
+            }
         }
     }
 

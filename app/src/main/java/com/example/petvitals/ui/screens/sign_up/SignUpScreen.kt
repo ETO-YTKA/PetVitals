@@ -116,6 +116,14 @@ fun SignUpScreen(
         }
 
         Spacer(modifier = Modifier.height(Dimen.spaceLarge))
+        uiState.signUpErrorMessage?.let { message ->
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
+            Spacer(modifier = Modifier.height(Dimen.spaceSmall))
+        }
         Button(
             onClick = {
                 viewModel.onSignUpClick(navigateTo)

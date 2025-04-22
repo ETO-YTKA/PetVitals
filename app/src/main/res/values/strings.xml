@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">PetVitals</string>
+
+    <!-- Sign up Log in -->
     <string name="log_in">Log in</string>
     <string name="sign_up">Sign up</string>
     <string name="email">Email</string>
@@ -7,6 +9,8 @@
     <string name="sign_up_new_account">Don\'t have an account? Sign Up</string>
     <string name="name">Name</string>
     <string name="password_requirements">Use at least 8 characters for your password</string>
+
+    <!-- Errors -->
     <string name="password_short_error">Password must contain at least 8 characters</string>
     <string name="password_whitespace_error">Password cannot contain whitespace</string>
     <string name="password_no_digit_error">Password must contain at least one digit</string>
@@ -15,4 +19,10 @@
     <string name="empty_field_error">Field cannot be empty</string>
     <string name="display_name_too_long_error">The field must not exceed 30 characters</string>
     <string name="invalid_email_error">Invalid email</string>
+    <string name="invalid_email_password_error">Invalid email or password</string>
+    <string name="user_not_found_error">User not found. Please check your email</string>
+    <string name="network_error">A network error occurred. Please check your connection</string>
+    <string name="unexpected_error">An unexpected error occurred</string>
+    <string name="empty_fields_error">Fields cannot be empty</string>
+    <string name="email_already_in_use_error">This email is already in use</string>
 </resources>

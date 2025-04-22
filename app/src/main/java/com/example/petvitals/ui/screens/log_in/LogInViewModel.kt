@@ -1,17 +1,21 @@
 package com.example.petvitals.ui.screens.log_in
 
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.viewModelScope
+import com.example.petvitals.R
 import com.example.petvitals.SignUp
 import com.example.petvitals.Splash
 import com.example.petvitals.model.service.AccountService
 import com.example.petvitals.ui.screens.PetVitalsAppViewModel
 import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,7 +28,8 @@ data class LogInUiState(
 
 @HiltViewModel
 class LogInViewModel @Inject constructor(
-    private val accountService: AccountService
+    private val accountService: AccountService,
+    @ApplicationContext private val context: Context
 ) : PetVitalsAppViewModel() {
 
     private val _uiState = MutableStateFlow(LogInUiState())
@@ -51,26 +56,22 @@ class LogInViewModel @Inject constructor(
                 )
                 navigateTo(Splash)
             } catch (e: Exception) {
+                Log.d("LogInViewModel", e.message.orEmpty())
                 when(e) {
-                    is FirebaseAuthInvalidCredentialsException -> {
-                        _uiState.update { state ->
-                            state.copy(errorMessage = "Invalid email or password.")
-                        }
+                    is IllegalArgumentException -> _uiState.update { state ->
+                        state.copy(errorMessage = context.getString(R.string.empty_fields_error))
                     }
-                    is FirebaseAuthInvalidUserException -> {
-                        _uiState.update { state ->
-                            state.copy(errorMessage = "User not found. Please check your email.")
-                        }
+                    is FirebaseAuthInvalidCredentialsException -> _uiState.update { state ->
+                        state.copy(errorMessage = context.getString(R.string.invalid_email_password_error))
                     }
-                    is FirebaseNetworkException -> {
-                        _uiState.update { state ->
-                            state.copy(errorMessage = "A network error occurred. Please check your connection.")
-                        }
+                    is FirebaseAuthInvalidUserException -> _uiState.update { state ->
+                        state.copy(errorMessage = context.getString(R.string.user_not_found_error))
                     }
-                    else -> {
-                        _uiState.update { state ->
-                            state.copy(errorMessage = "An unexpected error occurred.")
-                        }
+                    is FirebaseNetworkException -> _uiState.update { state ->
+                        state.copy(errorMessage = context.getString(R.string.network_error))
+                    }
+                    else -> _uiState.update { state ->
+                        state.copy(errorMessage = context.getString(R.string.unexpected_error))
                     }
                 }
             }
