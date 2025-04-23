@@ -13,4 +13,6 @@ object Dimen {
 
     val petIconSize = 150.dp
     val petIconCornerRadiusPercent = 20
+
+    val buttonWidth = 200.dp
 }

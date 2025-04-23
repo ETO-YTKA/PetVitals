@@ -11,6 +11,11 @@ class SignUpDataValidator @Inject constructor() {
             return Result.Error(DisplayNameError.EMPTY_FIELD)
         }
 
+        val regex = Regex("^[а-яА-Яa-zA-Z\\s]+$")
+        if (!regex.matches(displayName)) {
+            return Result.Error(DisplayNameError.INVALID_CHARACTERS)
+        }
+
         if (displayName.length > 30) {
             return Result.Error(DisplayNameError.TOO_LONG)
         }
@@ -20,7 +25,8 @@ class SignUpDataValidator @Inject constructor() {
 
     enum class DisplayNameError: Error {
         EMPTY_FIELD,
-        TOO_LONG
+        TOO_LONG,
+        INVALID_CHARACTERS
     }
 
     fun validateEmail(email: String): Result<Unit, EmailErrors> {

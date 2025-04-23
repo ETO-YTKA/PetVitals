@@ -12,11 +12,13 @@ import com.example.petvitals.ui.theme.Dimen
 @Composable
 fun ScreenLayout(
     modifier: Modifier = Modifier,
+    verticalArrangement: Arrangement.Vertical = Arrangement.Center,
+    horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
     content: @Composable () -> Unit
 ) {
     Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = verticalArrangement,
+        horizontalAlignment = horizontalAlignment,
         modifier = modifier.fillMaxSize().padding(Dimen.spaceMediumLarge)
     ) {
         content()

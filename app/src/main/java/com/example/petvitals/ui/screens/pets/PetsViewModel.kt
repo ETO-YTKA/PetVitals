@@ -15,7 +15,7 @@ data class PetsUiState(
 
 @HiltViewModel
 class PetsViewModel @Inject constructor(
-    val accountService: AccountService
+    private val accountService: AccountService
 ) : PetVitalsAppViewModel() {
 
     private val _uiState = MutableStateFlow(PetsUiState())
@@ -25,14 +25,8 @@ class PetsViewModel @Inject constructor(
         launchCatching {
             accountService.currentUser.collect { user ->
                 if (user == null) restartApp(Splash)
-                _uiState.update { state -> state.copy(displayName = accountService.currentUserName()) }
+                _uiState.update { state -> state.copy(displayName = accountService.getUserDisplayName()) }
             }
-        }
-    }
-
-    fun signOut() {
-        launchCatching {
-            accountService.signOut()
         }
     }
 }

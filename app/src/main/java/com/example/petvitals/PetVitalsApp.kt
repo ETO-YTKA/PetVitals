@@ -1,5 +1,6 @@
 package com.example.petvitals
 
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -23,6 +24,7 @@ import com.example.petvitals.ui.screens.log_in.SignInScreen
 import com.example.petvitals.ui.screens.pets.PetsScreen
 import com.example.petvitals.ui.screens.sign_up.SignUpScreen
 import com.example.petvitals.ui.screens.splash.SplashScreen
+import com.example.petvitals.ui.screens.user_profile.UserProfileScreen
 import com.example.petvitals.ui.theme.PetVitalsTheme
 import kotlinx.serialization.Serializable
 
@@ -33,18 +35,23 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
         val navController = rememberNavController()
         val currentBackStackEntry by navController.currentBackStackEntryAsState()
         val route = currentBackStackEntry?.destination?.route
-        val routesWithoutAppBar = List<String>(3) {
-            SignUp.toString().substringBefore('@')
-            LogIn.toString().substringBefore('@')
+        val routesWithoutAppBar = listOf(
+            SignUp.toString().substringBefore('@'),
+            LogIn.toString().substringBefore('@'),
             Splash.toString().substringBefore('@')
-        }
+        )
         var topBarTitle by remember { mutableStateOf<String>("PetVitals") }
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 if (!routesWithoutAppBar.contains(route)) {
-                    TopBar(topBarTitle)
+                    TopBar(
+                        title = topBarTitle,
+                        onActionClick = {  },
+                        onNavigationClick = { navController.navigate(route = UserProfile) }
+                    )
+                    Log.d("PetVitalsApp", routesWithoutAppBar.toString())
                 }
             }
         ) { innerPadding ->
@@ -68,6 +75,9 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
                 composable<Splash> {
                     SplashScreen(navigateTo = { route -> navController.navigate(route = route) })
                 }
+                composable<UserProfile> {
+                    UserProfileScreen()
+                }
             }
         }
     }
@@ -75,7 +85,11 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(title: String) {
+fun TopBar(
+    title: String,
+    onActionClick: () -> Unit,
+    onNavigationClick: () -> Unit
+) {
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -85,14 +99,14 @@ fun TopBar(title: String) {
         },
         actions = {
             IconButton(
-                onClick = {}
+                onClick = onActionClick
             ) {
                 Icon(painterResource(R.drawable.settings_24dp), contentDescription = null)
             }
         },
         navigationIcon = {
             IconButton(
-                onClick = {}
+                onClick = onNavigationClick
             ) {
                 Icon(painterResource(R.drawable.person_24dp), contentDescription = null)
             }
@@ -110,3 +124,6 @@ object Splash
 
 @Serializable
 object Pets
+
+@Serializable
+object UserProfile

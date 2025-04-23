@@ -75,7 +75,7 @@ fun PetsScreen(
 }
 
 @Composable
-fun PetProfile(icon: Painter, name: String) {
+private fun PetProfile(icon: Painter, name: String) {
     Card(
         modifier = Modifier
             .padding(Dimen.spaceMedium)

@@ -65,6 +65,9 @@ class SignUpViewModel @Inject constructor(
                     SignUpDataValidator.DisplayNameError.TOO_LONG -> _uiState.update { state ->
                         state.copy(displayNameErrorMessage = context.getString(R.string.display_name_too_long_error))
                     }
+                    SignUpDataValidator.DisplayNameError.INVALID_CHARACTERS -> _uiState.update { state ->
+                        state.copy(displayNameErrorMessage = context.getString(R.string.invalid_characters_error))
+                    }
                 }
             }
             is Result.Success -> _uiState.update { state ->

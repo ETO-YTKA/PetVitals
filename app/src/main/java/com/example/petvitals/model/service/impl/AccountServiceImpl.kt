@@ -10,6 +10,7 @@ import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import com.google.firebase.firestore.DocumentSnapshot
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -27,7 +28,7 @@ class AccountServiceImpl @Inject constructor() : AccountService {
     override val currentUserId: String
         get() = Firebase.auth.currentUser?.uid.orEmpty()
 
-    override suspend fun currentUserName(): String {
+    override suspend fun getUserDisplayName(): String {
         val userId = currentUserId
 
         if (userId.isEmpty()) {
@@ -41,6 +42,18 @@ class AccountServiceImpl @Inject constructor() : AccountService {
             .await()
 
         return userDoc.getString("displayName") ?: "anonymous"
+    }
+
+    override suspend fun getCurrentUserData(): DocumentSnapshot {
+        val userId = currentUserId
+
+        val userDoc = Firebase.firestore
+            .collection("users")
+            .document(userId)
+            .get()
+            .await()
+
+        return userDoc
     }
 
     override fun hasUser(): Boolean {
@@ -63,7 +76,8 @@ class AccountServiceImpl @Inject constructor() : AccountService {
             Log.d("SignUpError", "Firebase Authentication user object is null after creation.")
         } else {
             val userData = hashMapOf(
-                "displayName" to name
+                "displayName" to name,
+                "email" to email
             )
 
             Firebase.firestore.collection("users")
@@ -72,7 +86,7 @@ class AccountServiceImpl @Inject constructor() : AccountService {
         }
     }
 
-    override suspend fun signOut() {
+    override suspend fun logout() {
         Firebase.auth.signOut()
     }
 
