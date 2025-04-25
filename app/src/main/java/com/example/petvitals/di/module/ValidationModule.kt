@@ -1,4 +1,4 @@
-package com.example.petvitals.model.module
+package com.example.petvitals.di.module
 
 import com.example.petvitals.domain.SignUpDataValidator
 import dagger.Module

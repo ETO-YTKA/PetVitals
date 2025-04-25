@@ -1,7 +1,8 @@
 package com.example.petvitals.ui.screens.user_profile
 
 import androidx.lifecycle.viewModelScope
-import com.example.petvitals.model.service.AccountService
+import com.example.petvitals.data.repository.user.UserRepository
+import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.ui.screens.PetVitalsAppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +18,8 @@ data class UserProfileUiState(
 
 @HiltViewModel
 class UserProfileViewModel @Inject constructor(
-    private val accountService: AccountService
+    private val accountService: AccountService,
+    private val userRepository: UserRepository
 ): PetVitalsAppViewModel() {
 
     private val _uiState = MutableStateFlow(UserProfileUiState())
@@ -31,7 +33,7 @@ class UserProfileViewModel @Inject constructor(
 
     fun getUserData() {
         viewModelScope.launch {
-            val userData = accountService.getCurrentUserData()
+            val userData = userRepository.getCurrentUserData(accountService.currentUserId)
 
             _uiState.update { state ->
                 state.copy(

@@ -1,7 +1,8 @@
 package com.example.petvitals.ui.screens.pets
 
 import com.example.petvitals.Splash
-import com.example.petvitals.model.service.AccountService
+import com.example.petvitals.data.repository.user.UserRepository
+import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.ui.screens.PetVitalsAppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +16,8 @@ data class PetsUiState(
 
 @HiltViewModel
 class PetsViewModel @Inject constructor(
-    private val accountService: AccountService
+    private val accountService: AccountService,
+    private val userRepository: UserRepository
 ) : PetVitalsAppViewModel() {
 
     private val _uiState = MutableStateFlow(PetsUiState())
@@ -25,7 +27,7 @@ class PetsViewModel @Inject constructor(
         launchCatching {
             accountService.currentUser.collect { user ->
                 if (user == null) restartApp(Splash)
-                _uiState.update { state -> state.copy(displayName = accountService.getUserDisplayName()) }
+                _uiState.update { state -> state.copy(displayName = userRepository.getUserDisplayName(user!!.id)) }
             }
         }
     }

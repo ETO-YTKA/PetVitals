@@ -1,7 +1,7 @@
-package com.example.petvitals.model.module
+package com.example.petvitals.di.module
 
-import com.example.petvitals.model.service.AccountService
-import com.example.petvitals.model.service.impl.AccountServiceImpl
+import com.example.petvitals.data.service.account.AccountService
+import com.example.petvitals.data.service.account.AccountServiceImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

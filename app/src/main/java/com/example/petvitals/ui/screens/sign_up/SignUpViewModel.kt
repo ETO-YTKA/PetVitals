@@ -5,9 +5,10 @@ import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.LogIn
 import com.example.petvitals.R
+import com.example.petvitals.data.repository.user.UserRepository
 import com.example.petvitals.domain.Result
 import com.example.petvitals.domain.SignUpDataValidator
-import com.example.petvitals.model.service.AccountService
+import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.ui.screens.PetVitalsAppViewModel
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -37,6 +38,7 @@ data class SignUpUiState(
 @HiltViewModel
 class SignUpViewModel @Inject constructor(
     val accountService: AccountService,
+    val userRepository: UserRepository,
     @ApplicationContext private val context: Context,
     val dataValidator: SignUpDataValidator
 ) : PetVitalsAppViewModel() {
@@ -164,24 +166,29 @@ class SignUpViewModel @Inject constructor(
     fun onSignUpClick(navigateTo: (Any) -> Unit) {
         viewModelScope.launch {
             try {
-                accountService.signUp(
-                    name = uiState.value.displayName,
+                val userId = accountService.signUp(
                     email = uiState.value.email,
                     password = uiState.value.password
                 )
+
+                userRepository.createUserDocument(
+                    uid = userId,
+                    displayName = uiState.value.displayName,
+                    email = uiState.value.email
+                )
+
                 navigateTo(LogIn)
             } catch (e: Exception) {
-                Log.d("SignUpViewModel", e.message.orEmpty())
-                when(e) {
-                    is FirebaseNetworkException -> _uiState.update { state ->
-                        state.copy(signUpErrorMessage = context.getString(R.string.network_error))
-                    }
-                    is FirebaseAuthUserCollisionException -> _uiState.update { state ->
-                        state.copy(signUpErrorMessage = context.getString(R.string.email_already_in_use_error))
-                    }
-                    else -> _uiState.update { state ->
-                        state.copy(signUpErrorMessage = context.getString(R.string.unexpected_error))
-                    }
+                Log.d("SignUpViewModel", "Sign up failed", e)
+
+                val errorMessage = when(e) {
+                    is FirebaseNetworkException -> context.getString(R.string.network_error)
+                    is FirebaseAuthUserCollisionException -> context.getString(R.string.email_already_in_use_error)
+                    else -> context.getString(R.string.unexpected_error)
+                }
+
+                _uiState.update { state ->
+                    state.copy(signUpErrorMessage = errorMessage)
                 }
             }
         }
