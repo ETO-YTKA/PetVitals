@@ -1,5 +1,7 @@
 package com.example.petvitals.di.module
 
+import com.example.petvitals.data.repository.pet.PetRepository
+import com.example.petvitals.data.repository.pet.PetRepositoryImpl
 import com.example.petvitals.data.repository.user.UserRepository
 import com.example.petvitals.data.repository.user.UserRepositoryImpl
 import dagger.Binds
@@ -11,4 +13,5 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
     @Binds abstract fun provideUserRepository(impl: UserRepositoryImpl): UserRepository
+    @Binds abstract fun providePetRepository(impl: PetRepositoryImpl): PetRepository
 }

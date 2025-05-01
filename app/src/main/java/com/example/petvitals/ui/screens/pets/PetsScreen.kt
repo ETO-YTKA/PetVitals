@@ -1,6 +1,7 @@
 package com.example.petvitals.ui.screens.pets
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,11 +32,12 @@ import com.example.petvitals.ui.theme.Dimen
 fun PetsScreen(
     modifier: Modifier = Modifier,
     restartApp: (Any) -> Unit,
+    onAddPetClick: () -> Unit,
     viewModel: PetsViewModel = hiltViewModel(),
     topAppBarTitle: (String) -> Unit,
-
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
 
     LaunchedEffect(uiState.displayName) {
         topAppBarTitle("Hi, ${uiState.displayName}!")
@@ -42,32 +45,26 @@ fun PetsScreen(
     LaunchedEffect(Unit) { viewModel.initialize(restartApp) }
 
     ScreenLayout(modifier = modifier) {
+        val pets = uiState.pets
         LazyVerticalGrid(
             columns = GridCells.Adaptive(minSize = Dimen.petIconSize),
             modifier = Modifier.fillMaxSize()
         ) {
-            item {
+            items(pets.size) { index ->
+                val pet = pets[index]
                 PetProfile(
-                    icon = painterResource(id = R.drawable.add_circle_24dp),
-                    name = stringResource(R.string.add_pet)
+                    icon = painterResource(id = R.drawable.splash),
+                    name = pet.name,
                 )
             }
+
             item {
                 PetProfile(
                     icon = painterResource(id = R.drawable.add_circle_24dp),
-                    name = stringResource(R.string.add_pet)
-                )
-            }
-            item {
-                PetProfile(
-                    icon = painterResource(id = R.drawable.add_circle_24dp),
-                    name = stringResource(R.string.add_pet)
-                )
-            }
-            item {
-                PetProfile(
-                    icon = painterResource(id = R.drawable.add_circle_24dp),
-                    name = stringResource(R.string.add_pet)
+                    name = stringResource(R.string.add_pet),
+                    modifier = Modifier.clickable(
+                        onClick = onAddPetClick
+                    )
                 )
             }
         }
@@ -75,9 +72,9 @@ fun PetsScreen(
 }
 
 @Composable
-private fun PetProfile(icon: Painter, name: String) {
+private fun PetProfile(icon: Painter, name: String, modifier: Modifier = Modifier) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .padding(Dimen.spaceMedium)
             .clip(RoundedCornerShape(Dimen.petIconCornerRadiusPercent))
     ) {
@@ -91,7 +88,10 @@ private fun PetProfile(icon: Painter, name: String) {
             Image(
                 painter = icon,
                 contentDescription = null,
-                modifier = Modifier.size(Dimen.petIconSize)
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(Dimen.petIconSize)
+                    .clip(RoundedCornerShape(100))
             )
             Text(text = name)
         }

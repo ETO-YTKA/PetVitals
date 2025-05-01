@@ -1,6 +1,5 @@
 package com.example.petvitals
 
-import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -20,6 +19,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.petvitals.ui.screens.add_pet.AddPetScreen
 import com.example.petvitals.ui.screens.log_in.SignInScreen
 import com.example.petvitals.ui.screens.pets.PetsScreen
 import com.example.petvitals.ui.screens.sign_up.SignUpScreen
@@ -51,7 +51,6 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
                         onActionClick = {  },
                         onNavigationClick = { navController.navigate(route = UserProfile) }
                     )
-                    Log.d("PetVitalsApp", routesWithoutAppBar.toString())
                 }
             }
         ) { innerPadding ->
@@ -69,7 +68,8 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
                 composable<Pets> {
                     PetsScreen(
                         restartApp = { route -> navController.navigate(route = route) },
-                        topAppBarTitle = { composableTitle -> topBarTitle = composableTitle }
+                        topAppBarTitle = { composableTitle -> topBarTitle = composableTitle },
+                        onAddPetClick = { navController.navigate(route = AddPet) }
                     )
                 }
                 composable<Splash> {
@@ -77,6 +77,9 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
                 }
                 composable<UserProfile> {
                     UserProfileScreen()
+                }
+                composable<AddPet> {
+                    AddPetScreen()
                 }
             }
         }
@@ -127,3 +130,6 @@ object Pets
 
 @Serializable
 object UserProfile
+
+@Serializable
+object AddPet

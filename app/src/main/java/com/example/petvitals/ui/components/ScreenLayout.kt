@@ -19,7 +19,9 @@ fun ScreenLayout(
     Column(
         verticalArrangement = verticalArrangement,
         horizontalAlignment = horizontalAlignment,
-        modifier = modifier.fillMaxSize().padding(Dimen.spaceMediumLarge)
+        modifier = modifier
+            .fillMaxSize()
+            .padding(Dimen.spaceLarge)
     ) {
         content()
     }

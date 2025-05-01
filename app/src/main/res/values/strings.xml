@@ -17,6 +17,19 @@
     <string name="logout">Logout</string>
     <string name="profile">Profile</string>
 
+    <!-- AddPet -->
+    <string name="date_of_birth_is_approximate">Date of birth is approximate</string>
+    <string name="day">Day</string>
+    <string name="month">Month</string>
+    <string name="year">Year</string>
+    <string name="pet_name">Name</string>
+    <string name="species">Species</string>
+    <string name="date_of_birth">Date of Birth</string>
+    <string name="tap_to_select_date">Tap the icon to select date</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+
     <!-- Errors -->
     <string name="password_short_error">Password must contain at least 8 characters</string>
     <string name="password_whitespace_error">Password cannot contain whitespace</string>
