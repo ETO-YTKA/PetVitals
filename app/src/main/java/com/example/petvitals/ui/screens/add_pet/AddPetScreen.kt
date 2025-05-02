@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
@@ -46,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.CustomOutlinedTextField
+import com.example.petvitals.ui.components.DropDownOption
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.screens.add_pet.AddPetViewModel.PastOrPresentSelectableDates
 import com.example.petvitals.ui.theme.Dimen
@@ -55,6 +58,7 @@ fun AddPetScreen(
     viewModel: AddPetViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     if (uiState.showModal) {
         DatePickerModal(
@@ -64,6 +68,7 @@ fun AddPetScreen(
     }
 
     ScreenLayout(
+        modifier = Modifier.verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(Dimen.spaceMediumLarge),
         horizontalAlignment = Alignment.Start
     ) {
@@ -75,11 +80,12 @@ fun AddPetScreen(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         )
 
-        SpeciesDropDown(
+        DropDown(
             value = uiState.species,
             onValueChange = viewModel::onSpeciesChange,
             options = viewModel.getSpeciesList(),
-            modifier = Modifier.fillMaxWidth(),
+            label = stringResource(R.string.species),
+            modifier = Modifier.fillMaxWidth()
         )
 
         Card(
@@ -99,16 +105,29 @@ fun AddPetScreen(
                     label = stringResource(R.string.date_of_birth_is_approximate)
                 )
                 if (uiState.isDateOfBirthApproximate) {
-                    ApproximateDateInput(
-                        month = uiState.birthMonth,
-                        year = uiState.birthYear,
-                        onMonthChange = viewModel::onBirthMonthChange,
-                        onYearChange = viewModel::onBirthYearChange,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(Dimen.spaceMedium),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ValueDropDown(
+                            value = uiState.selectedBirthMonth,
+                            onValueChange = viewModel::onBirthMonthChange,
+                            options = uiState.monthOptions,
+                            label = stringResource(R.string.month),
+                            modifier = Modifier.weight(1f)
+                        )
+                        CustomOutlinedTextField(
+                            value = uiState.birthYear,
+                            onValueChange = viewModel::onBirthYearChange,
+                            label = { Text(stringResource(R.string.year)) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 } else {
                     BirthDatePickerField(
-                        value = viewModel.formatDateForDisplay (millis = uiState.birthDateMillis, context = LocalContext.current) ,
+                        value = viewModel.formatDateForDisplay (millis = uiState.birthDateMillis, context = context) ,
                         onClick = { viewModel.onShowModalChange(true) },
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -127,10 +146,11 @@ fun AddPetScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SpeciesDropDown(
+private fun DropDown(
     value: String,
     onValueChange: (String) -> Unit,
     options: List<String>,
+    label: String,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -143,7 +163,7 @@ private fun SpeciesDropDown(
         CustomOutlinedTextField(
             value = value,
             onValueChange = { },
-            label = { Text(stringResource(R.string.species)) },
+            label = { Text(text = label) },
             readOnly = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
@@ -154,12 +174,63 @@ private fun SpeciesDropDown(
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
+            shape = MaterialTheme.shapes.large
         ) {
             options.forEach { selectionOption ->
                 DropdownMenuItem(
                     text = { Text(selectionOption) },
                     onClick = {
                         onValueChange(selectionOption)
+                        expanded = false
+                    },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun <T> ValueDropDown(
+    value: T,
+    onValueChange: (T) -> Unit,
+    options: List<DropDownOption<T>>,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    val selectedOptionDisplay = remember(value, options) {
+        options.find { it.value == value }!!.display
+    }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = modifier
+    ) {
+        CustomOutlinedTextField(
+            value = selectedOptionDisplay,
+            onValueChange = { },
+            label = { Text(text = label) },
+            readOnly = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.PrimaryEditable)
+                .fillMaxWidth()
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            shape = MaterialTheme.shapes.large
+        ) {
+            options.forEach { selectionOption ->
+                DropdownMenuItem(
+                    text = { Text(selectionOption.display) },
+                    onClick = {
+                        onValueChange(selectionOption.value)
                         expanded = false
                     },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
@@ -225,36 +296,6 @@ private fun DatePickerModal(
         DatePicker(
             state = datePickerState,
             showModeToggle = false
-        )
-    }
-}
-
-@Composable
-private fun ApproximateDateInput(
-    month: String,
-    year: String,
-    onMonthChange: (String) -> Unit,
-    onYearChange: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(Dimen.spaceMedium),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        CustomOutlinedTextField(
-            value = month,
-            onValueChange = { onMonthChange },
-            label = { Text(stringResource(R.string.month)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
-            modifier = Modifier.weight(1f)
-        )
-        CustomOutlinedTextField(
-            value = year,
-            onValueChange = { onYearChange },
-            label = { Text(stringResource(R.string.year)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
-            modifier = Modifier.weight(1f)
         )
     }
 }

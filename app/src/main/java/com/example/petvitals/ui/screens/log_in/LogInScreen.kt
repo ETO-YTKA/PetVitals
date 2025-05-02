@@ -3,7 +3,9 @@ package com.example.petvitals.ui.screens.log_in
 import android.widget.Toast
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -31,7 +33,9 @@ fun SignInScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    ScreenLayout(modifier = modifier) {
+    ScreenLayout(
+        modifier = modifier.verticalScroll(rememberScrollState())
+    ) {
         Text(
             text = stringResource(R.string.log_in),
             style = MaterialTheme.typography.titleLarge
