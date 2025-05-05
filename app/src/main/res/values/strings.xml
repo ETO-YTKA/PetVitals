@@ -16,6 +16,9 @@
     <!-- Profile -->
     <string name="logout">Logout</string>
     <string name="profile">Profile</string>
+    <string name="delete_profile">Delete profile</string>
+    <string name="delete">Delete</string>
+    <string name="are_you_sure_you_want_to_delete_your_account">Are you sure you want to delete your account?</string>
 
     <!-- AddPet -->
     <string name="date_of_birth_is_approximate">Date of birth is approximate</string>
@@ -29,6 +32,19 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
+    <string name="unknown">Unknown</string>
+    <string name="january">January</string>
+    <string name="february">February</string>
+    <string name="march">March</string>
+    <string name="april">April</string>
+    <string name="may">May</string>
+    <string name="june">June</string>
+    <string name="july">July</string>
+    <string name="august">August</string>
+    <string name="september">September</string>
+    <string name="october">October</string>
+    <string name="november">November</string>
+    <string name="december">December</string>
 
     <!-- Errors -->
     <string name="password_short_error">Password must contain at least 8 characters</string>
@@ -46,17 +62,4 @@
     <string name="empty_fields_error">Fields cannot be empty</string>
     <string name="email_already_in_use_error">This email is already in use</string>
     <string name="invalid_characters_error">The field must contain only letters and spaces</string>
-    <string name="unknown">Unknown</string>
-    <string name="january">January</string>
-    <string name="february">February</string>
-    <string name="march">March</string>
-    <string name="april">April</string>
-    <string name="may">May</string>
-    <string name="june">June</string>
-    <string name="july">July</string>
-    <string name="august">August</string>
-    <string name="september">September</string>
-    <string name="october">October</string>
-    <string name="november">November</string>
-    <string name="december">December</string>
 </resources>

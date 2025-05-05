@@ -14,6 +14,7 @@ import javax.inject.Inject
 data class UserProfileUiState(
     val displayName: String = "",
     val email: String = "",
+    val showDeleteAccountModal: Boolean = false
 )
 
 @HiltViewModel
@@ -28,6 +29,18 @@ class UserProfileViewModel @Inject constructor(
     fun logout() {
         launchCatching {
             accountService.logout()
+        }
+    }
+
+    fun deleteAccount() {
+        launchCatching {
+            accountService.deleteAccount()
+        }
+    }
+
+    fun showModal(show: Boolean) {
+        _uiState.update { state ->
+            state.copy(showDeleteAccountModal = show)
         }
     }
 
