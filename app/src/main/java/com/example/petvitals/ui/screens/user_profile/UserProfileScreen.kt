@@ -21,17 +21,21 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
+import com.example.petvitals.ui.components.ButtonWithIcon
+import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.theme.Dimen
 
@@ -42,34 +46,54 @@ fun UserProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(true) {
-        viewModel.getUserData()
-    }
-
     if (uiState.showDeleteAccountModal) {
         BasicAlertDialog(
             onDismissRequest = { viewModel.showModal(false) },
         ) {
             Card {
                 Column(Modifier.padding(Dimen.spaceLarge)) {
-                    Text(text = stringResource(R.string.are_you_sure_you_want_to_delete_your_account))
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(R.string.delete_account),
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(Dimen.spaceHuge))
+                    Text(text = stringResource(R.string.enter_your_password_to_confirm))
+
+                    Spacer(modifier = Modifier.height(Dimen.spaceLarge))
+                    CustomOutlinedTextField(
+                        value = uiState.password,
+                        onValueChange = viewModel::onPasswordChange,
+                        label = { Text(stringResource(R.string.password)) },
+                        visualTransformation = PasswordVisualTransformation(),
+                    )
+
+                    Spacer(modifier = Modifier.height(Dimen.spaceLarge))
                     Row(
                         horizontalArrangement = Arrangement.SpaceAround,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Button(
-                            onClick = { viewModel.deleteAccount() },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error
-                            )
+                            onClick = {
+                                viewModel.showModal(false)
+                            }
                         ) {
-                            Text(text = stringResource(R.string.delete))
+                            Text(text = stringResource(R.string.cancel))
                         }
 
-                        Button(onClick = { viewModel.showModal(false) }) {
-                            Text(text = stringResource(R.string.cancel))
+                        Button(
+                            onClick = {
+                                viewModel.deleteAccount()
+                            },
+                            colors = ButtonDefaults.buttonColors()
+                                .copy(containerColor = MaterialTheme.colorScheme.error)
+                        ) {
+                            Text(text = stringResource(R.string.delete_account))
                         }
                     }
                 }
@@ -111,23 +135,34 @@ fun UserProfileScreen(
 
 
         Spacer(modifier = Modifier.height(Dimen.spaceExtraHuge))
-        Button(
+        ButtonWithIcon(
             onClick = { viewModel.logout() },
+            text = stringResource(R.string.logout),
+            icon = {
+                Icon(
+                    painter = painterResource(R.drawable.logout_24dp),
+                    contentDescription = null
+                )
+            },
             modifier = Modifier.width(Dimen.buttonWidth),
             colors = ButtonDefaults.buttonColors()
-                .copy(containerColor = MaterialTheme.colorScheme.error)
-        ) {
-            Text(text = stringResource(R.string.logout))
-        }
+                .copy(containerColor = MaterialTheme.colorScheme.error),
+
+        )
 
         Spacer(modifier = Modifier.height(Dimen.spaceMedium))
-        Button(
+        ButtonWithIcon(
             onClick = { viewModel.showModal(true) },
+            text = stringResource(R.string.delete_account),
+            icon = {
+                Icon(
+                    painter = painterResource(R.drawable.delete_forever_24dp),
+                    contentDescription = null
+                )
+            },
             modifier = Modifier.width(Dimen.buttonWidth),
             colors = ButtonDefaults.buttonColors()
                 .copy(containerColor = MaterialTheme.colorScheme.error)
-        ) {
-            Text(text = stringResource(R.string.delete_profile))
-        }
+        )
     }
 }

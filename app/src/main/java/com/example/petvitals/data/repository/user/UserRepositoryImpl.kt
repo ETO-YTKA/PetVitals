@@ -38,4 +38,8 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             .document(uid)
             .set(userData)
     }
+
+    override suspend fun deleteUser(userId: String) {
+        Firebase.firestore.collection("users").document(userId).delete().await()
+    }
 }

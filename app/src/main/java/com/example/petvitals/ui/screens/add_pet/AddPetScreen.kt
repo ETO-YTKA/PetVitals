@@ -55,7 +55,8 @@ import com.example.petvitals.ui.theme.Dimen
 
 @Composable
 fun AddPetScreen(
-    viewModel: AddPetViewModel = hiltViewModel()
+    viewModel: AddPetViewModel = hiltViewModel(),
+    navigateToPets: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -136,7 +137,10 @@ fun AddPetScreen(
         }
 
         Button(
-            onClick = { viewModel.addPet() },
+            onClick = {
+                viewModel.addPet()
+                navigateToPets()
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = stringResource(R.string.save))

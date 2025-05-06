@@ -79,7 +79,7 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
                     UserProfileScreen()
                 }
                 composable<AddPet> {
-                    AddPetScreen()
+                    AddPetScreen(navigateToPets = { navController.navigate(route = Pets) })
                 }
             }
         }

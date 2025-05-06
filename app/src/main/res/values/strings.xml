@@ -16,9 +16,9 @@
     <!-- Profile -->
     <string name="logout">Logout</string>
     <string name="profile">Profile</string>
-    <string name="delete_profile">Delete profile</string>
     <string name="delete">Delete</string>
-    <string name="are_you_sure_you_want_to_delete_your_account">Are you sure you want to delete your account?</string>
+    <string name="enter_your_password_to_confirm">Enter your password to confirm</string>
+    <string name="delete_account">Delete account</string>
 
     <!-- AddPet -->
     <string name="date_of_birth_is_approximate">Date of birth is approximate</string>

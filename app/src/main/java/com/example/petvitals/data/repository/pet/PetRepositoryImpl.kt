@@ -33,4 +33,14 @@ class PetRepositoryImpl @Inject constructor() : PetRepository {
                 )
             }
     }
+
+    override suspend fun deletePet(userId: String, petId: String) {
+        Firebase.firestore.collection("users").document(userId).collection("pets").document(petId).delete().await()
+    }
+
+    override suspend fun deleteAllPets(userId: String) {
+        Firebase.firestore.collection("users").document(userId).collection("pets").get().await().forEach {
+            it.reference.delete()
+        }
+    }
 }
