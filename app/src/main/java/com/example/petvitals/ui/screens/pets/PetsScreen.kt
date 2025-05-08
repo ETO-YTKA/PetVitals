@@ -4,7 +4,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -32,9 +34,10 @@ import com.example.petvitals.ui.theme.Dimen
 fun PetsScreen(
     modifier: Modifier = Modifier,
     restartApp: (Any) -> Unit,
-    onAddPetClick: () -> Unit,
+    onNavigateToAddPet: () -> Unit,
     viewModel: PetsViewModel = hiltViewModel(),
     topAppBarTitle: (String) -> Unit,
+    onNavigateToPetProfile: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -46,6 +49,7 @@ fun PetsScreen(
 
     ScreenLayout(modifier = modifier) {
         val pets = uiState.pets
+
         LazyVerticalGrid(
             columns = GridCells.Adaptive(minSize = Dimen.petIconSize),
             modifier = Modifier.fillMaxSize()
@@ -53,17 +57,22 @@ fun PetsScreen(
             items(pets.size) { index ->
                 val pet = pets[index]
                 PetProfile(
-                    icon = painterResource(id = R.drawable.splash),
+                    petImage = painterResource(id = R.drawable.splash),
                     name = pet.name,
+                    modifier = Modifier.clickable(
+                        onClick = {
+                            onNavigateToPetProfile(pet.id)
+                        }
+                    )
                 )
             }
 
             item {
                 PetProfile(
-                    icon = painterResource(id = R.drawable.add_circle_24dp),
+                    petImage = painterResource(id = R.drawable.add_circle_24dp),
                     name = stringResource(R.string.add_pet),
                     modifier = Modifier.clickable(
-                        onClick = onAddPetClick
+                        onClick = onNavigateToAddPet
                     )
                 )
             }
@@ -72,7 +81,7 @@ fun PetsScreen(
 }
 
 @Composable
-private fun PetProfile(icon: Painter, name: String, modifier: Modifier = Modifier) {
+private fun PetProfile(petImage: Painter, name: String, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier
             .padding(Dimen.spaceMedium)
@@ -86,13 +95,14 @@ private fun PetProfile(icon: Painter, name: String, modifier: Modifier = Modifie
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
-                painter = icon,
+                painter = petImage,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(Dimen.petIconSize)
                     .clip(RoundedCornerShape(100))
             )
+            Spacer(modifier = Modifier.height(Dimen.spaceMedium))
             Text(text = name)
         }
     }

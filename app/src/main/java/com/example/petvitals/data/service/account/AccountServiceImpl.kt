@@ -1,6 +1,6 @@
 package com.example.petvitals.data.service.account
 
-import com.example.petvitals.data.User
+import com.example.petvitals.data.repository.user.User
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth

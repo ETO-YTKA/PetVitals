@@ -2,7 +2,7 @@ package com.example.petvitals.ui.screens.pets
 
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.Splash
-import com.example.petvitals.data.Pet
+import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
 import com.example.petvitals.data.repository.user.UserRepository
 import com.example.petvitals.data.service.account.AccountService

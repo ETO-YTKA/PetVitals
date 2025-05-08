@@ -19,8 +19,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.example.petvitals.ui.screens.add_pet.AddPetScreen
 import com.example.petvitals.ui.screens.log_in.SignInScreen
+import com.example.petvitals.ui.screens.pet_profile.PetProfileScreen
 import com.example.petvitals.ui.screens.pets.PetsScreen
 import com.example.petvitals.ui.screens.sign_up.SignUpScreen
 import com.example.petvitals.ui.screens.splash.SplashScreen
@@ -69,7 +71,8 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
                     PetsScreen(
                         restartApp = { route -> navController.navigate(route = route) },
                         topAppBarTitle = { composableTitle -> topBarTitle = composableTitle },
-                        onAddPetClick = { navController.navigate(route = AddPet) }
+                        onNavigateToAddPet = { navController.navigate(route = AddPet) },
+                        onNavigateToPetProfile = { petProfile -> navController.navigate(route = PetProfile(petProfile)) }
                     )
                 }
                 composable<Splash> {
@@ -80,6 +83,10 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
                 }
                 composable<AddPet> {
                     AddPetScreen(navigateToPets = { navController.navigate(route = Pets) })
+                }
+                composable<PetProfile> { backStackEntry ->
+                    val petProfile: PetProfile = backStackEntry.toRoute()
+                    PetProfileScreen(petProfile = petProfile)
                 }
             }
         }
@@ -133,3 +140,6 @@ object UserProfile
 
 @Serializable
 object AddPet
+
+@Serializable
+data class PetProfile(val petId: String)
