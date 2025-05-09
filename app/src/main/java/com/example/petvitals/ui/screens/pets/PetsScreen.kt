@@ -36,15 +36,10 @@ fun PetsScreen(
     restartApp: (Any) -> Unit,
     onNavigateToAddPet: () -> Unit,
     viewModel: PetsViewModel = hiltViewModel(),
-    topAppBarTitle: (String) -> Unit,
     onNavigateToPetProfile: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-
-    LaunchedEffect(uiState.displayName) {
-        topAppBarTitle("Hi, ${uiState.displayName}!")
-    }
     LaunchedEffect(Unit) { viewModel.initialize(restartApp) }
 
     ScreenLayout(modifier = modifier) {

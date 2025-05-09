@@ -1,5 +1,7 @@
 package com.example.petvitals
 
+import android.util.Log
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -9,12 +11,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -36,23 +40,35 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
     PetVitalsTheme {
         val navController = rememberNavController()
         val currentBackStackEntry by navController.currentBackStackEntryAsState()
-        val route = currentBackStackEntry?.destination?.route
-        val routesWithoutAppBar = listOf(
-            SignUp.toString().substringBefore('@'),
-            LogIn.toString().substringBefore('@'),
-            Splash.toString().substringBefore('@')
-        )
-        var topBarTitle by remember { mutableStateOf<String>("PetVitals") }
+
+        var currentRoute by remember { mutableStateOf<AppRoute?>(null) }
+
+        LaunchedEffect(currentBackStackEntry) {
+            if (currentBackStackEntry?.destination?.route != null) {
+                currentRoute = try {
+                    currentBackStackEntry?.toRoute<AppRoute>()
+                } catch (e: IllegalArgumentException) {
+                    Log.e("PetVitalsApp", "Failed to deserialize route: ${currentBackStackEntry?.destination?.route}", e)
+                    null
+                }
+            } else if (currentBackStackEntry == null && navController.graph.startDestinationRoute != null) {
+                currentRoute = null
+            }
+        }
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
-                if (!routesWithoutAppBar.contains(route)) {
-                    TopBar(
-                        title = topBarTitle,
-                        onActionClick = {  },
-                        onNavigationClick = { navController.navigate(route = UserProfile) }
-                    )
+                currentRoute?.let { route ->
+                    if (route.hasTopBottomBar) {
+                        TopBar(
+                            title = route.title?.let { stringResource(id = it) } ?: "",
+                            onNavigateToSettings = {  },
+                            onNavigateToProfile = { navController.navigate(route = UserProfile) },
+                            popBackStack = { navController.popBackStack() },
+                            currentRoute = currentRoute
+                        )
+                    }
                 }
             }
         ) { innerPadding ->
@@ -70,9 +86,8 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
                 composable<Pets> {
                     PetsScreen(
                         restartApp = { route -> navController.navigate(route = route) },
-                        topAppBarTitle = { composableTitle -> topBarTitle = composableTitle },
                         onNavigateToAddPet = { navController.navigate(route = AddPet) },
-                        onNavigateToPetProfile = { petProfile -> navController.navigate(route = PetProfile(petProfile)) }
+                        onNavigateToPetProfile = { petId -> navController.navigate(route = PetProfile(petId)) }
                     )
                 }
                 composable<Splash> {
@@ -97,8 +112,10 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
 @Composable
 fun TopBar(
     title: String,
-    onActionClick: () -> Unit,
-    onNavigationClick: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    onNavigateToProfile: () -> Unit,
+    popBackStack: () -> Unit,
+    currentRoute: AppRoute? = null
 ) {
     CenterAlignedTopAppBar(
         title = {
@@ -108,38 +125,90 @@ fun TopBar(
             )
         },
         actions = {
-            IconButton(
-                onClick = onActionClick
-            ) {
-                Icon(painterResource(R.drawable.settings_24dp), contentDescription = null)
+            when(currentRoute) {
+                is PetProfile -> {
+                    IconButton(
+                        onClick = { }
+                    ) {
+                        Icon(painterResource(R.drawable.ic_edit), contentDescription = null)
+                    }
+                }
+                else -> {
+                    IconButton(
+                        onClick = onNavigateToSettings
+                    ) {
+                        Icon(painterResource(R.drawable.settings_24dp), contentDescription = null)
+                    }
+                }
             }
         },
         navigationIcon = {
-            IconButton(
-                onClick = onNavigationClick
-            ) {
-                Icon(painterResource(R.drawable.person_24dp), contentDescription = null)
+            when(currentRoute) {
+                is PetProfile -> {
+                    IconButton(
+                        onClick = popBackStack
+                    ) {
+                        Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = null)
+                    }
+                }
+                else -> {
+                    IconButton(
+                        onClick = onNavigateToProfile
+                    ) {
+                        Icon(painterResource(R.drawable.person_24dp), contentDescription = null)
+                    }
+                }
             }
         }
     )
 }
-@Serializable
-object LogIn
 
 @Serializable
-object SignUp
+object LogIn : AppRoute {
+    override val hasTopBottomBar: Boolean = false
+    override val title: Int? = null
+}
 
 @Serializable
-object Splash
+object SignUp : AppRoute {
+    override val hasTopBottomBar: Boolean = false
+    override val title: Int? = null
+}
 
 @Serializable
-object Pets
+object Splash : AppRoute {
+    override val hasTopBottomBar: Boolean = false
+    override val title: Int? = null
+}
 
 @Serializable
-object UserProfile
+object Pets : AppRoute {
+    override val hasTopBottomBar: Boolean = true
+    override val title: Int? = R.string.pets
+}
 
 @Serializable
-object AddPet
+object UserProfile : AppRoute {
+    override val hasTopBottomBar: Boolean = true
+    override val title: Int? = R.string.profile
+}
 
 @Serializable
-data class PetProfile(val petId: String)
+object AddPet : AppRoute {
+    override val hasTopBottomBar: Boolean = true
+    override val title: Int? = R.string.add_your_pet
+}
+
+@Serializable
+data class PetProfile(val petId: String) : AppRoute {
+    override val hasTopBottomBar: Boolean = true
+    override val title: Int? = null
+}
+
+@Serializable
+sealed interface AppRoute {
+
+    val hasTopBottomBar: Boolean
+    @get:StringRes
+    val title: Int?
+}
