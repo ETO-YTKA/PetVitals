@@ -9,7 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.pet.PetRepository
 import com.example.petvitals.data.service.account.AccountService
-import com.example.petvitals.ui.components.DropDownOption
+import com.example.petvitals.ui.screens.add_pet.AddPetViewModel.DropDownOption
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -212,4 +212,10 @@ class AddPetViewModel @Inject constructor(
             return year <= LocalDate.now().year
         }
     }
+
+    data class DropDownOption<T>(
+        val display: String,
+        val value: T
+    )
+
 }

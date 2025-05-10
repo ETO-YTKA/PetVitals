@@ -48,8 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.CustomOutlinedTextField
-import com.example.petvitals.ui.components.DropDownOption
 import com.example.petvitals.ui.components.ScreenLayout
+import com.example.petvitals.ui.screens.add_pet.AddPetViewModel.DropDownOption
 import com.example.petvitals.ui.screens.add_pet.AddPetViewModel.PastOrPresentSelectableDates
 import com.example.petvitals.ui.theme.Dimen
 
