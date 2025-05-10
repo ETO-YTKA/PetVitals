@@ -40,8 +40,8 @@ class PetProfileViewModel @Inject constructor(
                     state.copy(
                         name = it.name,
                         species = it.species,
-                        birthDay = it.birthDate["day"].toString(),
-                        birthMonth = it.birthDate["month"].toString(),
+                        birthDay = it.birthDate.getOrDefault("day", "").toString(),
+                        birthMonth = it.birthDate.getOrDefault("month", "").toString(),
                         birthYear = it.birthDate["year"].toString()
                     )
                 }
