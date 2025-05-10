@@ -35,9 +35,9 @@ fun SignUpScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val (trailingIcon, visualTransformation) = if (uiState.isPasswordHidden) {
-        painterResource(R.drawable.rounded_visibility_24) to PasswordVisualTransformation()
+        painterResource(R.drawable.ic_rounded_visibility) to PasswordVisualTransformation()
     } else {
-        painterResource(R.drawable.rounded_visibility_off_24) to VisualTransformation.None
+        painterResource(R.drawable.ic_rounded_visibility_off) to VisualTransformation.None
     }
 
     ScreenLayout(
@@ -54,7 +54,7 @@ fun SignUpScreen(
             onValueChange = { viewModel.onDisplayNameChange(it) },
             modifier = Modifier.width(280.dp),
             label = { Text(text = stringResource(R.string.name)) },
-            leadingIcon = { Icon(painterResource(R.drawable.person_24dp), contentDescription = null) },
+            leadingIcon = { Icon(painterResource(R.drawable.ic_person), contentDescription = null) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Next
@@ -76,7 +76,7 @@ fun SignUpScreen(
             onValueChange = { viewModel.onEmailChange(it) },
             modifier = Modifier.width(280.dp),
             label = { Text(text = stringResource(R.string.email)) },
-            leadingIcon = { Icon(painterResource(R.drawable.mail_24), contentDescription = null) },
+            leadingIcon = { Icon(painterResource(R.drawable.ic_mail), contentDescription = null) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Next
@@ -98,7 +98,7 @@ fun SignUpScreen(
             onValueChange = { viewModel.onPasswordChange(it) },
             modifier = Modifier.width(280.dp),
             label = { Text(text = stringResource(R.string.password)) },
-            leadingIcon = { Icon(painterResource(R.drawable.password_24), contentDescription = null) },
+            leadingIcon = { Icon(painterResource(R.drawable.ic_password2), contentDescription = null) },
             trailingIcon = {
                 IconButton(
                     onClick = { viewModel.onChangeVisibilityClick() }

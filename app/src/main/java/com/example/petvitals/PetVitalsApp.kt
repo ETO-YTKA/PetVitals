@@ -163,7 +163,7 @@ fun TopBar(
                     IconButton(
                         onClick = onNavigateToSettings
                     ) {
-                        Icon(painterResource(R.drawable.settings_24dp), contentDescription = null)
+                        Icon(painterResource(R.drawable.ic_settings), contentDescription = null)
                     }
                 }
             }
@@ -181,7 +181,7 @@ fun TopBar(
                     IconButton(
                         onClick = onNavigateToProfile
                     ) {
-                        Icon(painterResource(R.drawable.person_24dp), contentDescription = null)
+                        Icon(painterResource(R.drawable.ic_person), contentDescription = null)
                     }
                 }
             }

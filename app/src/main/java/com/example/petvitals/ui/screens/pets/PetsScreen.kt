@@ -64,7 +64,7 @@ fun PetsScreen(
 
             item {
                 PetProfile(
-                    petImage = painterResource(id = R.drawable.add_circle_24dp),
+                    petImage = painterResource(id = R.drawable.ic_add_circle),
                     name = stringResource(R.string.add_pet),
                     modifier = Modifier.clickable(
                         onClick = onNavigateToAddPet

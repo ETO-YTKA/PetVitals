@@ -114,7 +114,7 @@ fun UserProfileScreen(
                 )
         ) {
             Image(
-                painter = painterResource(R.drawable.person_24dp),
+                painter = painterResource(R.drawable.ic_person),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize()
             )
@@ -140,7 +140,7 @@ fun UserProfileScreen(
             text = stringResource(R.string.logout),
             icon = {
                 Icon(
-                    painter = painterResource(R.drawable.logout_24dp),
+                    painter = painterResource(R.drawable.ic_logout),
                     contentDescription = null
                 )
             },
@@ -156,7 +156,7 @@ fun UserProfileScreen(
             text = stringResource(R.string.delete_account),
             icon = {
                 Icon(
-                    painter = painterResource(R.drawable.delete_forever_24dp),
+                    painter = painterResource(R.drawable.ic_delete_forever),
                     contentDescription = null
                 )
             },
