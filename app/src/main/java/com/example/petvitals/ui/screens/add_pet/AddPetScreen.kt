@@ -49,6 +49,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.ScreenLayout
+import com.example.petvitals.ui.components.TopBarBackButton
 import com.example.petvitals.ui.screens.add_pet.AddPetViewModel.DropDownOption
 import com.example.petvitals.ui.screens.add_pet.AddPetViewModel.PastOrPresentSelectableDates
 import com.example.petvitals.ui.theme.Dimen
@@ -56,7 +57,9 @@ import com.example.petvitals.ui.theme.Dimen
 @Composable
 fun AddPetScreen(
     viewModel: AddPetViewModel = hiltViewModel(),
-    navigateToPets: () -> Unit
+    navigateToPets: () -> Unit,
+    onPopBackStack: () -> Unit
+
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -69,9 +72,10 @@ fun AddPetScreen(
     }
 
     ScreenLayout(
-        modifier = Modifier.verticalScroll(rememberScrollState()),
+        columnModifier = Modifier.verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(Dimen.spaceMediumLarge),
-        horizontalAlignment = Alignment.Start
+        horizontalAlignment = Alignment.Start,
+        topBar = { TopBarBackButton(onPopBackStack = onPopBackStack) }
     ) {
         CustomOutlinedTextField(
             value = uiState.name,

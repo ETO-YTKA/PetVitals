@@ -39,7 +39,6 @@ import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.theme.Dimen
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserProfileScreen(
     viewModel: UserProfileViewModel = hiltViewModel()
@@ -47,62 +46,16 @@ fun UserProfileScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     if (uiState.showDeleteAccountModal) {
-        BasicAlertDialog(
-            onDismissRequest = { viewModel.showModal(false) },
-        ) {
-            Card {
-                Column(Modifier.padding(Dimen.spaceLarge)) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = stringResource(R.string.delete_account),
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(Dimen.spaceHuge))
-                    Text(text = stringResource(R.string.enter_your_password_to_confirm))
-
-                    Spacer(modifier = Modifier.height(Dimen.spaceLarge))
-                    CustomOutlinedTextField(
-                        value = uiState.password,
-                        onValueChange = viewModel::onPasswordChange,
-                        label = { Text(stringResource(R.string.password)) },
-                        visualTransformation = PasswordVisualTransformation(),
-                    )
-
-                    Spacer(modifier = Modifier.height(Dimen.spaceLarge))
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Button(
-                            onClick = {
-                                viewModel.showModal(false)
-                            }
-                        ) {
-                            Text(text = stringResource(R.string.cancel))
-                        }
-
-                        Button(
-                            onClick = {
-                                viewModel.deleteAccount()
-                            },
-                            colors = ButtonDefaults.buttonColors()
-                                .copy(containerColor = MaterialTheme.colorScheme.error)
-                        ) {
-                            Text(text = stringResource(R.string.delete_account))
-                        }
-                    }
-                }
-            }
-        }
+        DeleteAccountModal(
+            password = uiState.password,
+            onPasswordChange = viewModel::onPasswordChange,
+            showModal = viewModel::showModal,
+            deleteAccount = viewModel::deleteAccount
+        )
     }
 
     ScreenLayout(
-        modifier = Modifier.verticalScroll(rememberScrollState()),
+        columnModifier = Modifier.verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Top
     ) {
         Box(
@@ -164,5 +117,63 @@ fun UserProfileScreen(
             colors = ButtonDefaults.buttonColors()
                 .copy(containerColor = MaterialTheme.colorScheme.error)
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DeleteAccountModal(
+    password: String,
+    onPasswordChange: (String) -> Unit,
+    showModal: (Boolean) -> Unit,
+    deleteAccount: () -> Unit,
+) {
+    BasicAlertDialog(
+        onDismissRequest = { showModal(false) },
+    ) {
+        Card {
+            Column(Modifier.padding(Dimen.spaceLarge)) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.delete_account),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(Dimen.spaceHuge))
+                Text(text = stringResource(R.string.enter_your_password_to_confirm))
+
+                Spacer(modifier = Modifier.height(Dimen.spaceLarge))
+                CustomOutlinedTextField(
+                    value = password,
+                    onValueChange = { onPasswordChange(it) },
+                    label = { Text(stringResource(R.string.password)) },
+                    visualTransformation = PasswordVisualTransformation(),
+                )
+
+                Spacer(modifier = Modifier.height(Dimen.spaceLarge))
+                Row(
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Button(
+                        onClick = { showModal(false) }
+                    ) {
+                        Text(text = stringResource(R.string.cancel))
+                    }
+
+                    Button(
+                        onClick = deleteAccount,
+                        colors = ButtonDefaults.buttonColors()
+                            .copy(containerColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text(text = stringResource(R.string.delete_account))
+                    }
+                }
+            }
+        }
     }
 }

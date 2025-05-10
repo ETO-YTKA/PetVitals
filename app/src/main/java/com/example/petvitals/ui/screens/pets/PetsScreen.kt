@@ -13,6 +13,10 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,17 +36,21 @@ import com.example.petvitals.ui.theme.Dimen
 
 @Composable
 fun PetsScreen(
-    modifier: Modifier = Modifier,
     restartApp: (Any) -> Unit,
     onNavigateToAddPet: () -> Unit,
-    viewModel: PetsViewModel = hiltViewModel(),
-    onNavigateToPetProfile: (String) -> Unit
+    onNavigateToPetProfile: (String) -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onNavigateToUserProfile: () -> Unit,
+    viewModel: PetsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) { viewModel.initialize(restartApp) }
 
-    ScreenLayout(modifier = modifier) {
+    ScreenLayout(topBar = { TopBar(
+        onNavigateToSettings = onNavigateToSettings,
+        onNavigateToUserProfile = onNavigateToUserProfile
+    ) }) {
         val pets = uiState.pets
 
         LazyVerticalGrid(
@@ -101,4 +109,38 @@ private fun PetProfile(petImage: Painter, name: String, modifier: Modifier = Mod
             Text(text = name)
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TopBar(
+    onNavigateToSettings: () -> Unit,
+    onNavigateToUserProfile: () -> Unit
+) {
+    CenterAlignedTopAppBar(
+        title = {
+            Text(text = stringResource(R.string.pets))
+        },
+        navigationIcon = {
+            IconButton(
+                onClick = onNavigateToUserProfile
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_person),
+                    contentDescription = null
+                )
+            }
+        },
+        actions = {
+            IconButton(
+                onClick = onNavigateToSettings
+
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_settings),
+                    contentDescription = null
+                )
+            }
+        }
+    )
 }

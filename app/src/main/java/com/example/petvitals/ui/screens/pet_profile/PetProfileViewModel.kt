@@ -14,9 +14,7 @@ import javax.inject.Inject
 data class PetProfileUiState(
     val name: String = "",
     val species: String = "",
-    val birthDay: String = "",
-    val birthMonth: String = "",
-    val birthYear: String = ""
+    val birthDate: String = ""
 )
 
 @HiltViewModel
@@ -36,16 +34,39 @@ class PetProfileViewModel @Inject constructor(
             )
 
             pet?.let {
+                val birthDay = it.birthDate.getOrDefault("day", "").toString()
+                val birthMonth = it.birthDate.getOrDefault("month", "").toString()
+                val birthYear = it.birthDate["year"].toString()
+
+                val birthDate = when {
+                    birthDay.isNotEmpty() && birthMonth.isNotEmpty() -> {
+                        "$birthDay.$birthMonth.$birthYear"
+                    }
+                    birthMonth.isNotEmpty() -> {
+                        "$birthMonth.$birthYear"
+                    }
+                    else -> {
+                        birthYear
+                    }
+                }
+
                 _uiState.update { state ->
                     state.copy(
                         name = it.name,
                         species = it.species,
-                        birthDay = it.birthDate.getOrDefault("day", "").toString(),
-                        birthMonth = it.birthDate.getOrDefault("month", "").toString(),
-                        birthYear = it.birthDate["year"].toString()
+                        birthDate = birthDate
                     )
                 }
             }
+        }
+    }
+
+    fun deletePet(petId: String) {
+        viewModelScope.launch {
+            petRepository.deletePet(
+                userId = accountService.currentUserId,
+                petId = petId
+            )
         }
     }
 }

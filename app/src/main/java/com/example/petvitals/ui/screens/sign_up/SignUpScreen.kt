@@ -9,7 +9,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -24,12 +23,15 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.CustomOutlinedTextField
+import com.example.petvitals.ui.components.ErrorMessage
 import com.example.petvitals.ui.components.ScreenLayout
+import com.example.petvitals.ui.components.TopBarBackButton
 import com.example.petvitals.ui.theme.Dimen
 
 @Composable
 fun SignUpScreen(
     navigateTo: (Any) -> Unit,
+    onPopBackStack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SignUpViewModel = hiltViewModel()
 ) {
@@ -41,14 +43,12 @@ fun SignUpScreen(
     }
 
     ScreenLayout(
-        modifier = modifier.verticalScroll(rememberScrollState())
+        columnModifier = modifier.verticalScroll(rememberScrollState()),
+        topBar = { TopBarBackButton(
+            onPopBackStack = onPopBackStack,
+            title = stringResource(R.string.sign_up)
+        ) }
     ) {
-        Text(
-            text = stringResource(R.string.sign_up),
-            style = MaterialTheme.typography.titleLarge
-        )
-
-        Spacer(modifier = Modifier.height(Dimen.spaceLarge))
         CustomOutlinedTextField(
             value = uiState.displayName,
             onValueChange = { viewModel.onDisplayNameChange(it) },
@@ -61,14 +61,7 @@ fun SignUpScreen(
             ),
             isError = uiState.isDisplayNameInvalid
         )
-        uiState.displayNameErrorMessage?.let { message ->
-            Spacer(modifier = Modifier.height(Dimen.spaceSmall))
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
-            )
-        }
+        uiState.displayNameErrorMessage?.let { ErrorMessage(it) }
 
         Spacer(modifier = Modifier.height(Dimen.spaceMedium))
         CustomOutlinedTextField(
@@ -83,16 +76,9 @@ fun SignUpScreen(
             ),
             isError = uiState.isEmailInvalid
         )
-        uiState.emailErrorMessage?.let { message ->
-            Spacer(modifier = Modifier.height(Dimen.spaceSmall))
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
-            )
-        }
+        uiState.emailErrorMessage?.let { ErrorMessage(it) }
 
-        Spacer(modifier = Modifier.height(Dimen.spaceSmall))
+        Spacer(modifier = Modifier.height(Dimen.spaceMedium))
         CustomOutlinedTextField(
             value = uiState.password,
             onValueChange = { viewModel.onPasswordChange(it) },
@@ -110,24 +96,9 @@ fun SignUpScreen(
             singleLine = true,
             isError = uiState.isPasswordInvalid
         )
-        uiState.passwordErrorMessage?.let { message ->
-            Spacer(modifier = Modifier.height(Dimen.spaceSmall))
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
-            )
-        }
+        uiState.passwordErrorMessage?.let { ErrorMessage(it) }
 
         Spacer(modifier = Modifier.height(Dimen.spaceLarge))
-        uiState.signUpErrorMessage?.let { message ->
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
-            )
-            Spacer(modifier = Modifier.height(Dimen.spaceSmall))
-        }
         Button(
             onClick = {
                 viewModel.onSignUpClick(navigateTo)
@@ -136,5 +107,6 @@ fun SignUpScreen(
         ) {
             Text(text = stringResource(R.string.sign_up))
         }
+        uiState.signUpErrorMessage?.let { ErrorMessage(it) }
     }
 }

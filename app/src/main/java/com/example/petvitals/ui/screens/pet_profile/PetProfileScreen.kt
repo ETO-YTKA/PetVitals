@@ -1,6 +1,5 @@
 package com.example.petvitals.ui.screens.pet_profile
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,10 +8,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,30 +34,28 @@ import com.example.petvitals.ui.theme.Dimen
 @Composable
 fun PetProfileScreen(
     petProfile: PetProfile,
+    onPopBackStack: () -> Unit,
+    onNavigateToEditScreen: () -> Unit,
     viewModel: PetProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    val birthDate = when {
-        uiState.birthDay.isNotEmpty() && uiState.birthMonth.isNotEmpty() -> {
-            "${uiState.birthDay}.${uiState.birthMonth}.${uiState.birthYear}"
-        }
-        uiState.birthMonth.isNotEmpty() -> {
-            "${uiState.birthMonth}.${uiState.birthYear}"
-        }
-        else -> {
-            uiState.birthYear
-        }
-    }
-    Log.d("PetProfileScreen", "BirthDate: $birthDate")
 
     LaunchedEffect(Unit) {
         viewModel.getPetData(petProfile.petId)
     }
 
     ScreenLayout(
-        modifier = Modifier.verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.Start
+        modifier = Modifier,
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.Top,
+        topBar = { TopBar(
+            onPopBackStack = onPopBackStack,
+            onNavigateToEditScreen = onNavigateToEditScreen,
+            onDeleteClick = {
+                viewModel.deletePet(petProfile.petId)
+                onPopBackStack()
+            }
+        ) }
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -85,8 +84,45 @@ fun PetProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
             ) {
                 Text(text = uiState.species)
-                Text(text = birthDate)
+                Text(text = uiState.birthDate)
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TopBar(
+    onPopBackStack: () -> Unit,
+    onNavigateToEditScreen: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
+    CenterAlignedTopAppBar(
+        title = {
+            Text(
+                text = "",
+                maxLines = 1
+            )
+        },
+        actions = {
+            IconButton(
+                onClick = onNavigateToEditScreen
+            ) {
+                Icon(painterResource(R.drawable.ic_edit), contentDescription = null)
+            }
+            IconButton(
+                onClick = onDeleteClick
+            ) {
+                Icon(painterResource(R.drawable.ic_delete_forever), contentDescription = null)
+            }
+        },
+        navigationIcon = {
+            IconButton(
+                onClick = onPopBackStack
+
+            ) {
+                Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = null)
+            }
+        }
+    )
 }

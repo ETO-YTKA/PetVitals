@@ -52,6 +52,16 @@ class PetRepositoryImpl @Inject constructor() : PetRepository {
         }
     }
 
+    override suspend fun updatePet(userId: String, pet: Pet) {
+        Firebase.firestore.collection("users").document(userId).collection("pets").document(pet.id).set(
+            hashMapOf(
+                "name" to pet.name,
+                "species" to pet.species,
+                "birthDate" to pet.birthDate
+            )
+        ).await()
+    }
+
     override suspend fun deletePet(userId: String, petId: String) {
         Firebase.firestore.collection("users").document(userId).collection("pets").document(petId).delete().await()
     }

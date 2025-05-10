@@ -7,6 +7,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -15,6 +18,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -34,18 +38,14 @@ fun SignInScreen(
     val context = LocalContext.current
 
     ScreenLayout(
-        modifier = modifier.verticalScroll(rememberScrollState())
+        columnModifier = modifier.verticalScroll(rememberScrollState()),
+        topBar = { TopBar(title = stringResource(R.string.log_in)) }
     ) {
-        Text(
-            text = stringResource(R.string.log_in),
-            style = MaterialTheme.typography.titleLarge
-        )
-
-        Spacer(modifier = Modifier.height(Dimen.spaceLarge))
         CustomOutlinedTextField(
             value = uiState.email,
             onValueChange = { viewModel.onEmailChange(it) },
             label = { Text(text = stringResource(R.string.email)) },
+            leadingIcon = { Icon(painter = painterResource(R.drawable.ic_mail), contentDescription = null) },
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Next
             ),
@@ -57,6 +57,7 @@ fun SignInScreen(
             value = uiState.password,
             onValueChange = { viewModel.onPasswordChange(it) },
             label = { Text(text = stringResource(R.string.password)) },
+            leadingIcon = { Icon(painter = painterResource(R.drawable.ic_password2), contentDescription = null) },
             visualTransformation = PasswordVisualTransformation(),
             singleLine = true,
         )
@@ -88,4 +89,14 @@ fun SignInScreen(
             Text(text = stringResource(R.string.sign_up_new_account))
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TopBar(title: String) {
+    CenterAlignedTopAppBar(
+        title = {
+            Text(text = title)
+        }
+    )
 }
