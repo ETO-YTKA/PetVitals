@@ -62,7 +62,8 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
                 PetProfileScreen(
                     petProfile = petProfile,
                     onPopBackStack = { navController.popBackStack() },
-                    onNavigateToEditScreen = {}
+                    onNavigateToEditPet = {},
+                    onNavigateToPets = { navController.navigate(route = Pets) }
                 )
             }
         }

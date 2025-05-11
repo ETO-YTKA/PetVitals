@@ -35,7 +35,8 @@ import com.example.petvitals.ui.theme.Dimen
 fun PetProfileScreen(
     petProfile: PetProfile,
     onPopBackStack: () -> Unit,
-    onNavigateToEditScreen: () -> Unit,
+    onNavigateToEditPet: () -> Unit,
+    onNavigateToPets: () -> Unit,
     viewModel: PetProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -50,10 +51,10 @@ fun PetProfileScreen(
         verticalArrangement = Arrangement.Top,
         topBar = { TopBar(
             onPopBackStack = onPopBackStack,
-            onNavigateToEditScreen = onNavigateToEditScreen,
+            onNavigateToEditScreen = onNavigateToEditPet,
             onDeleteClick = {
                 viewModel.deletePet(petProfile.petId)
-                onPopBackStack()
+                onNavigateToPets()
             }
         ) }
     ) {

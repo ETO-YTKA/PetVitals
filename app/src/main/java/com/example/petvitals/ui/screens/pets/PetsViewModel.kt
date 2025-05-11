@@ -16,7 +16,8 @@ import javax.inject.Inject
 
 data class PetsUiState(
     val displayName: String = "",
-    val pets: List<Pet> = listOf()
+    val pets: List<Pet> = listOf(),
+    val isRefreshing: Boolean = false
 )
 
 @HiltViewModel
@@ -30,7 +31,7 @@ class PetsViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     init {
-        getPets()
+        refreshPets()
     }
 
     fun initialize(restartApp: (Any) -> Unit) {
@@ -42,10 +43,11 @@ class PetsViewModel @Inject constructor(
         }
     }
 
-    fun getPets() {
+    fun refreshPets() {
+        _uiState.update { state -> state.copy(isRefreshing = true) }
         viewModelScope.launch {
             val pets = petRepository.getUserPets(userId = accountService.currentUserId)
-            _uiState.update { state -> state.copy(pets = pets) }
+            _uiState.update { state -> state.copy(pets = pets, isRefreshing = false) }
         }
     }
 }

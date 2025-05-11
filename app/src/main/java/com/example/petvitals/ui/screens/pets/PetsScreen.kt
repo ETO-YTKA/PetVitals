@@ -18,6 +18,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -34,6 +35,7 @@ import com.example.petvitals.R
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.theme.Dimen
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PetsScreen(
     restartApp: (Any) -> Unit,
@@ -53,31 +55,36 @@ fun PetsScreen(
     ) }) {
         val pets = uiState.pets
 
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = Dimen.petIconSize),
-            modifier = Modifier.fillMaxSize()
+        PullToRefreshBox(
+            isRefreshing = uiState.isRefreshing,
+            onRefresh = { viewModel.refreshPets() }
         ) {
-            items(pets.size) { index ->
-                val pet = pets[index]
-                PetProfile(
-                    petImage = painterResource(id = R.drawable.splash),
-                    name = pet.name,
-                    modifier = Modifier.clickable(
-                        onClick = {
-                            onNavigateToPetProfile(pet.id)
-                        }
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = Dimen.petIconSize),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(pets.size) { index ->
+                    val pet = pets[index]
+                    PetProfile(
+                        petImage = painterResource(id = R.drawable.splash),
+                        name = pet.name,
+                        modifier = Modifier.clickable(
+                            onClick = {
+                                onNavigateToPetProfile(pet.id)
+                            }
+                        )
                     )
-                )
-            }
+                }
 
-            item {
-                PetProfile(
-                    petImage = painterResource(id = R.drawable.ic_add_circle),
-                    name = stringResource(R.string.add_pet),
-                    modifier = Modifier.clickable(
-                        onClick = onNavigateToAddPet
+                item {
+                    PetProfile(
+                        petImage = painterResource(id = R.drawable.ic_add_circle),
+                        name = stringResource(R.string.add_pet),
+                        modifier = Modifier.clickable(
+                            onClick = onNavigateToAddPet
+                        )
                     )
-                )
+                }
             }
         }
     }
