@@ -14,7 +14,6 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,6 +49,7 @@ fun PetProfileScreen(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Top,
         topBar = { TopBar(
+            title = uiState.name,
             onPopBackStack = onPopBackStack,
             onNavigateToEditScreen = { onNavigateToEditPet(petProfile.petId) },
             onDeleteClick = {
@@ -71,9 +71,6 @@ fun PetProfileScreen(
                     .size(Dimen.petImageProfile)
                     .clip(CircleShape)
             )
-
-            Spacer(modifier = Modifier.height(Dimen.spaceMedium))
-            Text(text = uiState.name, style = MaterialTheme.typography.titleLarge)
         }
 
         Spacer(modifier = Modifier.height(Dimen.spaceHuge))
@@ -94,6 +91,7 @@ fun PetProfileScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(
+    title: String,
     onPopBackStack: () -> Unit,
     onNavigateToEditScreen: () -> Unit,
     onDeleteClick: () -> Unit
@@ -101,7 +99,7 @@ private fun TopBar(
     CenterAlignedTopAppBar(
         title = {
             Text(
-                text = "",
+                text = title,
                 maxLines = 1
             )
         },

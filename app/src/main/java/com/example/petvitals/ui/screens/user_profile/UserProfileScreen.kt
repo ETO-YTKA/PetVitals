@@ -37,10 +37,12 @@ import com.example.petvitals.R
 import com.example.petvitals.ui.components.ButtonWithIcon
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.ScreenLayout
+import com.example.petvitals.ui.components.TopBarBackButton
 import com.example.petvitals.ui.theme.Dimen
 
 @Composable
 fun UserProfileScreen(
+    onPopBackStack: () -> Unit,
     viewModel: UserProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -56,7 +58,13 @@ fun UserProfileScreen(
 
     ScreenLayout(
         columnModifier = Modifier.verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.Top
+        verticalArrangement = Arrangement.Top,
+        topBar = {
+            TopBarBackButton(
+                title = stringResource(R.string.profile),
+                onPopBackStack = onPopBackStack
+            )
+        }
     ) {
         Box(
             modifier = Modifier

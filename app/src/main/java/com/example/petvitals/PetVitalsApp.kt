@@ -49,7 +49,7 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
                 SplashScreen(navigateTo = { route -> navController.navigate(route = route) })
             }
             composable<UserProfile> {
-                UserProfileScreen()
+                UserProfileScreen(onPopBackStack = { navController.popBackStack() })
             }
             composable<AddEditPet> { backStackEntry ->
                 val addEditPet: AddEditPet = backStackEntry.toRoute()
