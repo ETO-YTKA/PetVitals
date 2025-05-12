@@ -2,16 +2,6 @@ package com.example.petvitals
 
 import kotlinx.serialization.Serializable
 
-enum class Routes {
-    LogIn,
-    SignUp,
-    Splash,
-    Pets,
-    UserProfile,
-    AddPet,
-    PetProfile
-}
-
 @Serializable
 object LogIn
 
@@ -28,7 +18,7 @@ object Pets
 object UserProfile
 
 @Serializable
-object AddPet
+data class AddEditPet(val petId: String? = null)
 
 @Serializable
 data class PetProfile(val petId: String)

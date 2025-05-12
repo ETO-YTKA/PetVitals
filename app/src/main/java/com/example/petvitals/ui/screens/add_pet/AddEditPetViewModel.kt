@@ -7,9 +7,10 @@ import androidx.compose.material3.SelectableDates
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
+import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
 import com.example.petvitals.data.service.account.AccountService
-import com.example.petvitals.ui.screens.add_pet.AddPetViewModel.DropDownOption
+import com.example.petvitals.ui.screens.add_pet.AddEditPetViewModel.DropDownOption
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +24,7 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
-data class AddPetUiState(
+data class AddEditPetUiState(
     val name: String = "",
     val species: String = "",
     val isDateOfBirthApproximate: Boolean = false,
@@ -32,15 +33,16 @@ data class AddPetUiState(
     val selectedBirthMonth: Int = 0,
     val monthOptions: List<DropDownOption<Int>> = emptyList(),
     val birthYear: String = "",
+    val editMode: Boolean = false
 )
 
 @HiltViewModel
-class AddPetViewModel @Inject constructor(
+class AddEditPetViewModel @Inject constructor(
     private val petRepository: PetRepository,
     private val accountService: AccountService,
     @ApplicationContext private val context: Context
 ): ViewModel() {
-    private val _uiState = MutableStateFlow(AddPetUiState())
+    private val _uiState = MutableStateFlow(AddEditPetUiState())
     val uiState = _uiState.asStateFlow()
 
     init {
@@ -162,8 +164,82 @@ class AddPetViewModel @Inject constructor(
 
     fun addPet() {
         val userId = accountService.currentUserId
+        val birthDate = getBirthDateAsMap()
 
-        val birthDate = if (uiState.value.isDateOfBirthApproximate) {
+        viewModelScope.launch {
+            try {
+                petRepository.addPetToUser(
+                    userId = userId,
+                    petName = uiState.value.name,
+                    species = uiState.value.species,
+                    birthDate = birthDate
+                )
+            } catch (e: Exception) {
+                Log.d("AddPetViewModel", "addPet: ${e.message}")
+            }
+        }
+    }
+
+    fun loadPetData(petId: String) {
+        viewModelScope.launch {
+            val user = accountService.currentUserId
+            val pet: Pet? = petRepository.getPetById(
+                userId = user,
+                petId = petId
+            )
+
+            pet?.let {
+                _uiState.update { state ->
+                    state.copy(
+                        name = it.name,
+                        species = it.species,
+                        isDateOfBirthApproximate = it.birthDate.size != 3,
+                        birthDateMillis = if (it.birthDate.size == 3) {
+                            val date = Calendar.getInstance(Locale.getDefault())
+                            date.set(Calendar.DAY_OF_MONTH, it.birthDate["day"]!!)
+                            date.set(Calendar.MONTH, it.birthDate["month"]!!)
+                            date.set(Calendar.YEAR, it.birthDate["year"]!!)
+                            date.timeInMillis
+                        } else {
+                            null
+                        },
+                        selectedBirthMonth = if (it.birthDate.size == 2) {
+                            it.birthDate["month"]!!
+                        } else {
+                            0
+                        },
+                        birthYear = it.birthDate["year"].toString(),
+                        editMode = true
+                    )
+                }
+            }
+        }
+    }
+
+    fun updatePet(petId: String) {
+        val userId = accountService.currentUserId
+        val birthDate = getBirthDateAsMap()
+        val pet = Pet(
+            id = petId,
+            name = uiState.value.name,
+            species = uiState.value.species,
+            birthDate = birthDate
+        )
+
+        viewModelScope.launch {
+            try {
+                petRepository.updatePet(
+                    userId = userId,
+                    pet = pet
+                )
+            } catch (e: Exception) {
+                Log.d("AddPetViewModel", "updatePet: ${e.message}")
+            }
+        }
+    }
+
+    fun getBirthDateAsMap(): Map<String, Int> {
+        return if (uiState.value.isDateOfBirthApproximate) {
             when (uiState.value.selectedBirthMonth) {
                 0 -> {
                     mapOf<String, Int>(
@@ -187,19 +263,6 @@ class AddPetViewModel @Inject constructor(
                 "year" to date.get(Calendar.YEAR)
             )
         }
-
-        viewModelScope.launch {
-            try {
-                petRepository.addPetToUser(
-                    userId = userId,
-                    petName = uiState.value.name,
-                    species = uiState.value.species,
-                    birthDate = birthDate
-                )
-            } catch (e: Exception) {
-                Log.d("AddPetViewModel", "addPet: ${e.message}")
-            }
-        }
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -217,5 +280,4 @@ class AddPetViewModel @Inject constructor(
         val display: String,
         val value: T
     )
-
 }

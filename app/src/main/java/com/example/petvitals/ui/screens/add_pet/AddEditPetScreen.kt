@@ -46,23 +46,31 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.petvitals.AddEditPet
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBarBackButton
-import com.example.petvitals.ui.screens.add_pet.AddPetViewModel.DropDownOption
-import com.example.petvitals.ui.screens.add_pet.AddPetViewModel.PastOrPresentSelectableDates
+import com.example.petvitals.ui.screens.add_pet.AddEditPetViewModel.DropDownOption
+import com.example.petvitals.ui.screens.add_pet.AddEditPetViewModel.PastOrPresentSelectableDates
 import com.example.petvitals.ui.theme.Dimen
 
 @Composable
-fun AddPetScreen(
-    viewModel: AddPetViewModel = hiltViewModel(),
+fun AddEditPetScreen(
+    addEditPet: AddEditPet,
     navigateToPets: () -> Unit,
-    onPopBackStack: () -> Unit
+    onPopBackStack: () -> Unit,
+    viewModel: AddEditPetViewModel = hiltViewModel()
 
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        addEditPet.petId?.let { petId ->
+            viewModel.loadPetData(petId)
+        }
+    }
 
     if (uiState.showModal) {
         DatePickerModal(
@@ -142,7 +150,11 @@ fun AddPetScreen(
 
         Button(
             onClick = {
-                viewModel.addPet()
+                if (uiState.editMode) {
+                    viewModel.updatePet(addEditPet.petId!!)
+                } else {
+                    viewModel.addPet()
+                }
                 navigateToPets()
             },
             modifier = Modifier.fillMaxWidth()
