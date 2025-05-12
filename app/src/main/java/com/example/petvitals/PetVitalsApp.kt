@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.petvitals.ui.screens.add_pet.AddEditPetScreen
+import com.example.petvitals.ui.screens.create_record.CreateRecordScreen
 import com.example.petvitals.ui.screens.log_in.SignInScreen
 import com.example.petvitals.ui.screens.pet_profile.PetProfileScreen
 import com.example.petvitals.ui.screens.pets.PetsScreen
@@ -41,7 +42,7 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
                     restartApp = { route -> navController.navigate(route = route) },
                     onNavigateToAddPet = { navController.navigate(route = AddEditPet()) },
                     onNavigateToPetProfile = { petId -> navController.navigate(route = PetProfile(petId)) },
-                    onNavigateToSettings = {  },
+                    onNavigateToCreateRecord = { navController.navigate(route = CreateRecord) },
                     onNavigateToUserProfile = { navController.navigate(route = UserProfile) }
                 )
             }
@@ -67,6 +68,9 @@ fun PetVitalsApp(modifier: Modifier = Modifier) {
                     onNavigateToEditPet = { petId -> navController.navigate(route = AddEditPet(petId)) },
                     onNavigateToPets = { navController.navigate(route = Pets) }
                 )
+            }
+            composable<CreateRecord> {
+                CreateRecordScreen(onPopBackStack = { navController.popBackStack() })
             }
         }
     }

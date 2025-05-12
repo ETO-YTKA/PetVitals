@@ -2,6 +2,8 @@ package com.example.petvitals.di.module
 
 import com.example.petvitals.data.repository.pet.PetRepository
 import com.example.petvitals.data.repository.pet.PetRepositoryImpl
+import com.example.petvitals.data.repository.record.RecordRepository
+import com.example.petvitals.data.repository.record.RecordRepositoryImpl
 import com.example.petvitals.data.repository.user.UserRepository
 import com.example.petvitals.data.repository.user.UserRepositoryImpl
 import dagger.Binds
@@ -14,4 +16,6 @@ import dagger.hilt.components.SingletonComponent
 abstract class RepositoryModule {
     @Binds abstract fun provideUserRepository(impl: UserRepositoryImpl): UserRepository
     @Binds abstract fun providePetRepository(impl: PetRepositoryImpl): PetRepository
+    @Binds
+    abstract fun provideRecordRepository(impl: RecordRepositoryImpl): RecordRepository
 }

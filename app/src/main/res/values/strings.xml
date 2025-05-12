@@ -48,6 +48,20 @@
     <string name="november">November</string>
     <string name="december">December</string>
 
+    <!-- Create Note -->
+    <string name="title">title</string>
+
+    <string name="vaccination">Vaccination</string>
+    <string name="medication">Medication</string>
+    <string name="vet_visit">Vet Visit</string>
+    <string name="symptom">Symptom</string>
+    <string name="grooming">Grooming</string>
+    <string name="incident">Incident</string>
+    <string name="note">Note</string>
+
+    <string name="description">Description</string>
+
+
     <!-- Errors -->
     <string name="password_short_error">Password must contain at least 8 characters</string>
     <string name="password_whitespace_error">Password cannot contain whitespace</string>
@@ -64,4 +78,7 @@
     <string name="empty_fields_error">Fields cannot be empty</string>
     <string name="email_already_in_use_error">This email is already in use</string>
     <string name="invalid_characters_error">The field must contain only letters and spaces</string>
+    <string name="type">Type</string>
+    <string name="date">Date</string>
+    <string name="create_record">Create Record</string>
 </resources>

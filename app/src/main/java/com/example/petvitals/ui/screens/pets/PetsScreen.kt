@@ -41,7 +41,7 @@ fun PetsScreen(
     restartApp: (Any) -> Unit,
     onNavigateToAddPet: () -> Unit,
     onNavigateToPetProfile: (String) -> Unit,
-    onNavigateToSettings: () -> Unit,
+    onNavigateToCreateRecord: () -> Unit,
     onNavigateToUserProfile: () -> Unit,
     viewModel: PetsViewModel = hiltViewModel()
 ) {
@@ -50,7 +50,7 @@ fun PetsScreen(
     LaunchedEffect(Unit) { viewModel.initialize(restartApp) }
 
     ScreenLayout(topBar = { TopBar(
-        onNavigateToSettings = onNavigateToSettings,
+        onNavigateToMakeNote = onNavigateToCreateRecord,
         onNavigateToUserProfile = onNavigateToUserProfile
     ) }) {
         val pets = uiState.pets
@@ -121,7 +121,7 @@ private fun PetProfile(petImage: Painter, name: String, modifier: Modifier = Mod
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(
-    onNavigateToSettings: () -> Unit,
+    onNavigateToMakeNote: () -> Unit,
     onNavigateToUserProfile: () -> Unit
 ) {
     CenterAlignedTopAppBar(
@@ -140,11 +140,11 @@ private fun TopBar(
         },
         actions = {
             IconButton(
-                onClick = onNavigateToSettings
+                onClick = onNavigateToMakeNote
 
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_settings),
+                    painter = painterResource(id = R.drawable.ic_note_add),
                     contentDescription = null
                 )
             }
