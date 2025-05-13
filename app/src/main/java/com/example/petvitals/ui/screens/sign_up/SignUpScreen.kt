@@ -30,7 +30,7 @@ import com.example.petvitals.ui.theme.Dimen
 
 @Composable
 fun SignUpScreen(
-    navigateTo: (Any) -> Unit,
+    onNavigateToLogIn: () -> Unit,
     onPopBackStack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SignUpViewModel = hiltViewModel()
@@ -101,7 +101,7 @@ fun SignUpScreen(
         Spacer(modifier = Modifier.height(Dimen.spaceLarge))
         Button(
             onClick = {
-                viewModel.onSignUpClick(navigateTo)
+                viewModel.onSignUpClick(onNavigateToLogIn = onNavigateToLogIn)
             },
             enabled = uiState.signUpButtonEnabled
         ) {

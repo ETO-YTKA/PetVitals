@@ -13,10 +13,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -33,26 +32,46 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.ScreenLayout
+import com.example.petvitals.ui.components.TopBarProfileSettings
 import com.example.petvitals.ui.theme.Dimen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PetsScreen(
-    restartApp: (Any) -> Unit,
+    onNavigateToSplash: () -> Unit,
     onNavigateToAddPet: () -> Unit,
     onNavigateToPetProfile: (String) -> Unit,
-    onNavigateToCreateRecord: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     onNavigateToUserProfile: () -> Unit,
     viewModel: PetsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(Unit) { viewModel.initialize(restartApp) }
+    LaunchedEffect(Unit) { viewModel.initialize(onNavigateToSplash) }
 
-    ScreenLayout(topBar = { TopBar(
-        onNavigateToMakeNote = onNavigateToCreateRecord,
-        onNavigateToUserProfile = onNavigateToUserProfile
-    ) }) {
+    ScreenLayout(
+        topBar = {
+            TopBarProfileSettings(
+                title = stringResource(R.string.pets),
+                onNavigateToSettings = onNavigateToSettings,
+                onNavigateToUserProfile = onNavigateToUserProfile,
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onNavigateToAddPet,
+                modifier = Modifier
+                    .padding(Dimen.spaceHuge)
+                    .size(Dimen.fabSize)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_add_circle),
+                    contentDescription = null,
+                    modifier = Modifier.size(Dimen.fabIconSize)
+                )
+            }
+        }
+    ) {
         val pets = uiState.pets
 
         PullToRefreshBox(
@@ -72,16 +91,6 @@ fun PetsScreen(
                             onClick = {
                                 onNavigateToPetProfile(pet.id)
                             }
-                        )
-                    )
-                }
-
-                item {
-                    PetProfile(
-                        petImage = painterResource(id = R.drawable.ic_add_circle),
-                        name = stringResource(R.string.add_pet),
-                        modifier = Modifier.clickable(
-                            onClick = onNavigateToAddPet
                         )
                     )
                 }
@@ -116,38 +125,4 @@ private fun PetProfile(petImage: Painter, name: String, modifier: Modifier = Mod
             Text(text = name)
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TopBar(
-    onNavigateToMakeNote: () -> Unit,
-    onNavigateToUserProfile: () -> Unit
-) {
-    CenterAlignedTopAppBar(
-        title = {
-            Text(text = stringResource(R.string.pets))
-        },
-        navigationIcon = {
-            IconButton(
-                onClick = onNavigateToUserProfile
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_person),
-                    contentDescription = null
-                )
-            }
-        },
-        actions = {
-            IconButton(
-                onClick = onNavigateToMakeNote
-
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_note_add),
-                    contentDescription = null
-                )
-            }
-        }
-    )
 }

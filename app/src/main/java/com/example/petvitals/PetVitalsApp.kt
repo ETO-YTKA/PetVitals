@@ -2,75 +2,45 @@ package com.example.petvitals
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
-import com.example.petvitals.ui.screens.add_pet.AddEditPetScreen
-import com.example.petvitals.ui.screens.create_record.CreateRecordScreen
 import com.example.petvitals.ui.screens.log_in.SignInScreen
-import com.example.petvitals.ui.screens.pet_profile.PetProfileScreen
-import com.example.petvitals.ui.screens.pets.PetsScreen
+import com.example.petvitals.ui.screens.main_screen.MainAppScreen
 import com.example.petvitals.ui.screens.sign_up.SignUpScreen
 import com.example.petvitals.ui.screens.splash.SplashScreen
-import com.example.petvitals.ui.screens.user_profile.UserProfileScreen
 import com.example.petvitals.ui.theme.PetVitalsTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PetVitalsApp(modifier: Modifier = Modifier) {
+fun PetVitalsApp() {
     PetVitalsTheme {
         val navController = rememberNavController()
 
         NavHost(
             navController = navController,
-            startDestination = Splash,
-            modifier = modifier
+            startDestination = Splash
         ) {
             composable<LogIn> {
-                SignInScreen(navigateTo = { route -> navController.navigate(route = route) })
+                SignInScreen(
+                    onNavigateToSignUp = { navController.navigate(route = SignUp) },
+                    onNavigateToSplash = { navController.navigate(route = Splash) }
+                )
             }
             composable<SignUp> {
                 SignUpScreen(
-                    navigateTo = { route -> navController.navigate(route = route) },
+                    onNavigateToLogIn = { navController.navigate(route = LogIn) },
                     onPopBackStack = { navController.popBackStack() }
-                )
-            }
-            composable<Pets> {
-                PetsScreen(
-                    restartApp = { route -> navController.navigate(route = route) },
-                    onNavigateToAddPet = { navController.navigate(route = AddEditPet()) },
-                    onNavigateToPetProfile = { petId -> navController.navigate(route = PetProfile(petId)) },
-                    onNavigateToCreateRecord = { navController.navigate(route = CreateRecord) },
-                    onNavigateToUserProfile = { navController.navigate(route = UserProfile) }
                 )
             }
             composable<Splash> {
-                SplashScreen(navigateTo = { route -> navController.navigate(route = route) })
-            }
-            composable<UserProfile> {
-                UserProfileScreen(onPopBackStack = { navController.popBackStack() })
-            }
-            composable<AddEditPet> { backStackEntry ->
-                val addEditPet: AddEditPet = backStackEntry.toRoute()
-                AddEditPetScreen(
-                    addEditPet = addEditPet,
-                    navigateToPets = { navController.navigate(route = Pets) },
-                    onPopBackStack = { navController.popBackStack() }
+                SplashScreen(
+                    onNavigateToMainApp = { navController.navigate(route = MainApp) },
+                    onNavigateToLogIn = { navController.navigate(route = LogIn) }
                 )
             }
-            composable<PetProfile> { backStackEntry ->
-                val petProfile: PetProfile = backStackEntry.toRoute()
-                PetProfileScreen(
-                    petProfile = petProfile,
-                    onPopBackStack = { navController.popBackStack() },
-                    onNavigateToEditPet = { petId -> navController.navigate(route = AddEditPet(petId)) },
-                    onNavigateToPets = { navController.navigate(route = Pets) }
-                )
-            }
-            composable<CreateRecord> {
-                CreateRecordScreen(onPopBackStack = { navController.popBackStack() })
+            composable<MainApp> {
+                MainAppScreen(onNavigateToSplash = { navController.navigate(route = Splash) })
             }
         }
     }

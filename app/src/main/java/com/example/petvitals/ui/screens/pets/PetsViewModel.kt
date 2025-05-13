@@ -1,7 +1,6 @@
 package com.example.petvitals.ui.screens.pets
 
 import androidx.lifecycle.viewModelScope
-import com.example.petvitals.Splash
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
 import com.example.petvitals.data.repository.user.UserRepository
@@ -34,10 +33,10 @@ class PetsViewModel @Inject constructor(
         refreshPets()
     }
 
-    fun initialize(restartApp: (Any) -> Unit) {
+    fun initialize(onNavigateToSplash: () -> Unit) {
         launchCatching {
             accountService.currentUser.collect { user ->
-                if (user == null) restartApp(Splash)
+                if (user == null) onNavigateToSplash()
                 _uiState.update { state -> state.copy(displayName = userRepository.getUserDisplayName(user!!.id)) }
             }
         }

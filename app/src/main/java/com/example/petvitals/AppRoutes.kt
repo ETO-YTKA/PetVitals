@@ -25,3 +25,9 @@ data class PetProfile(val petId: String)
 
 @Serializable
 object CreateRecord
+
+@Serializable
+object Records
+
+@Serializable
+object MainApp

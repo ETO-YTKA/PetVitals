@@ -81,4 +81,7 @@
     <string name="type">Type</string>
     <string name="date">Date</string>
     <string name="create_record">Create Record</string>
+    <string name="records">Records</string>
+    <string name="user_profile">User Profile</string>
+    <string name="settings">Settings</string>
 </resources>

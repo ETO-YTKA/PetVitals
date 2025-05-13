@@ -4,8 +4,6 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
-import com.example.petvitals.SignUp
-import com.example.petvitals.Splash
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.ui.screens.PetVitalsAppViewModel
 import com.google.firebase.FirebaseNetworkException
@@ -47,14 +45,14 @@ class LogInViewModel @Inject constructor(
         }
     }
 
-    fun onLogInClick(navigateTo: (Any) -> Unit) {
+    fun onLogInClick(onNavigateToSplash: () -> Unit) {
         viewModelScope.launch {
             try {
                 accountService.signIn(
                     email = uiState.value.email,
                     password = uiState.value.password
                 )
-                navigateTo(Splash)
+                onNavigateToSplash()
             } catch (e: Exception) {
                 Log.d("LogInViewModel", e.message.orEmpty())
                 when(e) {
@@ -78,7 +76,7 @@ class LogInViewModel @Inject constructor(
         }
     }
 
-    fun onSignUpClick(navigateTo: (Any) -> Unit) {
-        navigateTo(SignUp)
+    fun onSignUpClick(onNavigateToSignUp: () -> Unit) {
+        onNavigateToSignUp()
     }
 }

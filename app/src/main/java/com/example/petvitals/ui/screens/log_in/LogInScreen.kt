@@ -30,7 +30,8 @@ import com.example.petvitals.ui.theme.Dimen
 
 @Composable
 fun SignInScreen(
-    navigateTo: (Any) -> Unit,
+    onNavigateToSplash: () -> Unit,
+    onNavigateToSignUp: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LogInViewModel = hiltViewModel()
 ) {
@@ -73,7 +74,7 @@ fun SignInScreen(
         Spacer(modifier = Modifier.height(Dimen.spaceLarge))
         Button(
             onClick = {
-                viewModel.onLogInClick(navigateTo)
+                viewModel.onLogInClick(onNavigateToSplash = onNavigateToSplash)
 
                 uiState.errorMessage?.let { errorMessage ->
                     Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
@@ -84,7 +85,7 @@ fun SignInScreen(
         }
 
         TextButton(
-            onClick = { viewModel.onSignUpClick(navigateTo) }
+            onClick = { viewModel.onSignUpClick(onNavigateToSignUp = onNavigateToSignUp) }
         ) {
             Text(text = stringResource(R.string.sign_up_new_account))
         }

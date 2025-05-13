@@ -3,12 +3,11 @@ package com.example.petvitals.ui.screens.sign_up
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.viewModelScope
-import com.example.petvitals.LogIn
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.user.UserRepository
+import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.domain.Result
 import com.example.petvitals.domain.SignUpDataValidator
-import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.ui.screens.PetVitalsAppViewModel
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -163,7 +162,7 @@ class SignUpViewModel @Inject constructor(
         }
     }
 
-    fun onSignUpClick(navigateTo: (Any) -> Unit) {
+    fun onSignUpClick(onNavigateToLogIn: () -> Unit) {
         viewModelScope.launch {
             try {
                 val userId = accountService.signUp(
@@ -177,7 +176,7 @@ class SignUpViewModel @Inject constructor(
                     email = uiState.value.email
                 )
 
-                navigateTo(LogIn)
+                onNavigateToLogIn()
             } catch (e: Exception) {
                 Log.d("SignUpViewModel", "Sign up failed", e)
 
