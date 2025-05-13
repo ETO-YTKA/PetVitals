@@ -67,7 +67,7 @@ fun CreateRecordScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(Dimen.spaceLarge))
+        Spacer(modifier = Modifier.height(Dimen.spaceMedium))
 
         Row {
             ValueDropDown(
@@ -86,7 +86,7 @@ fun CreateRecordScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(Dimen.spaceLarge))
+        Spacer(modifier = Modifier.height(Dimen.spaceMedium))
 
         CustomOutlinedTextField(
             value = uiState.description,
@@ -95,7 +95,7 @@ fun CreateRecordScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(Dimen.spaceHuge))
+        Spacer(modifier = Modifier.height(Dimen.spaceLarge))
 
         ButtonWithIcon(
             text = stringResource(R.string.create_record),

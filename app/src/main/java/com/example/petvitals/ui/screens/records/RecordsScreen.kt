@@ -1,10 +1,13 @@
 package com.example.petvitals.ui.screens.records
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -12,11 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,11 +35,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
+import com.example.petvitals.data.repository.record.RecordType
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBarProfileSettings
 import com.example.petvitals.ui.theme.Dimen
@@ -84,10 +89,10 @@ fun RecordsScreen(
             ) {
                 items(uiState.records.size) { index ->
                     val record = uiState.records[index]
-                    Record(
+                    RecordCard(
                         title = record.title,
                         description = record.description,
-                        type = stringResource(id = record.type.titleResId),
+                        type = record.type,
                         date = viewModel.formatDateForDisplay(record.date, context),
                         modifier = Modifier.clickable { }
                     )
@@ -98,67 +103,96 @@ fun RecordsScreen(
 }
 
 @Composable
-fun Record(
+fun RecordCard(
     title: String,
     description: String,
-    type: String,
+    type: RecordType,
     date: String,
     modifier: Modifier = Modifier
 ) {
+    var isDescriptionTruncated by remember { mutableStateOf(false) }
+    val maxLinesCollapsed = 3
+
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = modifier.padding(vertical = Dimen.spaceMedium)
     ) {
-        Column(
-            modifier = modifier.padding(Dimen.spaceMedium)
+        Row(
+            modifier = Modifier.height(IntrinsicSize.Min),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+            Box(
+                modifier = Modifier
+                    .width(10.dp)
+                    .fillMaxHeight()
+                    .background(type.color, RoundedCornerShape(topStart = 2.dp, bottomStart = 2.dp))
+            )
+            Spacer(modifier = Modifier.width(Dimen.spaceSmall))
+            Column(
+                modifier = modifier.padding(Dimen.spaceMedium)
             ) {
-                Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleLarge,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = stringResource(type.titleResId),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(Dimen.spaceMedium))
+
                     Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = type,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        text = date,
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.End,
                         maxLines = 1
                     )
                 }
-                Spacer(modifier = Modifier.width(Dimen.spaceMedium))
+                Spacer(modifier = Modifier.height(Dimen.spaceLarge))
 
+                var expanded by remember { mutableStateOf(false) }
                 Text(
-                    text = date,
+                    text = description,
                     style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.End,
-                    maxLines = 1
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = if (expanded) Int.MAX_VALUE else maxLinesCollapsed,
+                    overflow = TextOverflow.Ellipsis,
+                    onTextLayout = { textLayoutResult: TextLayoutResult ->
+                        isDescriptionTruncated = textLayoutResult.hasVisualOverflow
+                    }
                 )
-            }
-            Spacer(modifier = Modifier.height(Dimen.spaceSmall))
-            HorizontalDivider(
-                thickness = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant
-            )
-            Spacer(modifier = Modifier.height(Dimen.spaceMedium))
 
-            var expanded by remember { mutableStateOf(false) }
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) { expanded = !expanded },
-                maxLines = if (expanded) Int.MAX_VALUE else 2,
-                overflow = if (!expanded) TextOverflow.Ellipsis else TextOverflow.Clip
-            )
+//                if (isDescriptionTruncated || expanded) {
+//                    Box(
+//                        modifier = Modifier
+//                            .align(Alignment.End)
+//                            .clickable { expanded = !expanded }
+//                    ) {
+//                        Text(
+//                            text = if (expanded) stringResource(R.string.show_less)
+//                            else stringResource(R.string.read_more),
+//                            style = MaterialTheme.typography.labelMedium,
+//                            color = MaterialTheme.colorScheme.primary,
+//                            modifier = Modifier.padding(
+//                                top = Dimen.spaceMedium,
+//                                end = Dimen.spaceMedium,
+//                                bottom = Dimen.spaceSmall,
+//                                start = Dimen.spaceMedium
+//                            )
+//                        )
+//                    }
+//                }
+            }
         }
     }
 }

@@ -13,6 +13,7 @@
     <!-- PetsScreen -->
     <string name="pets">Pets</string>
     <string name="add_pet">Add pet</string>
+    <string name="settings">Settings</string>
 
     <!-- Profile -->
     <string name="logout">Logout</string>
@@ -20,6 +21,7 @@
     <string name="delete">Delete</string>
     <string name="enter_your_password_to_confirm">Enter your password to confirm</string>
     <string name="delete_account">Delete account</string>
+    <string name="user_profile">User Profile</string>
 
     <!-- AddPet -->
     <string name="date_of_birth_is_approximate">Date of birth is approximate</string>
@@ -48,8 +50,12 @@
     <string name="november">November</string>
     <string name="december">December</string>
 
-    <!-- Create Note -->
+    <!-- Create record -->
+    <string name="create_record">Create Record</string>
     <string name="title">title</string>
+    <string name="type">Type</string>
+    <string name="date">Date</string>
+    <string name="description">Description</string>
 
     <string name="vaccination">Vaccination</string>
     <string name="medication">Medication</string>
@@ -59,8 +65,10 @@
     <string name="incident">Incident</string>
     <string name="note">Note</string>
 
-    <string name="description">Description</string>
-
+    <!-- Records -->
+    <string name="show_less">Show less</string>
+    <string name="read_more">Show more</string>
+    <string name="records">Records</string>
 
     <!-- Errors -->
     <string name="password_short_error">Password must contain at least 8 characters</string>
@@ -78,10 +86,4 @@
     <string name="empty_fields_error">Fields cannot be empty</string>
     <string name="email_already_in_use_error">This email is already in use</string>
     <string name="invalid_characters_error">The field must contain only letters and spaces</string>
-    <string name="type">Type</string>
-    <string name="date">Date</string>
-    <string name="create_record">Create Record</string>
-    <string name="records">Records</string>
-    <string name="user_profile">User Profile</string>
-    <string name="settings">Settings</string>
 </resources>

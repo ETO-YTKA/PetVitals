@@ -83,7 +83,12 @@ fun AddEditPetScreen(
         columnModifier = Modifier.verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(Dimen.spaceMediumLarge),
         horizontalAlignment = Alignment.Start,
-        topBar = { TopBarBackButton(onPopBackStack = onPopBackStack) }
+        topBar = {
+            TopBarBackButton(
+                onPopBackStack = onPopBackStack,
+                title = stringResource(R.string.add_pet)
+            )
+        }
     ) {
         CustomOutlinedTextField(
             value = uiState.name,
