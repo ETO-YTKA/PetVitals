@@ -96,7 +96,8 @@ fun MainAppScreen(
             composable<Records> {
                 RecordsScreen(
                     onNavigateToProfile = { navController.navigate(route = UserProfile) },
-                    onNavigateToSettings = { }
+                    onNavigateToSettings = { },
+                    onNavigateToCreateRecord = { navController.navigate(route = CreateRecord) }
                 )
             }
         }
