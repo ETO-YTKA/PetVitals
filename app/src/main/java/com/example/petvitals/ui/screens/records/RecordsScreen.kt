@@ -1,26 +1,28 @@
 package com.example.petvitals.ui.screens.records
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -32,11 +34,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -110,88 +111,91 @@ fun RecordCard(
     date: String,
     modifier: Modifier = Modifier
 ) {
-    var isDescriptionTruncated by remember { mutableStateOf(false) }
-    val maxLinesCollapsed = 3
-
     Card(
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = modifier.padding(vertical = Dimen.spaceMedium)
+        modifier = modifier
+            .padding(vertical = Dimen.spaceSmall)
+            .animateContentSize()
     ) {
-        Row(
-            modifier = Modifier.height(IntrinsicSize.Min),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = modifier.padding(Dimen.spaceMedium)
         ) {
-            Box(
-                modifier = Modifier
-                    .width(10.dp)
-                    .fillMaxHeight()
-                    .background(type.color, RoundedCornerShape(topStart = 2.dp, bottomStart = 2.dp))
-            )
-            Spacer(modifier = Modifier.width(Dimen.spaceSmall))
-            Column(
-                modifier = modifier.padding(Dimen.spaceMedium)
+            var isExpanded by remember { mutableStateOf(false) }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
+                    modifier = Modifier.weight(1f)
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.titleLarge,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Text(
-                            text = stringResource(type.titleResId),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1
+                    Box(
+                        modifier = Modifier.padding(end = Dimen.spaceMedium)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .background(
+                                    color = type.color,
+                                    shape = RoundedCornerShape(100)
+                                )
+                                .align(Alignment.Center)
                         )
                     }
-                    Spacer(modifier = Modifier.width(Dimen.spaceMedium))
 
                     Text(
-                        text = date,
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, false)
+                    )
+
+                    Text(
+                        text = "•",
                         style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.End,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Text(
+                        text = stringResource(type.titleResId),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1
                     )
                 }
-                Spacer(modifier = Modifier.height(Dimen.spaceLarge))
 
-                var expanded by remember { mutableStateOf(false) }
+                Spacer(modifier = Modifier.width(Dimen.spaceMedium))
+
                 Text(
-                    text = description,
+                    text = date,
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.fillMaxWidth(),
-                    maxLines = if (expanded) Int.MAX_VALUE else maxLinesCollapsed,
-                    overflow = TextOverflow.Ellipsis,
-                    onTextLayout = { textLayoutResult: TextLayoutResult ->
-                        isDescriptionTruncated = textLayoutResult.hasVisualOverflow
-                    }
+                    maxLines = 1
                 )
 
-//                if (isDescriptionTruncated || expanded) {
-//                    Box(
-//                        modifier = Modifier
-//                            .align(Alignment.End)
-//                            .clickable { expanded = !expanded }
-//                    ) {
-//                        Text(
-//                            text = if (expanded) stringResource(R.string.show_less)
-//                            else stringResource(R.string.read_more),
-//                            style = MaterialTheme.typography.labelMedium,
-//                            color = MaterialTheme.colorScheme.primary,
-//                            modifier = Modifier.padding(
-//                                top = Dimen.spaceMedium,
-//                                end = Dimen.spaceMedium,
-//                                bottom = Dimen.spaceSmall,
-//                                start = Dimen.spaceMedium
-//                            )
-//                        )
-//                    }
-//                }
+                if (description.isNotEmpty()) {
+                    val rotationAngle by animateFloatAsState(
+                        targetValue = if (isExpanded) 180f else 0f,
+                        label = "ArrowRotation"
+                    )
+                    IconButton(
+                        onClick = { isExpanded = !isExpanded }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.KeyboardArrowUp,
+                            contentDescription = null,
+                            modifier = Modifier.rotate(rotationAngle)
+                        )
+                    }
+                }
+            }
+            if (isExpanded) {
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
         }
     }
