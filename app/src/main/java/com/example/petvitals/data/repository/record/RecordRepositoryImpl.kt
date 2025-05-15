@@ -7,18 +7,25 @@ import javax.inject.Inject
 
 class RecordRepositoryImpl @Inject constructor() : RecordRepository {
 
-    override suspend fun createUserRecord(record: Record) {
-        Firebase.firestore.collection("users").document(record.userId)
-            .collection("records").add(record)
+    override suspend fun createRecord(record: Record) {
+
+        Firebase.firestore
+            .collection("users").document(record.userId)
+            .collection("records")
+            .add(record)
     }
 
-    override suspend fun getRecordByPetId(petId: String): List<Record> {
+    override suspend fun getRecordsByPetId(petId: String): List<Record> {
         TODO("Not yet implemented")
     }
 
     override suspend fun getAllRecord(userId: String): List<Record> {
+
         var records =
-            Firebase.firestore.collection("users").document(userId).collection("records").get()
+            Firebase.firestore
+                .collection("users").document(userId)
+                .collection("records")
+                .get()
                 .await()
 
         return records.map {
@@ -33,15 +40,15 @@ class RecordRepositoryImpl @Inject constructor() : RecordRepository {
         }
     }
 
-    override suspend fun getRecordById(recordId: String): Record? {
-        TODO("Not yet implemented")
-    }
-
     override suspend fun updateRecord(record: Record) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun deleteRecord(recordId: String) {
-        TODO("Not yet implemented")
+    override suspend fun deleteRecord(record: Record) {
+
+        Firebase.firestore
+            .collection("users").document(record.userId)
+            .collection("records").document(record.recordId!!)
+            .delete()
     }
 }
