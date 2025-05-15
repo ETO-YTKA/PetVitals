@@ -39,6 +39,7 @@ import com.example.petvitals.ui.theme.Dimen
 @Composable
 fun CreateRecordScreen(
     onPopBackStack: () -> Unit,
+    onNavigateToRecords: () -> Unit,
     viewModel: CreateRecordViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -99,7 +100,10 @@ fun CreateRecordScreen(
 
         ButtonWithIcon(
             text = stringResource(R.string.create_record),
-            onClick = { viewModel.createRecord() },
+            onClick = {
+                viewModel.createRecord()
+                onNavigateToRecords()
+            },
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_check),

@@ -1,9 +1,14 @@
 package com.example.petvitals.ui.screens.records
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,8 +24,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material3.Card
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +40,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,43 +50,25 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.record.RecordType
 import com.example.petvitals.ui.components.ScreenLayout
-import com.example.petvitals.ui.components.TopBarProfileSettings
 import com.example.petvitals.ui.theme.Dimen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecordsScreen(
-    onNavigateToProfile: () -> Unit,
-    onNavigateToSettings: () -> Unit,
     onNavigateToCreateRecord: () -> Unit,
     viewModel: RecordsViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     ScreenLayout(
         topBar = {
-            TopBarProfileSettings(
-                title = stringResource(R.string.records),
-                onNavigateToSettings = onNavigateToSettings,
-                onNavigateToUserProfile = onNavigateToProfile
+            TopBar(
+                onNavigateToCreateRecord = onNavigateToCreateRecord,
+                onDeleteClick = { uiState.selectedRecords.forEach { viewModel.deleteRecord(it) } },
+                selectionMode = uiState.selectionMode
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onNavigateToCreateRecord,
-                modifier = Modifier
-                    .padding(Dimen.spaceHuge)
-                    .size(Dimen.fabSize)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_note_add),
-                    contentDescription = stringResource(R.string.create_record),
-                    modifier = Modifier.size(Dimen.fabIconSize)
-                )
-            }
         }
     ) {
-        val uiState by viewModel.uiState.collectAsState()
-        val context = LocalContext.current
-
         PullToRefreshBox(
             isRefreshing = uiState.isRefreshing,
             onRefresh = { viewModel.refreshRecords() }
@@ -88,14 +76,32 @@ fun RecordsScreen(
             LazyColumn(
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(uiState.records.size) { index ->
+                items(
+                    count = uiState.records.size,
+                    key = { index -> uiState.records[index].recordId.toString() }
+                ) { index ->
                     val record = uiState.records[index]
                     RecordCard(
                         title = record.title,
                         description = record.description,
                         type = record.type,
-                        date = viewModel.formatDateForDisplay(record.date, context),
-                        modifier = Modifier.clickable { }
+                        date = viewModel.formatDateForDisplay(record.date),
+                        selected = uiState.selectedRecords.contains(record),
+                        modifier = Modifier
+                            .pointerInput(record) {
+                                this.detectTapGestures(
+                                    onLongPress = {
+                                        if (!uiState.selectionMode) {
+                                            viewModel.selectRecord(record)
+                                        }
+                                    },
+                                    onTap = {
+                                        if (uiState.selectionMode) {
+                                            viewModel.selectRecord(record)
+                                        }
+                                    }
+                                )
+                            }
                     )
                 }
             }
@@ -104,12 +110,13 @@ fun RecordsScreen(
 }
 
 @Composable
-fun RecordCard(
+private fun RecordCard(
     title: String,
     description: String,
     type: RecordType,
     date: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selected: Boolean = false
 ) {
     Card(
         modifier = modifier
@@ -134,15 +141,38 @@ fun RecordCard(
                     Box(
                         modifier = Modifier.padding(end = Dimen.spaceMedium)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(24.dp)
-                                .background(
-                                    color = type.color,
-                                    shape = RoundedCornerShape(100)
+                        AnimatedContent(
+                            targetState = selected,
+                            transitionSpec = {
+                                fadeIn(
+                                    animationSpec = tween(300)
+                                ) togetherWith fadeOut(animationSpec = tween(300))
+                            }
+                        ) { targetState ->
+
+                            if (targetState) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_check),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .background(
+                                            color = Color(0xff47df00),
+                                            shape = RoundedCornerShape(100)
+                                        )
                                 )
-                                .align(Alignment.Center)
-                        )
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .background(
+                                            color = type.color,
+                                            shape = RoundedCornerShape(100)
+                                        )
+                                        .align(Alignment.Center)
+                                )
+                            }
+                        }
                     }
 
                     Text(
@@ -199,4 +229,44 @@ fun RecordCard(
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TopBar(
+    onNavigateToCreateRecord: () -> Unit,
+    onDeleteClick: () -> Unit,
+    selectionMode: Boolean = false
+) {
+    CenterAlignedTopAppBar(
+        title = {
+            Text(
+                text = stringResource(R.string.records),
+                style = MaterialTheme.typography.titleLarge
+            )
+        },
+        actions = {
+            AnimatedContent(targetState = selectionMode, label = "TopBarActions") { targetState ->
+                if (targetState) {
+                    IconButton(
+                        onClick = onDeleteClick
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_delete_forever),
+                            contentDescription = stringResource(R.string.delete)
+                        )
+                    }
+                } else {
+                    IconButton(
+                        onClick = onNavigateToCreateRecord
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_note_add),
+                            contentDescription = stringResource(R.string.create_record)
+                        )
+                    }
+                }
+            }
+        }
+    )
 }

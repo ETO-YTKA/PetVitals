@@ -91,12 +91,13 @@ fun MainAppScreen(
                 )
             }
             composable<CreateRecord> {
-                CreateRecordScreen(onPopBackStack = { navController.popBackStack() })
+                CreateRecordScreen(
+                    onNavigateToRecords = { navController.navigate(route = Records) },
+                    onPopBackStack = { navController.popBackStack() }
+                )
             }
             composable<Records> {
                 RecordsScreen(
-                    onNavigateToProfile = { navController.navigate(route = UserProfile) },
-                    onNavigateToSettings = { },
                     onNavigateToCreateRecord = { navController.navigate(route = CreateRecord) }
                 )
             }

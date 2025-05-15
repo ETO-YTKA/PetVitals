@@ -93,7 +93,7 @@ class CreateRecordViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            recordRepository.createUserRecord(record)
+            recordRepository.createRecord(record)
         }
     }
 
