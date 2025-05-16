@@ -4,9 +4,10 @@ import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
 import com.example.petvitals.R
 import java.util.Calendar
+import java.util.UUID
 
 data class Record(
-    val recordId: String? = null,
+    val recordId: String = UUID.randomUUID().toString(),
     val userId: String,
     val title: String = "",
     val type: RecordType = RecordType.NOTE,

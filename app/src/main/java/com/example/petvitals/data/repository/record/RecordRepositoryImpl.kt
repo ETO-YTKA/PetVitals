@@ -11,8 +11,8 @@ class RecordRepositoryImpl @Inject constructor() : RecordRepository {
 
         Firebase.firestore
             .collection("users").document(record.userId)
-            .collection("records")
-            .add(record)
+            .collection("records").document(record.recordId)
+            .set(record)
     }
 
     override suspend fun getRecordsByPetId(petId: String): List<Record> {
@@ -48,7 +48,7 @@ class RecordRepositoryImpl @Inject constructor() : RecordRepository {
 
         Firebase.firestore
             .collection("users").document(record.userId)
-            .collection("records").document(record.recordId!!)
+            .collection("records").document(record.recordId)
             .delete()
     }
 }

@@ -3,7 +3,6 @@ package com.example.petvitals.ui.screens.pets
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
-import com.example.petvitals.data.repository.user.UserRepository
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.ui.screens.PetVitalsAppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +21,6 @@ data class PetsUiState(
 @HiltViewModel
 class PetsViewModel @Inject constructor(
     private val accountService: AccountService,
-    private val userRepository: UserRepository,
     private val petRepository: PetRepository
 ) : PetVitalsAppViewModel() {
 
@@ -37,7 +35,6 @@ class PetsViewModel @Inject constructor(
         launchCatching {
             accountService.currentUser.collect { user ->
                 if (user == null) onNavigateToSplash()
-                _uiState.update { state -> state.copy(displayName = userRepository.getUserDisplayName(user!!.id)) }
             }
         }
     }
@@ -45,7 +42,7 @@ class PetsViewModel @Inject constructor(
     fun refreshPets() {
         _uiState.update { state -> state.copy(isRefreshing = true) }
         viewModelScope.launch {
-            val pets = petRepository.getUserPets(userId = accountService.currentUserId)
+            val pets = petRepository.getUserPets()
             _uiState.update { state -> state.copy(pets = pets, isRefreshing = false) }
         }
     }

@@ -3,7 +3,6 @@ package com.example.petvitals.ui.screens.pet_profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.data.repository.pet.PetRepository
-import com.example.petvitals.data.service.account.AccountService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,8 +18,7 @@ data class PetProfileUiState(
 
 @HiltViewModel
 class PetProfileViewModel @Inject constructor(
-    private val petRepository: PetRepository,
-    private val accountService: AccountService
+    private val petRepository: PetRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PetProfileUiState())
@@ -28,10 +26,7 @@ class PetProfileViewModel @Inject constructor(
 
     fun getPetData(petId: String) {
         viewModelScope.launch {
-            val pet = petRepository.getPetById(
-                userId = accountService.currentUserId,
-                petId = petId
-            )
+            val pet = petRepository.getPetById(petId)
 
             pet?.let {
                 val birthDay = it.birthDate.getOrDefault("day", "").toString()
@@ -63,10 +58,7 @@ class PetProfileViewModel @Inject constructor(
 
     fun deletePet(petId: String) {
         viewModelScope.launch {
-            petRepository.deletePet(
-                userId = accountService.currentUserId,
-                petId = petId
-            )
+            petRepository.deletePet(petId)
         }
     }
 }

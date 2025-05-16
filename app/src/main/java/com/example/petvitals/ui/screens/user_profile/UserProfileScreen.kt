@@ -83,7 +83,7 @@ fun UserProfileScreen(
 
         Spacer(modifier = Modifier.height(Dimen.spaceMedium))
         Text(
-            text = uiState.displayName,
+            text = uiState.username,
             style = MaterialTheme.typography.displaySmall
         )
 

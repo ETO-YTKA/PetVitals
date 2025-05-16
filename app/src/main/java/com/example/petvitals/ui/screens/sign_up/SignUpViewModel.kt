@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
+import com.example.petvitals.data.repository.user.User
 import com.example.petvitals.data.repository.user.UserRepository
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.domain.Result
@@ -169,12 +170,13 @@ class SignUpViewModel @Inject constructor(
                     email = uiState.value.email,
                     password = uiState.value.password
                 )
-
-                userRepository.createUserDocument(
-                    uid = userId,
-                    displayName = uiState.value.displayName,
+                val user = User(
+                    id = userId,
+                    username = uiState.value.displayName,
                     email = uiState.value.email
                 )
+
+                userRepository.createUserDocument(user)
 
                 onNavigateToLogIn()
             } catch (e: Exception) {

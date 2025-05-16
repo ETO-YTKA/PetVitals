@@ -1,45 +1,44 @@
 package com.example.petvitals.data.repository.user
 
+import com.example.petvitals.data.service.account.AccountService
 import com.google.firebase.Firebase
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-class UserRepositoryImpl @Inject constructor() : UserRepository {
+class UserRepositoryImpl @Inject constructor(
+    private val accountService: AccountService
+) : UserRepository {
 
-    override suspend fun getCurrentUserData(userId: String): DocumentSnapshot {
+    override suspend fun createUserDocument(user: User) {
+
+        Firebase.firestore
+            .collection("users").document(user.id)
+            .set(user)
+    }
+
+    override suspend fun getCurrentUser(): User {
+
+        val userId = accountService.currentUserId
         val userDoc = Firebase.firestore
             .collection("users")
             .document(userId)
             .get()
             .await()
 
-        return userDoc
-    }
-
-    override suspend fun getUserDisplayName(userId: String): String {
-        val userDoc = Firebase.firestore
-            .collection("users")
-            .document(userId)
-            .get()
-            .await()
-
-        return userDoc.getString("displayName") ?: "anonymous"
-    }
-
-    override suspend fun createUserDocument(uid: String, displayName: String, email: String) {
-        val userData = hashMapOf(
-            "displayName" to displayName,
-            "email" to email
+        return User(
+            id = userDoc["id"].toString(),
+            username = userDoc["username"].toString(),
+            email = userDoc["email"].toString()
         )
-
-        Firebase.firestore.collection("users")
-            .document(uid)
-            .set(userData)
     }
 
-    override suspend fun deleteUser(userId: String) {
-        Firebase.firestore.collection("users").document(userId).delete().await()
+    override suspend fun deleteCurrentUser() {
+
+        val userId = accountService.currentUserId
+        Firebase.firestore
+            .collection("users").document(userId)
+            .delete()
+            .await()
     }
 }

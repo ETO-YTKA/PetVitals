@@ -1,6 +1,7 @@
 package com.example.petvitals.ui.screens.create_record
 
 import android.icu.util.Calendar
+import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +16,8 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -23,10 +26,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.ButtonWithIcon
@@ -54,6 +59,7 @@ fun CreateRecordScreen(
 
     ScreenLayout(
         verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.Start,
         topBar = {
             TopBarBackButton(
                 title = stringResource(R.string.create_record),
@@ -84,6 +90,24 @@ fun CreateRecordScreen(
                 onClick = { viewModel.onShowModalChange(true) },
                 label = stringResource(R.string.date),
                 modifier = Modifier.weight(1f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(Dimen.spaceMedium))
+
+        TextButton(
+            onClick = { },
+            modifier = Modifier
+                .border(1.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.large)
+        ) {
+            Text(
+                text = "Add pet",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.width(Dimen.spaceSmall))
+            Icon(
+                painter = painterResource(id = R.drawable.ic_add_circle),
+                contentDescription = null
             )
         }
 
@@ -177,5 +201,15 @@ private fun DatePickerModal(
             state = datePickerState,
             showModeToggle = false
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BottomSheetModal() {
+    ModalBottomSheet(
+        onDismissRequest = { /*TODO*/ }
+    ) {
+
     }
 }

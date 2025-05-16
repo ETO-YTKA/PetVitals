@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class UserProfileUiState(
-    val displayName: String = "",
+    val username: String = "",
     val email: String = "",
     val password: String = "",
     val showDeleteAccountModal: Boolean = false
@@ -43,8 +43,8 @@ class UserProfileViewModel @Inject constructor(
         launchCatching {
             accountService.signIn(uiState.value.email, uiState.value.password)
 
-            userRepository.deleteUser(accountService.currentUserId)
-            petRepository.deleteAllPets(accountService.currentUserId)
+            userRepository.deleteCurrentUser()
+            petRepository.deleteAllPets()
 
             accountService.deleteAccount()
         }
@@ -62,12 +62,12 @@ class UserProfileViewModel @Inject constructor(
 
     fun getUserData() {
         viewModelScope.launch {
-            val userData = userRepository.getCurrentUserData(accountService.currentUserId)
+            val user = userRepository.getCurrentUser()
 
             _uiState.update { state ->
                 state.copy(
-                    displayName = userData.getString("displayName") ?: "Anonymous",
-                    email = userData.getString("email") ?: "wtf bro where's your email😭😭😭"
+                    username = user.username,
+                    email = user.email
                 )
             }
         }

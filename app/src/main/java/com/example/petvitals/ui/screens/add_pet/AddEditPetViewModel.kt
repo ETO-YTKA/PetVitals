@@ -163,17 +163,17 @@ class AddEditPetViewModel @Inject constructor(
     }
 
     fun addPet() {
-        val userId = accountService.currentUserId
         val birthDate = getBirthDateAsMap()
+        val pet = Pet(
+            userId = accountService.currentUserId,
+            name = uiState.value.name,
+            species = uiState.value.species,
+            birthDate = birthDate
+        )
 
         viewModelScope.launch {
             try {
-                petRepository.addPetToUser(
-                    userId = userId,
-                    petName = uiState.value.name,
-                    species = uiState.value.species,
-                    birthDate = birthDate
-                )
+                petRepository.addPetToUser(pet)
             } catch (e: Exception) {
                 Log.d("AddPetViewModel", "addPet: ${e.message}")
             }
@@ -182,11 +182,7 @@ class AddEditPetViewModel @Inject constructor(
 
     fun loadPetData(petId: String) {
         viewModelScope.launch {
-            val user = accountService.currentUserId
-            val pet: Pet? = petRepository.getPetById(
-                userId = user,
-                petId = petId
-            )
+            val pet: Pet? = petRepository.getPetById(petId)
 
             pet?.let {
                 _uiState.update { state ->
@@ -217,10 +213,10 @@ class AddEditPetViewModel @Inject constructor(
     }
 
     fun updatePet(petId: String) {
-        val userId = accountService.currentUserId
         val birthDate = getBirthDateAsMap()
         val pet = Pet(
             id = petId,
+            userId = accountService.currentUserId,
             name = uiState.value.name,
             species = uiState.value.species,
             birthDate = birthDate
@@ -228,10 +224,7 @@ class AddEditPetViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                petRepository.updatePet(
-                    userId = userId,
-                    pet = pet
-                )
+                petRepository.updatePet(pet)
             } catch (e: Exception) {
                 Log.d("AddPetViewModel", "updatePet: ${e.message}")
             }
