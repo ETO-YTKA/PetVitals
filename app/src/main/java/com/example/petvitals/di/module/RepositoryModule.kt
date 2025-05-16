@@ -2,6 +2,8 @@ package com.example.petvitals.di.module
 
 import com.example.petvitals.data.repository.pet.PetRepository
 import com.example.petvitals.data.repository.pet.PetRepositoryImpl
+import com.example.petvitals.data.repository.pet_image.PetImageRepository
+import com.example.petvitals.data.repository.pet_image.PetImageRepositoryImpl
 import com.example.petvitals.data.repository.record.RecordRepository
 import com.example.petvitals.data.repository.record.RecordRepositoryImpl
 import com.example.petvitals.data.repository.user.UserRepository
@@ -18,4 +20,6 @@ abstract class RepositoryModule {
     @Binds abstract fun providePetRepository(impl: PetRepositoryImpl): PetRepository
     @Binds
     abstract fun provideRecordRepository(impl: RecordRepositoryImpl): RecordRepository
+    @Binds
+    abstract fun providePetImageRepository(impl: PetImageRepositoryImpl): PetImageRepository
 }

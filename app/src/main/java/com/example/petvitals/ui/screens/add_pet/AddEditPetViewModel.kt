@@ -1,14 +1,20 @@
 package com.example.petvitals.ui.screens.add_pet
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.Log
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SelectableDates
+import androidx.core.graphics.scale
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
+import com.example.petvitals.data.repository.pet_image.PetImage
+import com.example.petvitals.data.repository.pet_image.PetImageRepository
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.ui.components.DropDownOption
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,12 +23,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 data class AddEditPetUiState(
     val name: String = "",
@@ -33,13 +42,15 @@ data class AddEditPetUiState(
     val selectedBirthMonth: Int = 0,
     val monthOptions: List<DropDownOption<Int>> = emptyList(),
     val birthYear: String = "",
-    val editMode: Boolean = false
+    val editMode: Boolean = false,
+    val imageUri: Uri? = null
 )
 
 @HiltViewModel
 class AddEditPetViewModel @Inject constructor(
     private val petRepository: PetRepository,
     private val accountService: AccountService,
+    private val petImageRepository: PetImageRepository,
     @ApplicationContext private val context: Context
 ): ViewModel() {
     private val _uiState = MutableStateFlow(AddEditPetUiState())
@@ -90,6 +101,12 @@ class AddEditPetViewModel @Inject constructor(
     fun onBirthYearChange(year: String) {
         _uiState.update { state ->
             state.copy(birthYear = year)
+        }
+    }
+
+    fun onImageUriChange(uri: Uri?) {
+        _uiState.update { state ->
+            state.copy(imageUri = uri)
         }
     }
 
@@ -170,10 +187,14 @@ class AddEditPetViewModel @Inject constructor(
             species = uiState.value.species,
             birthDate = birthDate
         )
+        val imageUri = uiState.value.imageUri
 
         viewModelScope.launch {
             try {
                 petRepository.addPetToUser(pet)
+                if (imageUri != null) {
+                    processImageUri(context, imageUri, pet.id)
+                }
             } catch (e: Exception) {
                 Log.d("AddPetViewModel", "addPet: ${e.message}")
             }
@@ -256,6 +277,57 @@ class AddEditPetViewModel @Inject constructor(
                 "year" to date.get(Calendar.YEAR)
             )
         }
+    }
+
+    @OptIn(ExperimentalEncodingApi::class)
+    fun processImageUri(context: Context, uri: Uri, petId: String) {
+        viewModelScope.launch {
+            try {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val originalBitmap = BitmapFactory.decodeStream(inputStream)
+                inputStream?.close()
+
+                if (originalBitmap != null) {
+                    val quality = 75
+                    val maxWidth = 400
+                    val maxHeight = 400
+
+                    val resizedBitmap = resizeBitmap(originalBitmap, maxWidth, maxHeight)
+
+                    val outputStream = ByteArrayOutputStream()
+                    resizedBitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+                    val imageBytes = outputStream.toByteArray()
+
+                    val base64Image = Base64.encode(imageBytes)
+
+                    val petImage = PetImage(
+                        userId = accountService.currentUserId,
+                        petId = petId,
+                        imageString = base64Image
+                    )
+
+                    petImageRepository.addPetImage(petImage)
+                }
+            } catch (e: Exception) {
+                Log.e("ImageProcessing", "Error: ${e.message}")
+            }
+        }
+    }
+
+    private fun resizeBitmap(bitmap: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap {
+        val width = bitmap.width
+        val height = bitmap.height
+        val ratioBitmap = width.toFloat() / height.toFloat()
+        val ratioMax = maxWidth.toFloat() / maxHeight.toFloat()
+
+        var finalWidth = maxWidth
+        var finalHeight = maxHeight
+        if (ratioMax > ratioBitmap) {
+            finalWidth = (maxHeight.toFloat() * ratioBitmap).toInt()
+        } else {
+            finalHeight = (maxWidth.toFloat() / ratioBitmap).toInt()
+        }
+        return bitmap.scale(finalWidth, finalHeight)
     }
 
     @OptIn(ExperimentalMaterial3Api::class)

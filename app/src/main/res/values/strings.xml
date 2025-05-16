@@ -24,7 +24,7 @@
     <string name="user_profile">User Profile</string>
 
     <!-- AddPet -->
-    <string name="date_of_birth_is_approximate">Date of birth is approximate</string>
+    <string name="approximate_date">Approximate date</string>
     <string name="day">Day</string>
     <string name="month">Month</string>
     <string name="year">Year</string>
@@ -86,4 +86,5 @@
     <string name="empty_fields_error">Fields cannot be empty</string>
     <string name="email_already_in_use_error">This email is already in use</string>
     <string name="invalid_characters_error">The field must contain only letters and spaces</string>
+    <string name="tap_to_select_photo">Tap to select photo</string>
 </resources>
