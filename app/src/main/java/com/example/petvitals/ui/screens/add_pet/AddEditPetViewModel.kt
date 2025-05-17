@@ -13,8 +13,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
-import com.example.petvitals.data.repository.pet_image.PetImage
-import com.example.petvitals.data.repository.pet_image.PetImageRepository
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.ui.components.DropDownOption
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -50,7 +48,6 @@ data class AddEditPetUiState(
 class AddEditPetViewModel @Inject constructor(
     private val petRepository: PetRepository,
     private val accountService: AccountService,
-    private val petImageRepository: PetImageRepository,
     @ApplicationContext private val context: Context
 ): ViewModel() {
     private val _uiState = MutableStateFlow(AddEditPetUiState())
@@ -181,20 +178,30 @@ class AddEditPetViewModel @Inject constructor(
 
     fun addPet() {
         val birthDate = getBirthDateAsMap()
-        val pet = Pet(
-            userId = accountService.currentUserId,
-            name = uiState.value.name,
-            species = uiState.value.species,
-            birthDate = birthDate
-        )
         val imageUri = uiState.value.imageUri
+        var pet: Pet
+
+        if (imageUri != null) {
+            pet = Pet(
+                userId = accountService.currentUserId,
+                name = uiState.value.name,
+                species = uiState.value.species,
+                birthDate = birthDate,
+                imageString = processImageUri(context, imageUri)
+            )
+        } else {
+            pet = Pet(
+                userId = accountService.currentUserId,
+                name = uiState.value.name,
+                species = uiState.value.species,
+                birthDate = birthDate
+            )
+        }
+
 
         viewModelScope.launch {
             try {
                 petRepository.addPetToUser(pet)
-                if (imageUri != null) {
-                    processImageUri(context, imageUri, pet.id)
-                }
             } catch (e: Exception) {
                 Log.d("AddPetViewModel", "addPet: ${e.message}")
             }
@@ -280,41 +287,23 @@ class AddEditPetViewModel @Inject constructor(
     }
 
     @OptIn(ExperimentalEncodingApi::class)
-    fun processImageUri(context: Context, uri: Uri, petId: String) {
-        viewModelScope.launch {
-            try {
-                val inputStream = context.contentResolver.openInputStream(uri)
-                val originalBitmap = BitmapFactory.decodeStream(inputStream)
-                inputStream?.close()
+    fun processImageUri(context: Context, uri: Uri): String {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val originalBitmap = BitmapFactory.decodeStream(inputStream)
+        inputStream?.close()
 
-                if (originalBitmap != null) {
-                    val quality = 75
-                    val maxWidth = 400
-                    val maxHeight = 400
+        val quality = 90
 
-                    val resizedBitmap = resizeBitmap(originalBitmap, maxWidth, maxHeight)
+        val resizedBitmap = resizeBitmap(originalBitmap)
 
-                    val outputStream = ByteArrayOutputStream()
-                    resizedBitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
-                    val imageBytes = outputStream.toByteArray()
+        val outputStream = ByteArrayOutputStream()
+        resizedBitmap.compress(Bitmap.CompressFormat.WEBP, quality, outputStream)
+        val imageBytes = outputStream.toByteArray()
 
-                    val base64Image = Base64.encode(imageBytes)
-
-                    val petImage = PetImage(
-                        userId = accountService.currentUserId,
-                        petId = petId,
-                        imageString = base64Image
-                    )
-
-                    petImageRepository.addPetImage(petImage)
-                }
-            } catch (e: Exception) {
-                Log.e("ImageProcessing", "Error: ${e.message}")
-            }
-        }
+        return Base64.encode(imageBytes)
     }
 
-    private fun resizeBitmap(bitmap: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap {
+    private fun resizeBitmap(bitmap: Bitmap, maxWidth: Int = 1000, maxHeight: Int = 1000): Bitmap {
         val width = bitmap.width
         val height = bitmap.height
         val ratioBitmap = width.toFloat() / height.toFloat()

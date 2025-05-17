@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 data class PetsUiState(
     val displayName: String = "",
@@ -45,5 +47,10 @@ class PetsViewModel @Inject constructor(
             val pets = petRepository.getUserPets()
             _uiState.update { state -> state.copy(pets = pets, isRefreshing = false) }
         }
+    }
+
+    @OptIn(ExperimentalEncodingApi::class)
+    fun decodeBase64ToImage(imageString: String): ByteArray {
+        return Base64.decode(imageString)
     }
 }

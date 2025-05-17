@@ -8,5 +8,5 @@ data class Pet(
     val name: String,
     val species: String,
     val birthDate: Map<String, Int>,
-    val imageString: String? = null
+    var imageString: String? = null
 )

@@ -29,7 +29,9 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil3.compose.AsyncImage
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBarProfileSettings
@@ -84,8 +86,12 @@ fun PetsScreen(
             ) {
                 items(pets.size) { index ->
                     val pet = pets[index]
+                    val petImage = pet.imageString?.let { viewModel.decodeBase64ToImage(it) }
+                        ?: if (pet.species == "Cat") painterResource(id = R.drawable.ic_cat)
+                        else painterResource(id = R.drawable.ic_dog)
+
                     PetProfile(
-                        petImage = painterResource(id = R.drawable.splash),
+                        petImage = petImage,
                         name = pet.name,
                         modifier = Modifier.clickable(
                             onClick = {
@@ -100,7 +106,7 @@ fun PetsScreen(
 }
 
 @Composable
-private fun PetProfile(petImage: Painter, name: String, modifier: Modifier = Modifier) {
+private fun PetProfile(petImage: Any, name: String, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier
             .padding(Dimen.spaceMedium)
@@ -113,14 +119,25 @@ private fun PetProfile(petImage: Painter, name: String, modifier: Modifier = Mod
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = petImage,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(Dimen.petIconSize)
-                    .clip(RoundedCornerShape(100))
-            )
+            if (petImage is Painter) {
+                Image(
+                    painter = petImage,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(Dimen.petIconSize)
+                        .padding(15.dp)
+                )
+            } else {
+                AsyncImage(
+                    model = petImage,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(Dimen.petIconSize)
+                        .clip(RoundedCornerShape(100))
+                )
+            }
             Spacer(modifier = Modifier.height(Dimen.spaceMedium))
             Text(text = name)
         }
