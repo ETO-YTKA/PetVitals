@@ -1,13 +1,10 @@
 package com.example.petvitals.ui.screens.add_pet
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SelectableDates
-import androidx.core.graphics.scale
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
@@ -15,13 +12,14 @@ import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.ui.components.DropDownOption
+import com.example.petvitals.utils.decodeBase64ToImage
+import com.example.petvitals.utils.processImageUri
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.util.Calendar
@@ -41,7 +39,8 @@ data class AddEditPetUiState(
     val monthOptions: List<DropDownOption<Int>> = emptyList(),
     val birthYear: String = "",
     val editMode: Boolean = false,
-    val imageUri: Uri? = null
+    val imageUri: Uri? = null,
+    val petImageByteArray: ByteArray? = null
 )
 
 @HiltViewModel
@@ -233,22 +232,52 @@ class AddEditPetViewModel @Inject constructor(
                             0
                         },
                         birthYear = it.birthDate["year"].toString(),
-                        editMode = true
+                        editMode = true,
+                        petImageByteArray = it.imageString?.let { decodeBase64ToImage(it) }
                     )
                 }
             }
         }
     }
 
+    @OptIn(ExperimentalEncodingApi::class)
     fun updatePet(petId: String) {
         val birthDate = getBirthDateAsMap()
-        val pet = Pet(
-            id = petId,
-            userId = accountService.currentUserId,
-            name = uiState.value.name,
-            species = uiState.value.species,
-            birthDate = birthDate
-        )
+        val imageUri = uiState.value.imageUri
+        val pet: Pet
+
+
+        when {
+            imageUri != null -> {
+                pet = Pet(
+                    id = petId,
+                    userId = accountService.currentUserId,
+                    name = uiState.value.name,
+                    species = uiState.value.species,
+                    birthDate = birthDate,
+                    imageString = processImageUri(context, imageUri)
+                )
+            }
+            uiState.value.petImageByteArray != null && uiState.value.petImageByteArray!!.isNotEmpty() -> {
+                pet = Pet(
+                    id = petId,
+                    userId = accountService.currentUserId,
+                    name = uiState.value.name,
+                    species = uiState.value.species,
+                    birthDate = birthDate,
+                    imageString = Base64.encode(uiState.value.petImageByteArray!!)
+                )
+            }
+            else -> {
+                pet = Pet(
+                    id = petId,
+                    userId = accountService.currentUserId,
+                    name = uiState.value.name,
+                    species = uiState.value.species,
+                    birthDate = birthDate
+                )
+            }
+        }
 
         viewModelScope.launch {
             try {
@@ -284,39 +313,6 @@ class AddEditPetViewModel @Inject constructor(
                 "year" to date.get(Calendar.YEAR)
             )
         }
-    }
-
-    @OptIn(ExperimentalEncodingApi::class)
-    fun processImageUri(context: Context, uri: Uri): String {
-        val inputStream = context.contentResolver.openInputStream(uri)
-        val originalBitmap = BitmapFactory.decodeStream(inputStream)
-        inputStream?.close()
-
-        val quality = 90
-
-        val resizedBitmap = resizeBitmap(originalBitmap)
-
-        val outputStream = ByteArrayOutputStream()
-        resizedBitmap.compress(Bitmap.CompressFormat.WEBP, quality, outputStream)
-        val imageBytes = outputStream.toByteArray()
-
-        return Base64.encode(imageBytes)
-    }
-
-    private fun resizeBitmap(bitmap: Bitmap, maxWidth: Int = 1000, maxHeight: Int = 1000): Bitmap {
-        val width = bitmap.width
-        val height = bitmap.height
-        val ratioBitmap = width.toFloat() / height.toFloat()
-        val ratioMax = maxWidth.toFloat() / maxHeight.toFloat()
-
-        var finalWidth = maxWidth
-        var finalHeight = maxHeight
-        if (ratioMax > ratioBitmap) {
-            finalWidth = (maxHeight.toFloat() * ratioBitmap).toInt()
-        } else {
-            finalHeight = (maxWidth.toFloat() / ratioBitmap).toInt()
-        }
-        return bitmap.scale(finalWidth, finalHeight)
     }
 
     @OptIn(ExperimentalMaterial3Api::class)

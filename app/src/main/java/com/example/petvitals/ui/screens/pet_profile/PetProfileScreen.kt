@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil3.compose.AsyncImage
 import com.example.petvitals.PetProfile
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.ScreenLayout
@@ -63,14 +64,24 @@ fun PetProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Image(
-                painter = painterResource(R.drawable.splash),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(Dimen.petImageProfile)
-                    .clip(CircleShape)
-            )
+            if (uiState.imageByteArray != null && uiState.imageByteArray!!.isNotEmpty()) {
+                AsyncImage(
+                    model = uiState.imageByteArray,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(Dimen.petImageProfile)
+                        .clip(CircleShape)
+                )
+            } else {
+                Image(
+                    painter = if (uiState.species == "Cat") painterResource(R.drawable.ic_cat) else painterResource(R.drawable.ic_dog),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(Dimen.petImageProfile)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(Dimen.spaceHuge))

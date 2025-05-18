@@ -36,6 +36,7 @@ import com.example.petvitals.R
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBarProfileSettings
 import com.example.petvitals.ui.theme.Dimen
+import com.example.petvitals.utils.decodeBase64ToImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,7 +87,7 @@ fun PetsScreen(
             ) {
                 items(pets.size) { index ->
                     val pet = pets[index]
-                    val petImage = pet.imageString?.let { viewModel.decodeBase64ToImage(it) }
+                    val petImage = pet.imageString?.let { decodeBase64ToImage(it) }
                         ?: if (pet.species == "Cat") painterResource(id = R.drawable.ic_cat)
                         else painterResource(id = R.drawable.ic_dog)
 

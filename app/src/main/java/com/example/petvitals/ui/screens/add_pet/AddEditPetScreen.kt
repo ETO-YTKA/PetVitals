@@ -96,37 +96,59 @@ fun AddEditPetScreen(
         topBar = {
             TopBarBackButton(
                 onPopBackStack = onPopBackStack,
-                title = stringResource(R.string.add_pet)
+                title = if (addEditPet.petId == null) stringResource(R.string.add_pet) else stringResource(R.string.edit_pet)
             )
         }
     ) {
         val imagePickerLauncher = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
-
-            viewModel.onImageUriChange(uri)
+            uri?.let { viewModel.onImageUriChange(it) }
         }
 
         Column {
-            if (uiState.imageUri != null) {
-                AsyncImage(
-                    model = uiState.imageUri,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(Dimen.petIconSize)
-                        .clip(RoundedCornerShape(100))
-                )
-            } else {
-                IconButton(
-                    onClick = {
-                        imagePickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
-                    },
-                    modifier = Modifier.size(Dimen.petIconSize)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_add_circle),
+            when {
+                uiState.imageUri != null -> {
+                    AsyncImage(
+                        model = uiState.imageUri,
                         contentDescription = null,
-                        modifier = Modifier.size(Dimen.petIconSize)
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(Dimen.petIconSize)
+                            .clip(RoundedCornerShape(100))
+                            .clickable(
+                                onClick = {
+                                    imagePickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+                                }
+                            )
                     )
+                }
+                uiState.petImageByteArray != null && uiState.petImageByteArray!!.isNotEmpty()-> {
+                    AsyncImage(
+                        model = uiState.petImageByteArray,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(Dimen.petIconSize)
+                            .clip(RoundedCornerShape(100))
+                            .clickable(
+                                onClick = {
+                                    imagePickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+                                }
+                            )
+                    )
+                }
+                else -> {
+                    IconButton(
+                        onClick = {
+                            imagePickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+                        },
+                        modifier = Modifier.size(Dimen.petIconSize)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_add_circle),
+                            contentDescription = null,
+                            modifier = Modifier.size(Dimen.petIconSize)
+                        )
+                    }
                 }
             }
 
