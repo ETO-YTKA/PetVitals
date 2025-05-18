@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
+import com.example.petvitals.data.repository.pet.Pet
+import com.example.petvitals.data.repository.pet.PetRepository
 import com.example.petvitals.data.repository.record.Record
 import com.example.petvitals.data.repository.record.RecordRepository
 import com.example.petvitals.data.repository.record.RecordType
@@ -26,14 +28,18 @@ data class CreateRecordUiState(
     val selectedType: RecordType = RecordType.NOTE,
     val typeOptions: List<DropDownOption<RecordType>> = emptyList(),
     val date: Long = Calendar.getInstance().timeInMillis,
-    val showModal: Boolean = false,
+    val showDatePicker: Boolean = false,
     val description: String = "",
+    val showBottomSheet: Boolean = false,
+    val pets: List<Pet> = emptyList(),
+    val selectedPets: List<Pet> = emptyList()
 )
 
 @HiltViewModel
 class CreateRecordViewModel @Inject constructor(
     private val recordRepository: RecordRepository,
     private val accountService: AccountService,
+    private val petRepository: PetRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -42,6 +48,7 @@ class CreateRecordViewModel @Inject constructor(
 
     init {
         populateTypeOptions()
+        getPets()
     }
 
     fun onTitleChange(title: String) {
@@ -56,9 +63,9 @@ class CreateRecordViewModel @Inject constructor(
         }
     }
 
-    fun onShowModalChange(showModal: Boolean) {
+    fun onShowDatePickerChange(show: Boolean) {
         _uiState.update { state ->
-            state.copy(showModal = showModal)
+            state.copy(showDatePicker = show)
         }
 
     }
@@ -76,6 +83,12 @@ class CreateRecordViewModel @Inject constructor(
         }
     }
 
+    fun onShowBottomSheetChange(show: Boolean) {
+        _uiState.update { state ->
+            state.copy(showBottomSheet = show)
+        }
+    }
+
     fun createRecord() {
         val userId = accountService.currentUserId
         val title = if (uiState.value.title.isBlank()) {
@@ -89,7 +102,8 @@ class CreateRecordViewModel @Inject constructor(
             title = title,
             type = uiState.value.selectedType,
             date = uiState.value.date,
-            description = uiState.value.description
+            description = uiState.value.description,
+            petsId = uiState.value.selectedPets.map { pet -> pet.id }
         )
 
         viewModelScope.launch {
@@ -130,6 +144,26 @@ class CreateRecordViewModel @Inject constructor(
                         value = RecordType.INCIDENT
                     )
                 )
+            )
+        }
+    }
+
+    fun getPets() {
+        viewModelScope.launch {
+            _uiState.update { state ->
+                state.copy(pets = petRepository.getUserPets())
+            }
+        }
+    }
+
+    fun onPetSelected(pet: Pet) {
+        _uiState.update { state ->
+            state.copy(
+                selectedPets = if (state.selectedPets.contains(pet)) {
+                    state.selectedPets - pet
+                } else {
+                    state.selectedPets + pet
+                }
             )
         }
     }

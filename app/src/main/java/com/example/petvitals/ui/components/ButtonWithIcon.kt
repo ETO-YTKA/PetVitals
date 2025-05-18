@@ -6,8 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.dp
 import com.example.petvitals.ui.theme.Dimen
 
 @Composable
@@ -35,7 +36,7 @@ fun ButtonWithIcon(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier.widthIn(min = 200.dp),
         enabled = enabled,
         shape = shape,
         colors = colors,
@@ -44,20 +45,17 @@ fun ButtonWithIcon(
         contentPadding = contentPadding,
         interactionSource = interactionSource
     ) {
+        icon()
+        Spacer(modifier = Modifier.width(Dimen.spaceSmall))
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier,
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            icon()
-            Spacer(modifier = Modifier.width(Dimen.spaceSmall))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = text)
-            }
+            Text(
+                text = text,
+                maxLines = 1
+            )
         }
     }
 }

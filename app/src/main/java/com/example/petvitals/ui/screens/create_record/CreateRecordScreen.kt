@@ -1,17 +1,25 @@
 package com.example.petvitals.ui.screens.create_record
 
 import android.icu.util.Calendar
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,18 +36,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil3.compose.AsyncImage
 import com.example.petvitals.R
+import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.ui.components.ButtonWithIcon
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBarBackButton
 import com.example.petvitals.ui.components.ValueDropDown
 import com.example.petvitals.ui.theme.Dimen
+import com.example.petvitals.utils.decodeBase64ToImage
 
 @Composable
 fun CreateRecordScreen(
@@ -50,16 +64,25 @@ fun CreateRecordScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    if (uiState.showModal) {
+    if (uiState.showDatePicker) {
         DatePickerModal(
             onDateSelected = viewModel::onDateChange,
-            onDismiss = { viewModel.onShowModalChange(false) }
+            onDismiss = { viewModel.onShowDatePickerChange(false) }
+        )
+    }
+
+    if (uiState.showBottomSheet) {
+        BottomSheetModal(
+            onDismissRequest = { viewModel.onShowBottomSheetChange(false) },
+            onPetClick = viewModel::onPetSelected,
+            pets = uiState.pets,
+            selectedPets = uiState.selectedPets
         )
     }
 
     ScreenLayout(
         verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.Start,
+        horizontalAlignment = Alignment.CenterHorizontally,
         topBar = {
             TopBarBackButton(
                 title = stringResource(R.string.create_record),
@@ -87,7 +110,7 @@ fun CreateRecordScreen(
             Spacer(modifier = Modifier.width(Dimen.spaceMedium))
             DatePickerField(
                 value = viewModel.formatDateForDisplay(millis = uiState.date, context = context),
-                onClick = { viewModel.onShowModalChange(true) },
+                onClick = { viewModel.onShowDatePickerChange(true) },
                 label = stringResource(R.string.date),
                 modifier = Modifier.weight(1f)
             )
@@ -95,21 +118,42 @@ fun CreateRecordScreen(
 
         Spacer(modifier = Modifier.height(Dimen.spaceMedium))
 
-        TextButton(
-            onClick = { },
-            modifier = Modifier
-                .border(1.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.large)
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.large)
+                .padding(Dimen.spaceMedium),
         ) {
-            Text(
-                text = "Add pet",
-                style = MaterialTheme.typography.bodyMedium
+            ButtonWithIcon(
+                onClick = { viewModel.onShowBottomSheetChange(true) },
+                text = stringResource(R.string.attach_pet),
+                icon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_add),
+                        contentDescription = null
+                    )
+                }
             )
-            Spacer(modifier = Modifier.width(Dimen.spaceSmall))
-            Icon(
-                painter = painterResource(id = R.drawable.ic_add_circle),
-                contentDescription = null
-            )
+
+            if (uiState.selectedPets.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(Dimen.spaceMedium))
+            }
+
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
+                verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
+            ) {
+                uiState.selectedPets.forEach { pet ->
+                    PetCard(
+                        pet = pet,
+                        onClick = { viewModel.onPetSelected(pet) },
+                        isSelected = true,
+                    )
+                }
+            }
         }
+
+
 
         Spacer(modifier = Modifier.height(Dimen.spaceMedium))
 
@@ -204,12 +248,91 @@ private fun DatePickerModal(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class) // For ModalBottomSheet
 @Composable
-fun BottomSheetModal() {
+fun BottomSheetModal(
+    onDismissRequest: () -> Unit,
+    onPetClick: (Pet) -> Unit,
+    pets: List<Pet>,
+    selectedPets: List<Pet>
+) {
     ModalBottomSheet(
-        onDismissRequest = { /*TODO*/ }
+        onDismissRequest = onDismissRequest
     ) {
+        FlowRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(350.dp)
+                .padding(horizontal = Dimen.spaceSmall),
+            horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
+            verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
+        ) {
+            pets.forEach { pet ->
+                PetCard(
+                    pet = pet,
+                    onClick = { onPetClick(pet) },
+                    isSelected = selectedPets.contains(pet)
+                )
+            }
+        }
+    }
+}
 
+@Composable
+fun PetCard(
+    pet: Pet,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    isSelected: Boolean = false
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+        shape = CircleShape,
+        colors = CardDefaults.cardColors().copy(
+            containerColor = MaterialTheme.colorScheme.background
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(Dimen.spaceSmall),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Spacer(modifier = Modifier.width(Dimen.spaceSmall))
+
+            if (pet.imageString != null) {
+                AsyncImage(
+                    model = decodeBase64ToImage(pet.imageString),
+                    contentDescription = pet.name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                )
+            } else {
+                Image(
+                    painter = if (pet.species == "Cat") painterResource(id = R.drawable.ic_cat) else painterResource(id = R.drawable.ic_dog),
+                    contentDescription = pet.name,
+                    modifier = Modifier
+                        .size(24.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(Dimen.spaceMedium))
+
+            Text(
+                text = pet.name,
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+            )
+
+            Spacer(modifier = Modifier.width(Dimen.spaceMedium))
+
+            Icon(
+                painter = if (isSelected) painterResource(id = R.drawable.ic_remove) else painterResource(id = R.drawable.ic_add),
+                contentDescription = null
+            )
+        }
     }
 }

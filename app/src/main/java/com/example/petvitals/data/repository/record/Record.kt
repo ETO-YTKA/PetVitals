@@ -12,7 +12,8 @@ data class Record(
     val title: String = "",
     val type: RecordType = RecordType.NOTE,
     val date: Long = Calendar.getInstance().timeInMillis,
-    val description: String
+    val description: String,
+    val petsId: List<String> = emptyList()
 )
 
 enum class RecordType(@StringRes val titleResId: Int, val color: Color) {
