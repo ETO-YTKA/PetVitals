@@ -7,5 +7,4 @@ interface PetRepository {
     suspend fun updatePet(pet: Pet)
     suspend fun deletePet(petId: String)
     suspend fun deleteAllPets()
-    suspend fun uploadPetImage(petId: String, imageString: String)
 }

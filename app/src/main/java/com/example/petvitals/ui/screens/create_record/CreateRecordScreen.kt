@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Card
@@ -88,7 +90,8 @@ fun CreateRecordScreen(
                 title = stringResource(R.string.create_record),
                 onPopBackStack = onPopBackStack
             )
-        }
+        },
+        columnModifier = Modifier.verticalScroll(rememberScrollState()),
     ) {
         CustomOutlinedTextField(
             value = uiState.title,
@@ -250,7 +253,7 @@ private fun DatePickerModal(
 
 @OptIn(ExperimentalMaterial3Api::class) // For ModalBottomSheet
 @Composable
-fun BottomSheetModal(
+private fun BottomSheetModal(
     onDismissRequest: () -> Unit,
     onPetClick: (Pet) -> Unit,
     pets: List<Pet>,
@@ -279,7 +282,7 @@ fun BottomSheetModal(
 }
 
 @Composable
-fun PetCard(
+private fun PetCard(
     pet: Pet,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,

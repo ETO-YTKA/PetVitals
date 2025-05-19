@@ -1,11 +1,14 @@
 package com.example.petvitals.data.repository.record
 
+import com.example.petvitals.data.service.account.AccountService
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-class RecordRepositoryImpl @Inject constructor() : RecordRepository {
+class RecordRepositoryImpl @Inject constructor(
+    private val accountService: AccountService
+) : RecordRepository {
 
     override suspend fun createRecord(record: Record) {
 
@@ -19,14 +22,18 @@ class RecordRepositoryImpl @Inject constructor() : RecordRepository {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getAllRecord(userId: String): List<Record> {
+    override suspend fun getAllRecord(): List<Record> {
 
+        val userId = accountService.currentUserId
         var records =
             Firebase.firestore
                 .collection("users").document(userId)
                 .collection("records")
                 .get()
                 .await()
+                .sortedByDescending {
+                    it.data["date"] as Long
+                }
 
         return records.map {
             Record(
@@ -35,7 +42,8 @@ class RecordRepositoryImpl @Inject constructor() : RecordRepository {
                 title = it.data["title"] as String,
                 type = enumValueOf<RecordType>(it.data["type"] as String),
                 date = it.data["date"] as Long,
-                description = it.data["description"] as String
+                description = it.data["description"] as String,
+                petsId = it.data["petsId"] as List<String>
             )
         }
     }

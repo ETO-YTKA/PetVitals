@@ -92,19 +92,4 @@ class PetRepositoryImpl @Inject constructor(
             .get()
             .await().forEach { it.reference.delete() }
     }
-
-    override suspend fun uploadPetImage(petId: String, imageString: String) {
-
-        val userId = accountService.currentUserId
-        Firebase.firestore
-            .collection("users").document(userId)
-            .collection("petImage").document(petId)
-            .set(
-                hashMapOf(
-                    "userId" to userId,
-                    "petId" to petId,
-                    "imageString" to imageString
-                )
-            )
-    }
 }

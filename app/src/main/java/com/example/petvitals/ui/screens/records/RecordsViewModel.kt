@@ -2,9 +2,10 @@ package com.example.petvitals.ui.screens.records
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.petvitals.data.repository.pet.Pet
+import com.example.petvitals.data.repository.pet.PetRepository
 import com.example.petvitals.data.repository.record.Record
 import com.example.petvitals.data.repository.record.RecordRepository
-import com.example.petvitals.data.service.account.AccountService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,32 +17,44 @@ import java.util.Locale
 import javax.inject.Inject
 
 data class RecordsUiState(
-    val records: List<Record> = emptyList(),
+    val recordWithPets: List<RecordWithPets> = emptyList(),
     val isRefreshing: Boolean = false,
     val selectedRecords: List<Record> = emptyList(),
     val selectionMode: Boolean = false
 )
 
+data class RecordWithPets(
+    val record: Record,
+    val pets: List<Pet>
+)
+
 @HiltViewModel
 class RecordsViewModel @Inject constructor(
     private val recordRepository: RecordRepository,
-    private val accountService: AccountService
+    private val petRepository: PetRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RecordsUiState())
     val uiState = _uiState.asStateFlow()
 
     init {
-        refreshRecords()
+        getRecords()
     }
 
-    fun refreshRecords() {
+    fun getRecords() {
         _uiState.update { state -> state.copy(isRefreshing = true) }
         viewModelScope.launch {
-            val records = recordRepository.getAllRecord(accountService.currentUserId)
+            val records = recordRepository.getAllRecord()
+            val recordWithPets = records.map { record ->
+                val pets: List<Pet> = record.petsId.mapNotNull { petId ->
+                    petRepository.getPetById(petId)
+                }
+                RecordWithPets(record, pets)
+            }
+
             _uiState.update { state ->
                 state.copy(
-                    records = records,
+                    recordWithPets = recordWithPets,
                     isRefreshing = false,
                     selectionMode = false,
                     selectedRecords = emptyList()
@@ -53,7 +66,7 @@ class RecordsViewModel @Inject constructor(
     fun deleteRecord(record: Record) {
         viewModelScope.launch {
             recordRepository.deleteRecord(record)
-            refreshRecords()
+            getRecords()
         }
         _uiState.update { state ->
             state.copy(
