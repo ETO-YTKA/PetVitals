@@ -1,8 +1,10 @@
 <resources>
-    <string name="app_name">PetVitals</string>
+    <string name="app_name" translatable="false">PetVitals</string>
 
     <!-- Sign up Log in -->
+    <string name="log_in_to_your_account">Log in</string>
     <string name="log_in">Log in</string>
+    <string name="create_account">Create Account</string>
     <string name="sign_up">Sign up</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
@@ -31,12 +33,14 @@
     <string name="pet_name">Name</string>
     <string name="species">Species</string>
     <string name="date_of_birth">Date of Birth</string>
-    <string name="tap_to_select_date">Tap the icon to select date</string>
+    <string name="tap_to_select_date">Tap to select date</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
     <string name="tap_to_select_photo">Tap to select photo</string>
     <string name="edit_pet">Edit pet</string>
+    <string name="cat">Cat</string>
+    <string name="dog">Dog</string>
 
     <string name="unknown">Unknown</string>
     <string name="january">January</string>
@@ -54,7 +58,7 @@
 
     <!-- Create record -->
     <string name="create_record">Create Record</string>
-    <string name="title">title</string>
+    <string name="title">Title</string>
     <string name="type">Type</string>
     <string name="date">Date</string>
     <string name="description">Description</string>
@@ -80,7 +84,7 @@
     <string name="display_name_too_long_error">The field must not exceed 30 characters</string>
     <string name="invalid_email_error">Invalid email</string>
     <string name="invalid_email_password_error">Invalid email or password</string>
-    <string name="user_not_found_error">User not found. Please check your email</string>
+    <string name="user_not_found_error">User not found. Please check the entered data.</string>
     <string name="network_error">A network error occurred. Please check your connection</string>
     <string name="unexpected_error">An unexpected error occurred</string>
     <string name="empty_fields_error">Fields cannot be empty</string>

@@ -12,9 +12,9 @@ import com.example.petvitals.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBarProfileSettings(
+fun TopBarProfileAddPet(
     title: String,
-    onNavigateToSettings: () -> Unit,
+    onNavigateToAddPet: () -> Unit,
     onNavigateToUserProfile: () -> Unit
 ) {
     CenterAlignedTopAppBar(
@@ -31,10 +31,10 @@ fun TopBarProfileSettings(
         },
         actions = {
             IconButton(
-                onClick = onNavigateToSettings
+                onClick = onNavigateToAddPet
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_settings),
+                    painter = painterResource(id = R.drawable.ic_add_circle),
                     contentDescription = stringResource(R.string.settings)
                 )
             }

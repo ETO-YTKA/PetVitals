@@ -114,8 +114,8 @@ class AddEditPetViewModel @Inject constructor(
 
     fun getSpeciesList(): List<String> {
         return listOf(
-            "Cat",
-            "Dog"
+            context.getString(R.string.cat),
+            context.getString(R.string.dog)
         )
     }
 

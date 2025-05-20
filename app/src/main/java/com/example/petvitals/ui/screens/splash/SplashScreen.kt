@@ -9,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.ui.components.ScreenLayout
-import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(
@@ -27,7 +26,6 @@ fun SplashScreen(
     }
 
     LaunchedEffect(true) {
-        delay(500)
         viewModel.onAppStart(
             onNavigateToPets = onNavigateToMainApp,
             onNavigateToLogIn = onNavigateToLogIn

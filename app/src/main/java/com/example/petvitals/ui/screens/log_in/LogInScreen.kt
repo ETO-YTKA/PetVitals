@@ -40,7 +40,7 @@ fun SignInScreen(
 
     ScreenLayout(
         columnModifier = modifier.verticalScroll(rememberScrollState()),
-        topBar = { TopBar(title = stringResource(R.string.log_in)) }
+        topBar = { TopBar(title = stringResource(R.string.log_in_to_your_account)) }
     ) {
         CustomOutlinedTextField(
             value = uiState.email,

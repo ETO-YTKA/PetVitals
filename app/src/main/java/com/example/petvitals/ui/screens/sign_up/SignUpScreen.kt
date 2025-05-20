@@ -46,7 +46,7 @@ fun SignUpScreen(
         columnModifier = modifier.verticalScroll(rememberScrollState()),
         topBar = { TopBarBackButton(
             onPopBackStack = onPopBackStack,
-            title = stringResource(R.string.sign_up)
+            title = stringResource(R.string.create_account)
         ) }
     ) {
         CustomOutlinedTextField(

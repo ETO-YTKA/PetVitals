@@ -14,8 +14,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -34,7 +32,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.ScreenLayout
-import com.example.petvitals.ui.components.TopBarProfileSettings
+import com.example.petvitals.ui.components.TopBarProfileAddPet
 import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.utils.decodeBase64ToImage
 
@@ -54,26 +52,26 @@ fun PetsScreen(
 
     ScreenLayout(
         topBar = {
-            TopBarProfileSettings(
+            TopBarProfileAddPet(
                 title = stringResource(R.string.pets),
-                onNavigateToSettings = onNavigateToSettings,
+                onNavigateToAddPet = onNavigateToAddPet,
                 onNavigateToUserProfile = onNavigateToUserProfile,
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onNavigateToAddPet,
-                modifier = Modifier
-                    .padding(Dimen.spaceHuge)
-                    .size(Dimen.fabSize)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_add_circle),
-                    contentDescription = null,
-                    modifier = Modifier.size(Dimen.fabIconSize)
-                )
-            }
-        }
+//        floatingActionButton = {
+//            FloatingActionButton(
+//                onClick = onNavigateToAddPet,
+//                modifier = Modifier
+//                    .padding(Dimen.spaceMedium)
+//                    .size(Dimen.fabSize)
+//            ) {
+//                Icon(
+//                    painter = painterResource(id = R.drawable.ic_add_circle),
+//                    contentDescription = null,
+//                    modifier = Modifier.size(Dimen.fabIconSize)
+//                )
+//            }
+//        }
     ) {
         val pets = uiState.pets
 

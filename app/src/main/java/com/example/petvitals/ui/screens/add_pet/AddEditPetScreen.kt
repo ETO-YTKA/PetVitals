@@ -104,7 +104,9 @@ fun AddEditPetScreen(
             uri?.let { viewModel.onImageUriChange(it) }
         }
 
-        Column {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             when {
                 uiState.imageUri != null -> {
                     AsyncImage(
@@ -176,7 +178,7 @@ fun AddEditPetScreen(
             shape = MaterialTheme.shapes.large,
             modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.background
             )

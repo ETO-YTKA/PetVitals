@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="log_in_to_your_account">Вход</string>
+    <string name="log_in">Войти</string>
+    <string name="create_account">Регистрация</string>
+    <string name="sign_up">Зарегистрироваться</string>
+    <string name="email">Электронная почта</string>
+    <string name="password">Пароль</string>
+    <string name="sign_up_new_account">Нет аккаунта? Зарегистрируйтесь</string>
+    <string name="name">Имя</string>
+    <string name="password_requirements">Используйте не менее 8 символов для пароля</string>
+
+    <!-- PetsScreen -->
+    <string name="pets">Питомцы</string>
+    <string name="add_pet">Добавить питомца</string>
+    <string name="settings">Настройки</string>
+
+    <!-- Profile -->
+    <string name="logout">Выйти</string>
+    <string name="profile">Профиль</string>
+    <string name="delete">Удалить</string>
+    <string name="enter_your_password_to_confirm">Введите пароль для подтверждения</string>
+    <string name="delete_account">Удалить аккаунт</string>
+    <string name="user_profile">Профиль пользователя</string>
+
+    <!-- Add Edit Pet -->
+    <string name="approximate_date">Приблизительная дата</string>
+    <string name="day">День</string>
+    <string name="month">Месяц</string>
+    <string name="year">Год</string>
+    <string name="pet_name">Кличка</string>
+    <string name="species">Вид</string>
+    <string name="date_of_birth">Дата рождения</string>
+    <string name="tap_to_select_date">Нажмите, чтобы выбрать дату</string>
+    <string name="ok">ОК</string>
+    <string name="cancel">Отмена</string>
+    <string name="save">Сохранить</string>
+    <string name="tap_to_select_photo">Нажмите, чтобы выбрать фото</string>
+    <string name="edit_pet">Редактировать питомца</string>
+    <string name="cat">Кошка</string>
+    <string name="dog">Собака</string>
+
+    <string name="unknown">Неизвестно</string>
+    <string name="january">Январь</string>
+    <string name="february">Февраль</string>
+    <string name="march">Март</string>
+    <string name="april">Апрель</string>
+    <string name="may">Май</string>
+    <string name="june">Июнь</string>
+    <string name="july">Июль</string>
+    <string name="august">Август</string>
+    <string name="september">Сентябрь</string>
+    <string name="october">Октябрь</string>
+    <string name="november">Ноябрь</string>
+    <string name="december">Декабрь</string>
+
+    <!-- Create record -->
+    <string name="create_record">Создать запись</string>
+    <string name="title">Заголовок</string>
+    <string name="type">Тип</string>
+    <string name="date">Дата</string>
+    <string name="description">Описание</string>
+
+    <string name="vaccination">Вакцинация</string>
+    <string name="medication">Медикаменты</string>
+    <string name="vet_visit">Визит к ветеринару</string>
+    <string name="symptom">Симптом</string>
+    <string name="grooming">Уход (груминг)</string>
+    <string name="incident">Происшествие</string>
+    <string name="note">Заметка</string>
+
+    <!-- Records -->
+    <string name="records">Записи</string>
+
+    <!-- Errors -->
+    <string name="password_short_error">Пароль должен содержать не менее 8 символов</string>
+    <string name="password_whitespace_error">Пароль не может содержать пробелы</string>
+    <string name="password_no_digit_error">Пароль должен содержать хотя бы одну цифру</string>
+    <string name="password_no_uppercase_error">Пароль должен содержать хотя бы одну заглавную букву</string>
+    <string name="password_no_lowercase_error">Пароль должен содержать хотя бы одну строчную букву</string>
+    <string name="empty_field_error">Поле не может быть пустым</string>
+    <string name="display_name_too_long_error">Поле не должно превышать 30 символов</string>
+    <string name="invalid_email_error">Неверный формат электронной почты</string>
+    <string name="invalid_email_password_error">Неверный адрес электронной почты или пароль</string>
+    <string name="user_not_found_error">Пользователь не найден. Пожалуйста, проверьте введённые данные</string>
+    <string name="network_error">Произошла сетевая ошибка. Пожалуйста, проверьте ваше соединение</string>
+    <string name="unexpected_error">Произошла непредвиденная ошибка</string>
+    <string name="empty_fields_error">Поля не могут быть пустыми</string>
+    <string name="email_already_in_use_error">Этот адрес электронной почты уже используется</string>
+    <string name="invalid_characters_error">Поле должно содержать только буквы и пробелы</string>
+    <string name="attach_pet">Прикрепить питомца</string>
+</resources>
