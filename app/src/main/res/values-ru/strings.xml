@@ -62,7 +62,7 @@
     <string name="description">Описание</string>
 
     <string name="vaccination">Вакцинация</string>
-    <string name="medication">Медикаменты</string>
+    <string name="medication">Приём лекарст</string>
     <string name="vet_visit">Визит к ветеринару</string>
     <string name="symptom">Симптом</string>
     <string name="grooming">Уход (груминг)</string>

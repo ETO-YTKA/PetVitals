@@ -89,13 +89,10 @@ class CreateRecordViewModel @Inject constructor(
         }
     }
 
-    fun createRecord() {
+    fun onCreateRecordClick() {
         val userId = accountService.currentUserId
-        val title = if (uiState.value.title.isBlank()) {
-            context.getString(uiState.value.selectedType.titleResId)
-        } else {
-            uiState.value.title
-        }
+        val title = uiState.value.title.takeIf { it.isNotBlank() }
+            ?: context.getString(uiState.value.selectedType.titleResId)
 
         val record = Record(
             userId = userId,

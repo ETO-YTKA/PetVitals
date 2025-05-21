@@ -88,7 +88,7 @@ fun RecordsScreen(
             ) {
                 items(
                     count = uiState.recordWithPets.size,
-                    key = { index -> uiState.recordWithPets[index].record.recordId.toString() }
+                    key = { index -> uiState.recordWithPets[index].record.id.toString() }
                 ) { index ->
                     val recordWithPets = uiState.recordWithPets[index]
 
@@ -183,55 +183,61 @@ private fun RecordCard(
                         }
                     }
 
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, false)
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
+                        ) {
+                            Text(
+                                text = stringResource(type.titleResId),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1
+                            )
+
+                            Text(
+                                text = "•",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                            Text(
+                                text = date,
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 1
+                            )
+                        }
+                    }
+
+                    val rotationAngle by animateFloatAsState(
+                        targetValue = if (isExpanded) 180f else 0f,
+                        label = "ArrowRotation"
                     )
-
-                    Text(
-                        text = "•",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Text(
-                        text = stringResource(type.titleResId),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(Dimen.spaceMedium))
-
-                Text(
-                    text = date,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 1
-                )
-
-                val rotationAngle by animateFloatAsState(
-                    targetValue = if (isExpanded) 180f else 0f,
-                    label = "ArrowRotation"
-                )
-                IconButton(
-                    onClick = { isExpanded = !isExpanded }
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.KeyboardArrowUp,
-                        contentDescription = null,
-                        modifier = Modifier.rotate(rotationAngle)
-                    )
+                    IconButton(
+                        onClick = { isExpanded = !isExpanded }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.KeyboardArrowUp,
+                            contentDescription = null,
+                            modifier = Modifier.rotate(rotationAngle)
+                        )
+                    }
                 }
             }
             AnimatedContent(
                 targetState = isExpanded,
             ) { targetState ->
                 Column {
-
                     if (targetState) {
 
                         FlowRow {

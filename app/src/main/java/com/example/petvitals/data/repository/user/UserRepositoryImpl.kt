@@ -1,18 +1,18 @@
 package com.example.petvitals.data.repository.user
 
 import com.example.petvitals.data.service.account.AccountService
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
+    private val firestore: FirebaseFirestore,
     private val accountService: AccountService
 ) : UserRepository {
 
-    override suspend fun createUserDocument(user: User) {
+    override suspend fun createUser(user: User) {
 
-        Firebase.firestore
+        firestore
             .collection("users").document(user.id)
             .set(user)
     }
@@ -20,7 +20,7 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun getCurrentUser(): User {
 
         val userId = accountService.currentUserId
-        val userDoc = Firebase.firestore
+        val userDoc = firestore
             .collection("users")
             .document(userId)
             .get()
@@ -36,7 +36,7 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun deleteCurrentUser() {
 
         val userId = accountService.currentUserId
-        Firebase.firestore
+        firestore
             .collection("users").document(userId)
             .delete()
             .await()

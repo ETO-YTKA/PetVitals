@@ -172,7 +172,7 @@ fun CreateRecordScreen(
         ButtonWithIcon(
             text = stringResource(R.string.create_record),
             onClick = {
-                viewModel.createRecord()
+                viewModel.onCreateRecordClick()
                 onNavigateToRecords()
             },
             icon = {

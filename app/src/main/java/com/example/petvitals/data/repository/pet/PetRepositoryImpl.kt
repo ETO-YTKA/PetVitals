@@ -1,18 +1,18 @@
 package com.example.petvitals.data.repository.pet
 
 import com.example.petvitals.data.service.account.AccountService
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class PetRepositoryImpl @Inject constructor(
+    private val firestore: FirebaseFirestore,
     private val accountService: AccountService
 ) : PetRepository {
 
     override suspend fun addPetToUser(pet: Pet) {
 
-        Firebase.firestore
+        firestore
             .collection("users").document(pet.userId)
             .collection("pets").document(pet.id)
             .set(pet)
@@ -22,7 +22,7 @@ class PetRepositoryImpl @Inject constructor(
     override suspend fun getUserPets(): List<Pet> {
 
         val userId = accountService.currentUserId
-        return Firebase.firestore
+        return firestore
             .collection("users").document(userId)
             .collection("pets")
             .get()
@@ -43,7 +43,7 @@ class PetRepositoryImpl @Inject constructor(
 
         val userId = accountService.currentUserId
 
-        val doc = Firebase.firestore
+        val doc = firestore
             .collection("users").document(userId)
             .collection("pets").document(petId)
             .get()
@@ -66,7 +66,7 @@ class PetRepositoryImpl @Inject constructor(
     override suspend fun updatePet(pet: Pet) {
 
         val userId = accountService.currentUserId
-        Firebase.firestore
+        firestore
             .collection("users").document(userId)
             .collection("pets").document(pet.id)
             .set(pet)
@@ -76,7 +76,7 @@ class PetRepositoryImpl @Inject constructor(
     override suspend fun deletePet(petId: String) {
 
         val userId = accountService.currentUserId
-        Firebase.firestore
+        firestore
             .collection("users").document(userId)
             .collection("pets").document(petId)
             .delete()
@@ -86,7 +86,7 @@ class PetRepositoryImpl @Inject constructor(
     override suspend fun deleteAllPets() {
 
         val userId = accountService.currentUserId
-        Firebase.firestore
+        firestore
             .collection("users").document(userId)
             .collection("pets")
             .get()

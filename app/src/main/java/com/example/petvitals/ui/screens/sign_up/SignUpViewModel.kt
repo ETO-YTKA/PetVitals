@@ -1,7 +1,6 @@
 package com.example.petvitals.ui.screens.sign_up
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.user.User
@@ -176,11 +175,9 @@ class SignUpViewModel @Inject constructor(
                     email = uiState.value.email
                 )
 
-                userRepository.createUserDocument(user)
-
+                userRepository.createUser(user)
                 onNavigateToLogIn()
             } catch (e: Exception) {
-                Log.d("SignUpViewModel", "Sign up failed", e)
 
                 val errorMessage = when(e) {
                     is FirebaseNetworkException -> context.getString(R.string.network_error)
