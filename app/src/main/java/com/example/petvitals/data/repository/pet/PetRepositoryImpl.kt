@@ -2,6 +2,7 @@ package com.example.petvitals.data.repository.pet
 
 import com.example.petvitals.data.service.account.AccountService
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -27,40 +28,19 @@ class PetRepositoryImpl @Inject constructor(
             .collection("pets")
             .get()
             .await()
-            .map {
-                Pet(
-                    id = it.id,
-                    userId = it.data["userId"] as String,
-                    name = it.data["name"] as String,
-                    species = it.data["species"] as String,
-                    birthDate = it.data["birthDate"] as Map<String, Int>,
-                    imageString = it.data["imageString"] as String?
-                )
-            }
+            .map { it.toObject<Pet>() }
     }
 
     override suspend fun getPetById(petId: String): Pet? {
 
         val userId = accountService.currentUserId
 
-        val doc = firestore
+        return firestore
             .collection("users").document(userId)
             .collection("pets").document(petId)
             .get()
             .await()
-
-        return if (doc.exists()) {
-            Pet(
-                id = doc.id,
-                userId = (doc.data?.get("userId") ?: "") as String,
-                name = (doc.data?.get("name") ?: "") as String,
-                species = (doc.data?.get("species") ?: "") as String,
-                birthDate = (doc.data?.get("birthDate") ?: "") as Map<String, Int>,
-                imageString = (doc.data?.get("imageString") ?: "") as String?
-            )
-        } else {
-            null
-        }
+            .toObject<Pet>()
     }
 
     override suspend fun updatePet(pet: Pet) {

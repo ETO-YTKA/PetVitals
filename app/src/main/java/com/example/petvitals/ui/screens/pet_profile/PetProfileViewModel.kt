@@ -1,10 +1,9 @@
 package com.example.petvitals.ui.screens.pet_profile
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
-import com.example.petvitals.utils.decodeBase64ToImage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,10 +12,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class PetProfileUiState(
+    val pet: Pet = Pet(),
     val name: String = "",
-    val species: String = "",
     val birthDate: String = "",
-    val imageByteArray: ByteArray? = byteArrayOf()
 )
 
 @HiltViewModel
@@ -31,10 +29,10 @@ class PetProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val pet = petRepository.getPetById(petId)
 
-            pet?.let {
-                val birthDay = it.birthDate.getOrDefault("day", "").toString()
-                val birthMonth = it.birthDate.getOrDefault("month", "").toString()
-                val birthYear = it.birthDate["year"].toString()
+            pet?.let { pet ->
+                val birthDay = pet.birthDate.getOrDefault("day", "").toString()
+                val birthMonth = pet.birthDate.getOrDefault("month", "").toString()
+                val birthYear = pet.birthDate["year"].toString()
 
                 val birthDate = when {
                     birthDay.isNotEmpty() && birthMonth.isNotEmpty() -> {
@@ -50,13 +48,11 @@ class PetProfileViewModel @Inject constructor(
 
                 _uiState.update { state ->
                     state.copy(
-                        name = it.name,
-                        species = it.species,
-                        birthDate = birthDate,
-                        imageByteArray = it.imageString?.let { decodeBase64ToImage(it) }
+                        pet = pet,
+                        name = pet.name,
+                        birthDate = birthDate
                     )
                 }
-                Log.d("PetProfileViewModel", uiState.value.toString())
             }
         }
     }

@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
+import com.example.petvitals.data.repository.pet.PetSpecies
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.ui.components.DropDownOption
 import com.example.petvitals.utils.decodeBase64ToImage
@@ -31,16 +32,18 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 
 data class AddEditPetUiState(
     val name: String = "",
-    val species: String = "",
+    val selectedSpecies: PetSpecies = PetSpecies.CAT,
     val isDateOfBirthApproximate: Boolean = false,
     val showModal: Boolean = false,
     val birthDateMillis: Long? = null,
     val selectedBirthMonth: Int = 0,
-    val monthOptions: List<DropDownOption<Int>> = emptyList(),
     val birthYear: String = "",
     val editMode: Boolean = false,
     val imageUri: Uri? = null,
-    val petImageByteArray: ByteArray? = null
+    val petImageByteArray: ByteArray? = null,
+
+    val monthOptions: List<DropDownOption<Int>> = emptyList(),
+    val speciesOptions: List<DropDownOption<PetSpecies>> = emptyList()
 )
 
 @HiltViewModel
@@ -54,7 +57,10 @@ class AddEditPetViewModel @Inject constructor(
 
     init {
         _uiState.update { state ->
-            state.copy(monthOptions = populateMonthOptions(context = context))
+            state.copy(
+                monthOptions = populateMonthOptions(),
+                speciesOptions = populateSpeciesOptions()
+            )
         }
     }
 
@@ -64,9 +70,9 @@ class AddEditPetViewModel @Inject constructor(
         }
     }
 
-    fun onSpeciesChange(species: String) {
+    fun onSpeciesChange(species: PetSpecies) {
         _uiState.update { state ->
-            state.copy(species = species)
+            state.copy(selectedSpecies = species)
         }
     }
 
@@ -112,14 +118,20 @@ class AddEditPetViewModel @Inject constructor(
         } ?: context.getString(R.string.tap_to_select_date)
     }
 
-    fun getSpeciesList(): List<String> {
+    fun populateSpeciesOptions(): List<DropDownOption<PetSpecies>> {
         return listOf(
-            context.getString(R.string.cat),
-            context.getString(R.string.dog)
+            DropDownOption(
+                display = context.getString(R.string.cat),
+                value = PetSpecies.CAT
+            ),
+            DropDownOption(
+                display = context.getString(R.string.dog),
+                value = PetSpecies.DOG
+            ),
         )
     }
 
-    fun populateMonthOptions(context: Context): List<DropDownOption<Int>> {
+    fun populateMonthOptions(): List<DropDownOption<Int>> {
         return listOf(
             DropDownOption(
                 display = context.getString(R.string.unknown),
@@ -184,7 +196,7 @@ class AddEditPetViewModel @Inject constructor(
             pet = Pet(
                 userId = accountService.currentUserId,
                 name = uiState.value.name,
-                species = uiState.value.species,
+                species = uiState.value.selectedSpecies,
                 birthDate = birthDate,
                 imageString = processImageUri(context, imageUri)
             )
@@ -192,7 +204,7 @@ class AddEditPetViewModel @Inject constructor(
             pet = Pet(
                 userId = accountService.currentUserId,
                 name = uiState.value.name,
-                species = uiState.value.species,
+                species = uiState.value.selectedSpecies,
                 birthDate = birthDate
             )
         }
@@ -215,7 +227,7 @@ class AddEditPetViewModel @Inject constructor(
                 _uiState.update { state ->
                     state.copy(
                         name = it.name,
-                        species = it.species,
+                        selectedSpecies = it.species,
                         isDateOfBirthApproximate = it.birthDate.size != 3,
                         birthDateMillis = if (it.birthDate.size == 3) {
                             val date = Calendar.getInstance(Locale.getDefault())
@@ -253,7 +265,7 @@ class AddEditPetViewModel @Inject constructor(
                     id = petId,
                     userId = accountService.currentUserId,
                     name = uiState.value.name,
-                    species = uiState.value.species,
+                    species = uiState.value.selectedSpecies,
                     birthDate = birthDate,
                     imageString = processImageUri(context, imageUri)
                 )
@@ -263,7 +275,7 @@ class AddEditPetViewModel @Inject constructor(
                     id = petId,
                     userId = accountService.currentUserId,
                     name = uiState.value.name,
-                    species = uiState.value.species,
+                    species = uiState.value.selectedSpecies,
                     birthDate = birthDate,
                     imageString = Base64.encode(uiState.value.petImageByteArray!!)
                 )
@@ -273,7 +285,7 @@ class AddEditPetViewModel @Inject constructor(
                     id = petId,
                     userId = accountService.currentUserId,
                     name = uiState.value.name,
-                    species = uiState.value.species,
+                    species = uiState.value.selectedSpecies,
                     birthDate = birthDate
                 )
             }

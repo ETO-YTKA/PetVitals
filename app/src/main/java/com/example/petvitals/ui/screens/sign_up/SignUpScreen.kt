@@ -1,8 +1,8 @@
 package com.example.petvitals.ui.screens.sign_up
 
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -19,13 +19,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
+import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.ErrorMessage
 import com.example.petvitals.ui.components.ScreenLayout
-import com.example.petvitals.ui.components.TopBarBackButton
+import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.theme.Dimen
 
 @Composable
@@ -44,15 +44,23 @@ fun SignUpScreen(
 
     ScreenLayout(
         columnModifier = modifier.verticalScroll(rememberScrollState()),
-        topBar = { TopBarBackButton(
-            onPopBackStack = onPopBackStack,
-            title = stringResource(R.string.create_account)
-        ) }
+        topBar = {
+            TopBar(
+                title = { Text(text = stringResource(R.string.signup)) },
+                navigationIcon = {
+                    CustomIconButton(
+                        onClick = onPopBackStack,
+                        painter = painterResource(R.drawable.ic_arrow_back),
+                        contentDescription = stringResource(R.string.back)
+                    )
+                }
+            )
+        }
     ) {
         CustomOutlinedTextField(
             value = uiState.displayName,
             onValueChange = { viewModel.onDisplayNameChange(it) },
-            modifier = Modifier.width(280.dp),
+            modifier = Modifier.fillMaxWidth(),
             label = { Text(text = stringResource(R.string.name)) },
             leadingIcon = { Icon(painterResource(R.drawable.ic_person), contentDescription = null) },
             singleLine = true,
@@ -67,7 +75,7 @@ fun SignUpScreen(
         CustomOutlinedTextField(
             value = uiState.email,
             onValueChange = { viewModel.onEmailChange(it) },
-            modifier = Modifier.width(280.dp),
+            modifier = Modifier.fillMaxWidth(),
             label = { Text(text = stringResource(R.string.email)) },
             leadingIcon = { Icon(painterResource(R.drawable.ic_mail), contentDescription = null) },
             singleLine = true,
@@ -82,7 +90,7 @@ fun SignUpScreen(
         CustomOutlinedTextField(
             value = uiState.password,
             onValueChange = { viewModel.onPasswordChange(it) },
-            modifier = Modifier.width(280.dp),
+            modifier = Modifier.fillMaxWidth(),
             label = { Text(text = stringResource(R.string.password)) },
             leadingIcon = { Icon(painterResource(R.drawable.ic_password2), contentDescription = null) },
             trailingIcon = {

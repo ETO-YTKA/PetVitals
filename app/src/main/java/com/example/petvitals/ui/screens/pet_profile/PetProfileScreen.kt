@@ -1,6 +1,5 @@
 package com.example.petvitals.ui.screens.pet_profile
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,33 +9,34 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.example.petvitals.PetProfile
 import com.example.petvitals.R
+import com.example.petvitals.data.repository.pet.PetSpecies
+import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.ScreenLayout
+import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.theme.Dimen
+import com.example.petvitals.utils.decodeBase64ToImage
 
 @Composable
 fun PetProfileScreen(
     petProfile: PetProfile,
     onPopBackStack: () -> Unit,
     onNavigateToEditPet: (String) -> Unit,
-    onNavigateToPets: () -> Unit,
     viewModel: PetProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -49,39 +49,53 @@ fun PetProfileScreen(
         modifier = Modifier,
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Top,
-        topBar = { TopBar(
-            title = uiState.name,
-            onPopBackStack = onPopBackStack,
-            onNavigateToEditScreen = { onNavigateToEditPet(petProfile.petId) },
-            onDeleteClick = {
-                viewModel.deletePet(petProfile.petId)
-                onNavigateToPets()
-            }
-        ) }
+        topBar = {
+            TopBar(
+                title = { Text(uiState.name) },
+                navigationIcon = {
+                    CustomIconButton(
+                        onClick = onPopBackStack,
+                        painter = painterResource(R.drawable.ic_arrow_back),
+                        contentDescription = stringResource(R.string.back)
+                    )
+                },
+                actions = {
+                    CustomIconButton(
+                        onClick = { onNavigateToEditPet(petProfile.petId) },
+                        painter = painterResource(R.drawable.ic_edit),
+                        contentDescription = stringResource(R.string.edit_pet)
+                    )
+                    CustomIconButton(
+                        onClick = {
+                            viewModel.deletePet(petProfile.petId)
+                            onPopBackStack()
+                        },
+                        painter = painterResource(R.drawable.ic_delete_forever),
+                        contentDescription = stringResource(R.string.delete_pet)
+                    )
+                }
+            )
+        }
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            if (uiState.imageByteArray != null && uiState.imageByteArray!!.isNotEmpty()) {
-                AsyncImage(
-                    model = uiState.imageByteArray,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(Dimen.petImageProfile)
-                        .clip(CircleShape)
-                )
-            } else {
-                Image(
-                    painter = if (uiState.species == "Cat") painterResource(R.drawable.ic_cat) else painterResource(R.drawable.ic_dog),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(Dimen.petImageProfile)
-                )
-            }
+            val painterRes = if (uiState.pet.species == PetSpecies.CAT) R.drawable.ic_cat
+                else R.drawable.ic_dog
+            val image = uiState.pet.imageString?.let { remember { decodeBase64ToImage(it) } }
+            val imageModifier = Modifier
+                .size(Dimen.petImageProfile)
+                .then(if (image != null) Modifier.clip(CircleShape) else Modifier)
+
+            AsyncImage(
+                model = image,
+                contentDescription = uiState.pet.name,
+                contentScale = ContentScale.Crop,
+                fallback = painterResource(painterRes),
+                modifier = imageModifier
+            )
         }
 
         Spacer(modifier = Modifier.height(Dimen.spaceHuge))
@@ -92,47 +106,9 @@ fun PetProfileScreen(
                 modifier = Modifier.padding(Dimen.spaceMedium),
                 verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
             ) {
-                Text(text = uiState.species)
+                Text(text = uiState.name)
                 Text(text = uiState.birthDate)
             }
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TopBar(
-    title: String,
-    onPopBackStack: () -> Unit,
-    onNavigateToEditScreen: () -> Unit,
-    onDeleteClick: () -> Unit
-) {
-    CenterAlignedTopAppBar(
-        title = {
-            Text(
-                text = title,
-                maxLines = 1
-            )
-        },
-        actions = {
-            IconButton(
-                onClick = onNavigateToEditScreen
-            ) {
-                Icon(painterResource(R.drawable.ic_edit), contentDescription = null)
-            }
-            IconButton(
-                onClick = onDeleteClick
-            ) {
-                Icon(painterResource(R.drawable.ic_delete_forever), contentDescription = null)
-            }
-        },
-        navigationIcon = {
-            IconButton(
-                onClick = onPopBackStack
-
-            ) {
-                Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = null)
-            }
-        }
-    )
 }

@@ -35,9 +35,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.ButtonWithIcon
+import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.ScreenLayout
-import com.example.petvitals.ui.components.TopBarBackButton
+import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.theme.Dimen
 
 @Composable
@@ -60,9 +61,15 @@ fun UserProfileScreen(
         columnModifier = Modifier.verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Top,
         topBar = {
-            TopBarBackButton(
-                title = stringResource(R.string.profile),
-                onPopBackStack = onPopBackStack
+            TopBar(
+                title = { Text(stringResource(R.string.profile)) },
+                navigationIcon = {
+                    CustomIconButton(
+                        onClick = onPopBackStack,
+                        painter = painterResource(R.drawable.ic_arrow_back),
+                        contentDescription = stringResource(R.string.back)
+                    )
+                }
             )
         }
     ) {

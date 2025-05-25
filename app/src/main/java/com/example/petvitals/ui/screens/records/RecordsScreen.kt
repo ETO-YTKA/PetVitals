@@ -6,7 +6,6 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -28,7 +27,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,8 +55,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.pet.Pet
+import com.example.petvitals.data.repository.pet.PetSpecies
 import com.example.petvitals.data.repository.record.RecordType
+import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.ScreenLayout
+import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.utils.decodeBase64ToImage
 
@@ -73,9 +74,14 @@ fun RecordsScreen(
     ScreenLayout(
         topBar = {
             TopBar(
-                onNavigateToCreateRecord = onNavigateToCreateRecord,
-                onDeleteClick = { uiState.selectedRecords.forEach { viewModel.deleteRecord(it) } },
-                selectionMode = uiState.selectionMode
+                title = { Text(stringResource(R.string.records)) },
+                actions = {
+                    CustomIconButton(
+                        onClick = onNavigateToCreateRecord,
+                        painter = painterResource(id = R.drawable.ic_note_add),
+                        contentDescription = stringResource(R.string.create_record)
+                    )
+                }
             )
         }
     ) {
@@ -259,53 +265,13 @@ private fun RecordCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TopBar(
-    onNavigateToCreateRecord: () -> Unit,
-    onDeleteClick: () -> Unit,
-    selectionMode: Boolean = false
-) {
-    CenterAlignedTopAppBar(
-        title = {
-            Text(
-                text = stringResource(R.string.records),
-                style = MaterialTheme.typography.titleLarge
-            )
-        },
-        actions = {
-            AnimatedContent(targetState = selectionMode, label = "TopBarActions") { targetState ->
-                if (targetState) {
-                    IconButton(
-                        onClick = onDeleteClick
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_delete_forever),
-                            contentDescription = stringResource(R.string.delete)
-                        )
-                    }
-                } else {
-                    IconButton(
-                        onClick = onNavigateToCreateRecord
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_note_add),
-                            contentDescription = stringResource(R.string.create_record)
-                        )
-                    }
-                }
-            }
-        }
-    )
-}
-
 @Composable
 fun PetCard(
     pet: Pet,
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+        modifier = modifier.border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),
         shape = CircleShape,
         colors = CardDefaults.cardColors().copy(
             containerColor = MaterialTheme.colorScheme.background
@@ -317,23 +283,20 @@ fun PetCard(
         ) {
             Spacer(modifier = Modifier.width(Dimen.spaceSmall))
 
-            if (pet.imageString != null && pet.imageString.isNotEmpty()) {
-                AsyncImage(
-                    model = decodeBase64ToImage(pet.imageString),
-                    contentDescription = pet.name,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clip(CircleShape)
-                )
-            } else {
-                Image(
-                    painter = if (pet.species == "Cat") painterResource(id = R.drawable.ic_cat) else painterResource(id = R.drawable.ic_dog),
-                    contentDescription = pet.name,
-                    modifier = Modifier
-                        .size(24.dp)
-                )
-            }
+            val painterRes = if (pet.species == PetSpecies.CAT) R.drawable.ic_cat
+                else R.drawable.ic_dog
+            val image = pet.imageString?.let { remember { decodeBase64ToImage(pet.imageString) } }
+            val imageModifier = Modifier
+                .size(24.dp)
+                .then(if (image != null) Modifier.clip(CircleShape) else Modifier)
+
+            AsyncImage(
+                model = image,
+                contentDescription = pet.name,
+                contentScale = ContentScale.Crop,
+                fallback = painterResource(painterRes),
+                modifier = imageModifier
+            )
 
             Spacer(modifier = Modifier.width(Dimen.spaceMedium))
 

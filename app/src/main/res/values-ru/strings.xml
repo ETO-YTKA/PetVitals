@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="log_in_to_your_account">Вход</string>
+    <string name="login">Вход</string>
     <string name="log_in">Войти</string>
-    <string name="create_account">Регистрация</string>
+    <string name="signup">Регистрация</string>
     <string name="sign_up">Зарегистрироваться</string>
     <string name="email">Электронная почта</string>
     <string name="password">Пароль</string>
-    <string name="sign_up_new_account">Нет аккаунта? Зарегистрируйтесь</string>
+    <string name="dont_have_account_sign_up">Нет аккаунта? Зарегистрируйтесь</string>
     <string name="name">Имя</string>
     <string name="password_requirements">Используйте не менее 8 символов для пароля</string>
 
@@ -89,4 +89,6 @@
     <string name="email_already_in_use_error">Этот адрес электронной почты уже используется</string>
     <string name="invalid_characters_error">Поле должно содержать только буквы и пробелы</string>
     <string name="attach_pet">Прикрепить питомца</string>
+    <string name="back">Назад</string>
+    <string name="delete_pet">Удалить питомца</string>
 </resources>

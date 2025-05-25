@@ -2,15 +2,13 @@ package com.example.petvitals.ui.screens.log_in
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -25,7 +23,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.CustomOutlinedTextField
+import com.example.petvitals.ui.components.ErrorMessage
 import com.example.petvitals.ui.components.ScreenLayout
+import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.theme.Dimen
 
 @Composable
@@ -40,7 +40,7 @@ fun SignInScreen(
 
     ScreenLayout(
         columnModifier = modifier.verticalScroll(rememberScrollState()),
-        topBar = { TopBar(title = stringResource(R.string.log_in_to_your_account)) }
+        topBar = { TopBar(title = { Text(stringResource(R.string.login)) }) }
     ) {
         CustomOutlinedTextField(
             value = uiState.email,
@@ -51,6 +51,7 @@ fun SignInScreen(
                 imeAction = ImeAction.Next
             ),
             singleLine = true,
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(Dimen.spaceMedium))
@@ -61,15 +62,9 @@ fun SignInScreen(
             leadingIcon = { Icon(painter = painterResource(R.drawable.ic_password2), contentDescription = null) },
             visualTransformation = PasswordVisualTransformation(),
             singleLine = true,
+            modifier = Modifier.fillMaxWidth()
         )
-        uiState.errorMessage?.let { message ->
-            Spacer(modifier = Modifier.height(Dimen.spaceSmall))
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
-            )
-        }
+        uiState.errorMessage?.let { ErrorMessage(it) }
 
         Spacer(modifier = Modifier.height(Dimen.spaceLarge))
         Button(
@@ -87,17 +82,7 @@ fun SignInScreen(
         TextButton(
             onClick = { viewModel.onSignUpClick(onNavigateToSignUp = onNavigateToSignUp) }
         ) {
-            Text(text = stringResource(R.string.sign_up_new_account))
+            Text(text = stringResource(R.string.dont_have_account_sign_up))
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TopBar(title: String) {
-    CenterAlignedTopAppBar(
-        title = {
-            Text(text = title)
-        }
-    )
 }

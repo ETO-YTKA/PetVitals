@@ -6,6 +6,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -66,7 +67,6 @@ fun MainAppScreen(
                             )
                         )
                     },
-                    onNavigateToSettings = { },
                     onNavigateToUserProfile = { navController.navigate(route = UserProfile) }
                 )
             }
@@ -86,8 +86,7 @@ fun MainAppScreen(
                 PetProfileScreen(
                     petProfile = petProfile,
                     onPopBackStack = { navController.popBackStack() },
-                    onNavigateToEditPet = { petId -> navController.navigate(route = AddEditPet(petId)) },
-                    onNavigateToPets = { navController.navigate(route = Pets) }
+                    onNavigateToEditPet = { petId -> navController.navigate(route = AddEditPet(petId)) }
                 )
             }
             composable<CreateRecord> {
@@ -120,7 +119,8 @@ private fun BottomBar(
                     contentDescription = stringResource(R.string.pets)
                 )
             },
-            onClick = onNavigateToPets
+            onClick = onNavigateToPets,
+            label = { Text(stringResource(R.string.pets)) }
         )
         NavigationBarItem(
             selected = hierarchy?.any { it.hasRoute(Records::class) } == true,
@@ -130,7 +130,8 @@ private fun BottomBar(
                     contentDescription = stringResource(R.string.records)
                 )
             },
-            onClick = onNavigateToRecords
+            onClick = onNavigateToRecords,
+            label = { Text(stringResource(R.string.records)) }
         )
     }
 }

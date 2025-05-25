@@ -1,7 +1,6 @@
 package com.example.petvitals.ui.screens.create_record
 
 import android.icu.util.Calendar
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
@@ -21,7 +20,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,10 +47,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.pet.Pet
+import com.example.petvitals.data.repository.pet.PetSpecies
 import com.example.petvitals.ui.components.ButtonWithIcon
+import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.ScreenLayout
-import com.example.petvitals.ui.components.TopBarBackButton
+import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.components.ValueDropDown
 import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.utils.decodeBase64ToImage
@@ -86,9 +86,15 @@ fun CreateRecordScreen(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
         topBar = {
-            TopBarBackButton(
-                title = stringResource(R.string.create_record),
-                onPopBackStack = onPopBackStack
+            TopBar(
+                title = { Text(stringResource(R.string.create_record)) },
+                navigationIcon = {
+                    CustomIconButton(
+                        onClick = onPopBackStack,
+                        painter = painterResource(R.drawable.ic_arrow_back),
+                        contentDescription = stringResource(R.string.back)
+                    )
+                }
             )
         },
         columnModifier = Modifier.verticalScroll(rememberScrollState()),
@@ -251,7 +257,7 @@ private fun DatePickerModal(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class) // For ModalBottomSheet
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BottomSheetModal(
     onDismissRequest: () -> Unit,
@@ -290,35 +296,27 @@ private fun PetCard(
 ) {
     Card(
         onClick = onClick,
-        modifier = modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
         shape = CircleShape,
-        colors = CardDefaults.cardColors().copy(
-            containerColor = MaterialTheme.colorScheme.background
-        )
+        modifier = modifier
     ) {
         Row(
-            modifier = Modifier.padding(Dimen.spaceSmall),
+            modifier = Modifier.padding(Dimen.spaceMedium),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Spacer(modifier = Modifier.width(Dimen.spaceSmall))
+            val painterRes = if (pet.species == PetSpecies.CAT) R.drawable.ic_cat
+                else R.drawable.ic_dog
+            val image = pet.imageString?.let { remember { decodeBase64ToImage(pet.imageString) } }
+            val imageModifier = Modifier
+                .size(24.dp)
+                .then(if (image != null) Modifier.clip(CircleShape) else Modifier)
 
-            if (pet.imageString != null) {
-                AsyncImage(
-                    model = decodeBase64ToImage(pet.imageString),
-                    contentDescription = pet.name,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                )
-            } else {
-                Image(
-                    painter = if (pet.species == "Cat") painterResource(id = R.drawable.ic_cat) else painterResource(id = R.drawable.ic_dog),
-                    contentDescription = pet.name,
-                    modifier = Modifier
-                        .size(24.dp)
-                )
-            }
+            AsyncImage(
+                model = image,
+                contentDescription = pet.name,
+                contentScale = ContentScale.Crop,
+                fallback = painterResource(painterRes),
+                modifier = imageModifier
+            )
 
             Spacer(modifier = Modifier.width(Dimen.spaceMedium))
 
@@ -326,8 +324,7 @@ private fun PetCard(
                 text = pet.name,
                 style = MaterialTheme.typography.bodyLarge,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
+                overflow = TextOverflow.Ellipsis
             )
 
             Spacer(modifier = Modifier.width(Dimen.spaceMedium))
