@@ -8,11 +8,11 @@ import java.util.UUID
 
 data class Record(
     val id: String = UUID.randomUUID().toString(),
-    val userId: String,
+    val userId: String = "",
     val title: String = "",
     val type: RecordType = RecordType.NOTE,
     val date: Long = Calendar.getInstance().timeInMillis,
-    val description: String,
+    val description: String = "",
     val petsId: List<String> = emptyList()
 )
 

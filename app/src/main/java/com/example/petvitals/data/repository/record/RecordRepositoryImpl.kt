@@ -2,6 +2,7 @@ package com.example.petvitals.data.repository.record
 
 import com.example.petvitals.data.service.account.AccountService
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -25,27 +26,16 @@ class RecordRepositoryImpl @Inject constructor(
     override suspend fun getAllRecord(): List<Record> {
 
         val userId = accountService.currentUserId
-        var records =
-            firestore
-                .collection("users").document(userId)
-                .collection("records")
-                .get()
-                .await()
-                .sortedByDescending {
-                    it.data["date"] as Long
-                }
+        var records = firestore
+            .collection("users").document(userId)
+            .collection("records")
+            .get()
+            .await()
+            .sortedByDescending {
+                it.data["date"] as Long
+            }
 
-        return records.map {
-            Record(
-                id = it.id,
-                userId = it.data["userId"] as String,
-                title = it.data["title"] as String,
-                type = enumValueOf<RecordType>(it.data["type"] as String),
-                date = it.data["date"] as Long,
-                description = it.data["description"] as String,
-                petsId = it.data["petsId"] as List<String>
-            )
-        }
+        return records.map { it.toObject<Record>() }
     }
 
     override suspend fun updateRecord(record: Record) {

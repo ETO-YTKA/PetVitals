@@ -51,7 +51,7 @@ fun PetProfileScreen(
         verticalArrangement = Arrangement.Top,
         topBar = {
             TopBar(
-                title = { Text(uiState.name) },
+                title = { Text(uiState.pet.name) },
                 navigationIcon = {
                     CustomIconButton(
                         onClick = onPopBackStack,
@@ -106,7 +106,7 @@ fun PetProfileScreen(
                 modifier = Modifier.padding(Dimen.spaceMedium),
                 verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
             ) {
-                Text(text = uiState.name)
+                Text(text = stringResource(uiState.pet.species.titleRes))
                 Text(text = uiState.birthDate)
             }
         }

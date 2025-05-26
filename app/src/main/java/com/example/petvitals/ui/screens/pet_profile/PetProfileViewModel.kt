@@ -13,7 +13,6 @@ import javax.inject.Inject
 
 data class PetProfileUiState(
     val pet: Pet = Pet(),
-    val name: String = "",
     val birthDate: String = "",
 )
 
@@ -49,7 +48,6 @@ class PetProfileViewModel @Inject constructor(
                 _uiState.update { state ->
                     state.copy(
                         pet = pet,
-                        name = pet.name,
                         birthDate = birthDate
                     )
                 }

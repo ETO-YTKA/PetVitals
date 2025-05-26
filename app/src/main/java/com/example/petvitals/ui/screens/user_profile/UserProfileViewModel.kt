@@ -2,6 +2,7 @@ package com.example.petvitals.ui.screens.user_profile
 
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.data.repository.pet.PetRepository
+import com.example.petvitals.data.repository.user.User
 import com.example.petvitals.data.repository.user.UserRepository
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.ui.screens.PetVitalsAppViewModel
@@ -62,7 +63,7 @@ class UserProfileViewModel @Inject constructor(
 
     fun getUserData() {
         viewModelScope.launch {
-            val user = userRepository.getCurrentUser()
+            val user = userRepository.getCurrentUser() ?: User()
 
             _uiState.update { state ->
                 state.copy(
