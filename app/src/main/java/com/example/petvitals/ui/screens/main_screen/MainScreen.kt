@@ -3,6 +3,7 @@ package com.example.petvitals.ui.screens.main_screen
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -47,7 +48,8 @@ fun MainAppScreen(
                 onNavigateToPets = { navController.navigate(route = Pets) },
                 onNavigateToRecords = { navController.navigate(route = Records) }
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.surfaceContainer
     ) { paddingValues ->
         NavHost(
             navController = navController,

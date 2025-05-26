@@ -38,7 +38,7 @@ fun ScreenLayout(
             modifier = columnModifier
                 .fillMaxSize()
                 .padding(contentPadding)
-                .padding(horizontal =  Dimen.spaceLarge)
+                .padding(horizontal =  Dimen.spaceMedium)
         ) {
             content()
         }

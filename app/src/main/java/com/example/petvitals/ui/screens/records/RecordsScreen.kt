@@ -6,6 +6,12 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -23,6 +29,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material3.Card
@@ -32,6 +40,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -48,6 +58,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -74,13 +85,44 @@ fun RecordsScreen(
     ScreenLayout(
         topBar = {
             TopBar(
-                title = { Text(stringResource(R.string.records)) },
-                actions = {
-                    CustomIconButton(
-                        onClick = onNavigateToCreateRecord,
-                        painter = painterResource(id = R.drawable.ic_note_add),
-                        contentDescription = stringResource(R.string.create_record)
+                title = {
+                    TextField(
+                        value = uiState.searchCond,
+                        onValueChange = viewModel::onSearchCondChange,
+                        placeholder = { Text(stringResource(R.string.search)) },
+                        singleLine = true,
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent
+                        ),
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_search),
+                                contentDescription = null
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = { viewModel.search() })
                     )
+                },
+                actions = {
+                    AnimatedContent(targetState = uiState.selectionMode) { targetState ->
+                        if (targetState) {
+                            CustomIconButton(
+                                onClick = viewModel::deleteSelectedRecords,
+                                painter = painterResource(id = R.drawable.ic_delete_forever),
+                                contentDescription = stringResource(R.string.delete)
+                            )
+                        } else {
+                            CustomIconButton(
+                                onClick = onNavigateToCreateRecord,
+                                painter = painterResource(id = R.drawable.ic_note_add),
+                                contentDescription = stringResource(R.string.create_record)
+                            )
+                        }
+                    }
                 }
             )
         }
@@ -242,6 +284,43 @@ private fun RecordCard(
             }
             AnimatedContent(
                 targetState = isExpanded,
+                transitionSpec = { // Caution AI slop
+                    if (targetState) {
+                        slideInVertically(
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                delayMillis = 50
+                            ), // Customize duration/delay
+                            initialOffsetY = { fullHeight -> -fullHeight } // Start fully off-screen above
+                        ) + fadeIn(
+                            animationSpec = tween(durationMillis = 200, delayMillis = 100)
+                        ) togetherWith // Use 'togetherWith' to combine with the exit transition of old content
+                                // Exit transition for the (empty) content that was there when collapsed
+                                slideOutVertically(
+                                    animationSpec = tween(durationMillis = 200),
+                                    targetOffsetY = { fullHeight -> fullHeight / 2 } // Optional: slide out partially
+                                ) + fadeOut(
+                            animationSpec = tween(durationMillis = 150)
+                        )
+                    }
+                    // Transition for when content is COLLAPSING (targetState is false)
+                    else { // targetState is 'isExpanded' becoming false
+                        // Slide in the (empty) content that will be there when collapsed
+                        slideInVertically(
+                            animationSpec = tween(durationMillis = 200, delayMillis = 50),
+                            initialOffsetY = { fullHeight -> fullHeight / 2 } // Optional: slide in partially
+                        ) + fadeIn(
+                            animationSpec = tween(durationMillis = 150, delayMillis = 100)
+                        ) togetherWith
+                                // Slide up to the top and fade out for the existing expanded content
+                                slideOutVertically(
+                                    animationSpec = tween(durationMillis = 300),
+                                    targetOffsetY = { fullHeight -> -fullHeight } // Slide fully off-screen above
+                                ) + fadeOut(
+                            animationSpec = tween(durationMillis = 200)
+                        )
+                    }
+                }
             ) { targetState ->
                 Column {
                     if (targetState) {

@@ -20,7 +20,8 @@ data class RecordsUiState(
     val recordWithPets: List<RecordWithPets> = emptyList(),
     val isRefreshing: Boolean = false,
     val selectedRecords: List<Record> = emptyList(),
-    val selectionMode: Boolean = false
+    val selectionMode: Boolean = false,
+    val searchCond: String = ""
 )
 
 data class RecordWithPets(
@@ -39,6 +40,11 @@ class RecordsViewModel @Inject constructor(
 
     init {
         getRecords()
+    }
+
+    fun onSearchCondChange(cond: String) {
+        _uiState.update { state -> state.copy(searchCond = cond) }
+        search()
     }
 
     fun getRecords() {
@@ -63,9 +69,12 @@ class RecordsViewModel @Inject constructor(
         }
     }
 
-    fun deleteRecord(record: Record) {
+    fun deleteSelectedRecords() {
         viewModelScope.launch {
-            recordRepository.deleteRecord(record)
+            val selectedRecords = _uiState.value.selectedRecords
+            selectedRecords.forEach { record ->
+                recordRepository.deleteRecord(record)
+            }
             getRecords()
         }
         _uiState.update { state ->
@@ -97,5 +106,19 @@ class RecordsViewModel @Inject constructor(
 
     fun formatDateForDisplay(millis: Long): String {
         return SimpleDateFormat("dd MMMM yyyy", Locale.getDefault()).format(Date(millis))
+    }
+
+    fun search() {
+        viewModelScope.launch {
+            val records = recordRepository.getRecordsByCondition(uiState.value.searchCond)
+            val recordWithPets = records.map { record ->
+                val pets: List<Pet> = record.petsId.mapNotNull { petId ->
+                    petRepository.getPetById(petId)
+                }
+                RecordWithPets(record, pets)
+            }
+
+            _uiState.update { state -> state.copy(recordWithPets = recordWithPets) }
+        }
     }
 }

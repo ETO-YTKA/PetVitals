@@ -100,7 +100,8 @@ class CreateRecordViewModel @Inject constructor(
             type = uiState.value.selectedType,
             date = uiState.value.date,
             description = uiState.value.description,
-            petsId = uiState.value.selectedPets.map { pet -> pet.id }
+            petsId = uiState.value.selectedPets.map { pet -> pet.id },
+            petsName = uiState.value.selectedPets.map { pet -> pet.name }
         )
 
         viewModelScope.launch {
