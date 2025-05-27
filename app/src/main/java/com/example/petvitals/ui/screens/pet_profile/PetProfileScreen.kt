@@ -107,7 +107,7 @@ fun PetProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
             ) {
                 Text(text = stringResource(uiState.pet.species.titleRes))
-                Text(text = uiState.birthDate)
+                Text(text = uiState.dob)
             }
         }
     }

@@ -8,6 +8,7 @@ import androidx.compose.material3.SelectableDates
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
+import com.example.petvitals.data.repository.pet.DobPrecision
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
 import com.example.petvitals.data.repository.pet.PetSpecies
@@ -33,16 +34,17 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 data class AddEditPetUiState(
     val name: String = "",
     val selectedSpecies: PetSpecies = PetSpecies.CAT,
-    val isDateOfBirthApproximate: Boolean = false,
-    val showModal: Boolean = false,
-    val birthDateMillis: Long? = null,
-    val selectedBirthMonth: Int = 0,
-    val birthYear: String = "",
-    val editMode: Boolean = false,
+    val isDobApprox: Boolean = false,
+    val dobMillis: Long? = null,
+    val selectedDobMonth: Int? = null,
+    val dobYear: String = "",
     val imageUri: Uri? = null,
     val petImageByteArray: ByteArray? = null,
 
-    val monthOptions: List<DropDownOption<Int>> = emptyList(),
+    val showModal: Boolean = false,
+    val editMode: Boolean = false,
+
+    val monthOptions: List<DropDownOption<Int?>> = emptyList(),
     val speciesOptions: List<DropDownOption<PetSpecies>> = emptyList()
 )
 
@@ -76,9 +78,9 @@ class AddEditPetViewModel @Inject constructor(
         }
     }
 
-    fun onDateOfBirthApproximateChange(isApproximate: Boolean) {
+    fun onDobApproxChange(isApproximate: Boolean) {
         _uiState.update { state ->
-            state.copy(isDateOfBirthApproximate = isApproximate)
+            state.copy(isDobApprox = isApproximate)
         }
     }
 
@@ -88,21 +90,21 @@ class AddEditPetViewModel @Inject constructor(
         }
     }
 
-    fun onBirthDateMillisChange(birthMillis: Long?) {
+    fun onDobMillisChange(dobMillis: Long?) {
         _uiState.update { state ->
-            state.copy(birthDateMillis = birthMillis)
+            state.copy(dobMillis = dobMillis)
         }
     }
 
-    fun onBirthMonthChange(month: Int) {
+    fun onDobMonthChange(month: Int?) {
         _uiState.update { state ->
-            state.copy(selectedBirthMonth = month)
+            state.copy(selectedDobMonth = month)
         }
     }
 
-    fun onBirthYearChange(year: String) {
+    fun onDobYearChange(year: String) {
         _uiState.update { state ->
-            state.copy(birthYear = year)
+            state.copy(dobYear = year)
         }
     }
 
@@ -131,84 +133,95 @@ class AddEditPetViewModel @Inject constructor(
         )
     }
 
-    fun populateMonthOptions(): List<DropDownOption<Int>> {
+    fun populateMonthOptions(): List<DropDownOption<Int?>> {
         return listOf(
             DropDownOption(
                 display = context.getString(R.string.unknown),
-                value = 0
+                value = null
             ),
             DropDownOption(
                 display = context.getString(R.string.january),
-                value = 1
+                value = 0
             ),
             DropDownOption(
                 display = context.getString(R.string.february),
-                value = 2
+                value = 1
             ),
             DropDownOption(
                 display = context.getString(R.string.march),
-                value = 3
+                value = 2
             ),
             DropDownOption(
                 display = context.getString(R.string.april),
-                value = 4
+                value = 3
             ),
             DropDownOption(
                 display = context.getString(R.string.may),
-                value = 5
+                value = 4
             ),
             DropDownOption(
                 display = context.getString(R.string.june),
-                value = 6
+                value = 5
             ),
             DropDownOption(
                 display = context.getString(R.string.july),
-                value = 7
+                value = 6
             ),
             DropDownOption(
                 display = context.getString(R.string.august),
-                value = 8
+                value = 7
             ),
             DropDownOption(
                 display = context.getString(R.string.september),
-                value = 9
+                value = 8
             ),
             DropDownOption(
                 display = context.getString(R.string.october),
-                value = 10
+                value = 9
             ),
             DropDownOption(
                 display = context.getString(R.string.november),
-                value = 11
+                value = 10
             ),
             DropDownOption(
                 display = context.getString(R.string.december),
-                value = 12
-            ))
+                value = 11
+            )
+        )
     }
 
     fun addPet() {
-        val birthDate = getBirthDateAsMap()
-        val imageUri = uiState.value.imageUri
-        var pet: Pet
+        val uiState = uiState.value
+        val isDobApproximate = uiState.isDobApprox
+        val calendar = Calendar.getInstance()
 
-        if (imageUri != null) {
-            pet = Pet(
-                userId = accountService.currentUserId,
-                name = uiState.value.name,
-                species = uiState.value.selectedSpecies,
-                birthDate = birthDate,
-                imageString = processImageUri(context, imageUri)
-            )
+        val dob = if (isDobApproximate) {
+            val year = uiState.dobYear.toInt()
+            val month = uiState.selectedDobMonth ?: 0
+            val day = 1
+            calendar.set(year, month, day)
+            calendar.timeInMillis
         } else {
-            pet = Pet(
-                userId = accountService.currentUserId,
-                name = uiState.value.name,
-                species = uiState.value.selectedSpecies,
-                birthDate = birthDate
-            )
+            uiState.dobMillis?.let { calendar.timeInMillis = it }
+            calendar.timeInMillis
         }
 
+        val imageString = uiState.imageUri?.let { processImageUri(context, it) }
+
+        val dobPrecision = when {
+            !isDobApproximate -> DobPrecision.EXACT
+            uiState.selectedDobMonth != null -> DobPrecision.YEAR_MONTH
+            else -> DobPrecision.YEAR
+        }
+
+        val pet = Pet(
+            userId = accountService.currentUserId,
+            name = uiState.name,
+            species = uiState.selectedSpecies,
+            dobMillis = dob,
+            dobPrecision = dobPrecision,
+            imageString = imageString
+        )
 
         viewModelScope.launch {
             try {
@@ -221,31 +234,28 @@ class AddEditPetViewModel @Inject constructor(
 
     fun loadPetData(petId: String) {
         viewModelScope.launch {
-            val pet: Pet? = petRepository.getPetById(petId)
+            val pet = petRepository.getPetById(petId)
 
-            pet?.let {
+            pet?.let { pet ->
+                val calendar = Calendar.getInstance()
+                calendar.timeInMillis = pet.dobMillis
+                val dobPrecision = pet.dobPrecision
+                val month = when (dobPrecision) {
+                    DobPrecision.YEAR -> null
+                    else -> calendar.get(Calendar.MONTH)
+
+                }
+
                 _uiState.update { state ->
                     state.copy(
-                        name = it.name,
-                        selectedSpecies = it.species,
-                        isDateOfBirthApproximate = it.birthDate.size != 3,
-                        birthDateMillis = if (it.birthDate.size == 3) {
-                            val date = Calendar.getInstance(Locale.getDefault())
-                            date.set(Calendar.DAY_OF_MONTH, it.birthDate["day"]!!)
-                            date.set(Calendar.MONTH, it.birthDate["month"]!!)
-                            date.set(Calendar.YEAR, it.birthDate["year"]!!)
-                            date.timeInMillis
-                        } else {
-                            null
-                        },
-                        selectedBirthMonth = if (it.birthDate.size == 2) {
-                            it.birthDate["month"]!!
-                        } else {
-                            0
-                        },
-                        birthYear = it.birthDate["year"].toString(),
+                        name = pet.name,
+                        selectedSpecies = pet.species,
+                        isDobApprox = pet.dobPrecision.isApproximate,
+                        dobMillis = pet.dobMillis,
+                        selectedDobMonth = month,
+                        dobYear = calendar.get(Calendar.YEAR).toString(),
                         editMode = true,
-                        petImageByteArray = it.imageString?.let { decodeBase64ToImage(it) }
+                        petImageByteArray = pet.imageString?.let { decodeBase64ToImage(it) }
                     )
                 }
             }
@@ -254,42 +264,35 @@ class AddEditPetViewModel @Inject constructor(
 
     @OptIn(ExperimentalEncodingApi::class)
     fun updatePet(petId: String) {
-        val birthDate = getBirthDateAsMap()
-        val imageUri = uiState.value.imageUri
-        val pet: Pet
-
-
-        when {
-            imageUri != null -> {
-                pet = Pet(
-                    id = petId,
-                    userId = accountService.currentUserId,
-                    name = uiState.value.name,
-                    species = uiState.value.selectedSpecies,
-                    birthDate = birthDate,
-                    imageString = processImageUri(context, imageUri)
-                )
+        val uiState = uiState.value
+        val dobMillis = when {
+            uiState.isDobApprox -> {
+                approxDobToMillis(uiState.selectedDobMonth, uiState.dobYear.toInt())
             }
-            uiState.value.petImageByteArray != null && uiState.value.petImageByteArray!!.isNotEmpty() -> {
-                pet = Pet(
-                    id = petId,
-                    userId = accountService.currentUserId,
-                    name = uiState.value.name,
-                    species = uiState.value.selectedSpecies,
-                    birthDate = birthDate,
-                    imageString = Base64.encode(uiState.value.petImageByteArray!!)
-                )
-            }
-            else -> {
-                pet = Pet(
-                    id = petId,
-                    userId = accountService.currentUserId,
-                    name = uiState.value.name,
-                    species = uiState.value.selectedSpecies,
-                    birthDate = birthDate
-                )
-            }
+            else -> uiState.dobMillis ?: 0
         }
+
+        val image = when {
+            uiState.imageUri != null -> processImageUri(context, uiState.imageUri)
+            uiState.petImageByteArray != null -> Base64.encode(uiState.petImageByteArray)
+            else -> null
+        }
+
+        val dobPrecision = when {
+            !uiState.isDobApprox -> DobPrecision.EXACT
+            uiState.selectedDobMonth != null -> DobPrecision.YEAR_MONTH
+            else -> DobPrecision.YEAR
+        }
+
+        val pet = Pet(
+            id = petId,
+            userId = accountService.currentUserId,
+            name = uiState.name,
+            species = uiState.selectedSpecies,
+            dobMillis = dobMillis,
+            dobPrecision = dobPrecision,
+            imageString = image
+        )
 
         viewModelScope.launch {
             try {
@@ -300,31 +303,16 @@ class AddEditPetViewModel @Inject constructor(
         }
     }
 
-    fun getBirthDateAsMap(): Map<String, Int> {
-        return if (uiState.value.isDateOfBirthApproximate) {
-            when (uiState.value.selectedBirthMonth) {
-                0 -> {
-                    mapOf<String, Int>(
-                        "year" to uiState.value.birthYear.toInt()
-                    )
-                }
-                else -> {
-                    mapOf<String, Int>(
-                        "month" to uiState.value.selectedBirthMonth,
-                        "year" to uiState.value.birthYear.toInt()
-                    )
-                }
-            }
-        } else {
-            val date = Calendar.getInstance(Locale.getDefault())
-            date.timeInMillis = uiState.value.birthDateMillis ?: 0
-
-            mapOf<String, Int>(
-                "day" to date.get(Calendar.DAY_OF_MONTH),
-                "month" to date.get(Calendar.MONTH),
-                "year" to date.get(Calendar.YEAR)
-            )
-        }
+    fun approxDobToMillis(month: Int?, year: Int): Long {
+        val calendar = Calendar.getInstance()
+        val day = 1
+        calendar.set(
+            year,
+            month ?: 1,
+            day
+        )
+        Log.d("AddEditPetViewModel", "birthDateToMillis: ${Date(calendar.timeInMillis)}")
+        return calendar.timeInMillis
     }
 
     @OptIn(ExperimentalMaterial3Api::class)

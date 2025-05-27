@@ -86,7 +86,7 @@ fun AddEditPetScreen(
 
     if (uiState.showModal) {
         DatePickerModal(
-            onDateSelected = viewModel::onBirthDateMillisChange,
+            onDateSelected = viewModel::onDobMillisChange,
             onDismiss = { viewModel.onShowModalChange(false) }
         )
     }
@@ -168,12 +168,12 @@ fun AddEditPetScreen(
                     .fillMaxWidth()
             ) {
                 CheckboxWithLabel(
-                    checked = uiState.isDateOfBirthApproximate,
-                    onCheckedChange = viewModel::onDateOfBirthApproximateChange,
+                    checked = uiState.isDobApprox,
+                    onCheckedChange = viewModel::onDobApproxChange,
                     label = stringResource(R.string.approximate_date)
                 )
                 AnimatedContent(
-                    targetState = uiState.isDateOfBirthApproximate,
+                    targetState = uiState.isDobApprox,
                     transitionSpec = {
                         //Caution AI slop
                         if (targetState) {
@@ -192,15 +192,15 @@ fun AddEditPetScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             ValueDropDown(
-                                value = uiState.selectedBirthMonth,
-                                onValueChange = viewModel::onBirthMonthChange,
+                                value = uiState.selectedDobMonth,
+                                onValueChange = viewModel::onDobMonthChange,
                                 options = uiState.monthOptions,
                                 label = stringResource(R.string.month),
                                 modifier = Modifier.weight(1f)
                             )
                             CustomOutlinedTextField(
-                                value = uiState.birthYear,
-                                onValueChange = viewModel::onBirthYearChange,
+                                value = uiState.dobYear,
+                                onValueChange = viewModel::onDobYearChange,
                                 label = { Text(stringResource(R.string.year)) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                                 modifier = Modifier.weight(1f)
@@ -208,7 +208,7 @@ fun AddEditPetScreen(
                         }
                     } else {
                         BirthDatePickerField(
-                            value = viewModel.formatDateForDisplay (millis = uiState.birthDateMillis, context = context) ,
+                            value = viewModel.formatDateForDisplay (millis = uiState.dobMillis, context = context) ,
                             onClick = { viewModel.onShowModalChange(true) },
                             modifier = Modifier.fillMaxWidth()
                         )
