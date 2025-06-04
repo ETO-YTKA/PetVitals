@@ -41,6 +41,9 @@
     <string name="edit_pet">Edit pet</string>
     <string name="cat">Cat</string>
     <string name="dog">Dog</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="gender">Gender</string>
 
     <string name="unknown">Unknown</string>
     <string name="january">January</string>
@@ -74,11 +77,26 @@
     <!-- Records -->
     <string name="records">Records</string>
     <string name="attach_pet">Attach pet</string>
+    <string name="search">Search</string>
 
     <!-- Pet profile -->
+    <string name="breed">Breed</string>
+    <string name="pet_image">Pet Image</string>
     <string name="delete_pet">Delete pet</string>
-
+    <string name="pet_profile">Pet Profile</string>
     <string name="back">Back</string>
+    <plurals name="days_old_plural">
+        <item quantity="one">%d day old</item>
+        <item quantity="other">%d days old</item>
+    </plurals>
+    <plurals name="months_old_plural">
+        <item quantity="one">%d month old</item>
+        <item quantity="other">%d months old</item>
+    </plurals>
+    <plurals name="years_old_plural">
+        <item quantity="one">%d year old</item>
+        <item quantity="other">%d years old</item>
+    </plurals>
 
     <!-- Errors -->
     <string name="password_short_error">Password must contain at least 8 characters</string>
@@ -96,5 +114,4 @@
     <string name="empty_fields_error">Fields cannot be empty</string>
     <string name="email_already_in_use_error">This email is already in use</string>
     <string name="invalid_characters_error">The field must contain only letters and spaces</string>
-    <string name="search">Search</string>
 </resources>

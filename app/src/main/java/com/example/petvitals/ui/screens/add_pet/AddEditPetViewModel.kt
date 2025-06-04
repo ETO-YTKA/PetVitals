@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.pet.DobPrecision
+import com.example.petvitals.data.repository.pet.Gender
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
 import com.example.petvitals.data.repository.pet.PetSpecies
@@ -34,18 +35,23 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 data class AddEditPetUiState(
     val name: String = "",
     val selectedSpecies: PetSpecies = PetSpecies.CAT,
-    val isDobApprox: Boolean = false,
-    val dobMillis: Long? = null,
+    val selectedGender: Gender = Gender.MALE,
+    val breed: String = "",
+    val dobString: String = "",
     val selectedDobMonth: Int? = null,
     val dobYear: String = "",
     val imageUri: Uri? = null,
     val petImageByteArray: ByteArray? = null,
 
+    val dobMillis: Long? = null,
+
     val showModal: Boolean = false,
     val editMode: Boolean = false,
+    val isDobApprox: Boolean = false,
 
     val monthOptions: List<DropDownOption<Int?>> = emptyList(),
-    val speciesOptions: List<DropDownOption<PetSpecies>> = emptyList()
+    val speciesOptions: List<DropDownOption<PetSpecies>> = emptyList(),
+    val genderOptions: List<DropDownOption<Gender>> = emptyList()
 )
 
 @HiltViewModel
@@ -61,7 +67,9 @@ class AddEditPetViewModel @Inject constructor(
         _uiState.update { state ->
             state.copy(
                 monthOptions = populateMonthOptions(),
-                speciesOptions = populateSpeciesOptions()
+                speciesOptions = populateSpeciesOptions(),
+                genderOptions = populateGenderOptions(),
+                dobString = context.getString(R.string.tap_to_select_date)
             )
         }
     }
@@ -75,6 +83,18 @@ class AddEditPetViewModel @Inject constructor(
     fun onSpeciesChange(species: PetSpecies) {
         _uiState.update { state ->
             state.copy(selectedSpecies = species)
+        }
+    }
+
+    fun onGenderChange(gender: Gender) {
+        _uiState.update { state ->
+            state.copy(selectedGender = gender)
+        }
+    }
+
+    fun onBreedChange(breed: String) {
+        _uiState.update { state ->
+            state.copy(breed = breed)
         }
     }
 
@@ -92,7 +112,10 @@ class AddEditPetViewModel @Inject constructor(
 
     fun onDobMillisChange(dobMillis: Long?) {
         _uiState.update { state ->
-            state.copy(dobMillis = dobMillis)
+            state.copy(
+                dobMillis = dobMillis,
+                dobString = millisToDobString(dobMillis)
+            )
         }
     }
 
@@ -112,12 +135,6 @@ class AddEditPetViewModel @Inject constructor(
         _uiState.update { state ->
             state.copy(imageUri = uri)
         }
-    }
-
-    fun formatDateForDisplay(millis: Long?, context: Context): String {
-        return millis?.let {
-            SimpleDateFormat("dd MMMM yyyy", Locale.getDefault()).format(Date(it))
-        } ?: context.getString(R.string.tap_to_select_date)
     }
 
     fun populateSpeciesOptions(): List<DropDownOption<PetSpecies>> {
@@ -190,6 +207,19 @@ class AddEditPetViewModel @Inject constructor(
         )
     }
 
+    fun populateGenderOptions(): List<DropDownOption<Gender>> {
+        return listOf(
+            DropDownOption(
+                display = context.getString(R.string.male),
+                value = Gender.MALE
+            ),
+            DropDownOption(
+                display = context.getString(R.string.female),
+                value = Gender.FEMALE
+            )
+        )
+    }
+
     fun addPet() {
         val uiState = uiState.value
         val isDobApproximate = uiState.isDobApprox
@@ -218,6 +248,8 @@ class AddEditPetViewModel @Inject constructor(
             userId = accountService.currentUserId,
             name = uiState.name,
             species = uiState.selectedSpecies,
+            breed = uiState.breed,
+            gender = uiState.selectedGender,
             dobMillis = dob,
             dobPrecision = dobPrecision,
             imageString = imageString
@@ -237,21 +269,22 @@ class AddEditPetViewModel @Inject constructor(
             val pet = petRepository.getPetById(petId)
 
             pet?.let { pet ->
-                val calendar = Calendar.getInstance()
-                calendar.timeInMillis = pet.dobMillis
-                val dobPrecision = pet.dobPrecision
-                val month = when (dobPrecision) {
+                val calendar = Calendar.getInstance().apply { timeInMillis = pet.dobMillis }
+
+                val month = when (pet.dobPrecision) {
                     DobPrecision.YEAR -> null
                     else -> calendar.get(Calendar.MONTH)
-
                 }
 
                 _uiState.update { state ->
                     state.copy(
                         name = pet.name,
                         selectedSpecies = pet.species,
+                        breed = pet.breed,
+                        selectedGender = pet.gender,
                         isDobApprox = pet.dobPrecision.isApproximate,
                         dobMillis = pet.dobMillis,
+                        dobString = millisToDobString(pet.dobMillis),
                         selectedDobMonth = month,
                         dobYear = calendar.get(Calendar.YEAR).toString(),
                         editMode = true,
@@ -289,6 +322,8 @@ class AddEditPetViewModel @Inject constructor(
             userId = accountService.currentUserId,
             name = uiState.name,
             species = uiState.selectedSpecies,
+            breed = uiState.breed,
+            gender = uiState.selectedGender,
             dobMillis = dobMillis,
             dobPrecision = dobPrecision,
             imageString = image
@@ -313,6 +348,12 @@ class AddEditPetViewModel @Inject constructor(
         )
         Log.d("AddEditPetViewModel", "birthDateToMillis: ${Date(calendar.timeInMillis)}")
         return calendar.timeInMillis
+    }
+
+    fun millisToDobString(millis: Long?): String {
+        return millis?.let {
+            SimpleDateFormat("dd MMMM yyyy", Locale.getDefault()).format(Date(it))
+        } ?: context.getString(R.string.tap_to_select_date)
     }
 
     @OptIn(ExperimentalMaterial3Api::class)

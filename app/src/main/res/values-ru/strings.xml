@@ -40,6 +40,7 @@
     <string name="cat">Кошка</string>
     <string name="dog">Собака</string>
 
+    <string name="gender">Пол</string>
     <string name="unknown">Неизвестно</string>
     <string name="january">Январь</string>
     <string name="february">Февраль</string>
@@ -89,6 +90,32 @@
     <string name="email_already_in_use_error">Этот адрес электронной почты уже используется</string>
     <string name="invalid_characters_error">Поле должно содержать только буквы и пробелы</string>
     <string name="attach_pet">Прикрепить питомца</string>
+    <string name="pet_profile">Профиль питомца</string>
     <string name="back">Назад</string>
+    <string name="pet_image">Изображение питомца</string>
     <string name="delete_pet">Удалить питомца</string>
+    <plurals name="days_old_plural">
+        <item quantity="one">%d день</item>
+        <item quantity="few">%d дня</item>
+        <item quantity="many">%d дней</item>
+        <item quantity="other">%d дней</item>
+    </plurals>
+
+    <plurals name="months_old_plural">
+        <item quantity="one">%d месяц</item>
+        <item quantity="few">%d месяца</item>
+        <item quantity="many">%d месяцев</item>
+        <item quantity="other">%d месяцев</item>
+    </plurals>
+
+    <plurals name="years_old_plural">
+        <item quantity="one">%d год</item>
+        <item quantity="few">%d года</item>
+        <item quantity="many">%d лет</item>
+        <item quantity="other">%d лет</item>
+    </plurals>
+    <string name="search">Поиск</string>
+    <string name="breed">Порода</string>
+    <string name="male">Самец</string>
+    <string name="female">Самка</string>
 </resources>

@@ -18,6 +18,7 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -48,7 +49,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -73,10 +73,8 @@ fun AddEditPetScreen(
     navigateToPets: () -> Unit,
     onPopBackStack: () -> Unit,
     viewModel: AddEditPetViewModel = hiltViewModel()
-
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         addEditPet.petId?.let { petId ->
@@ -112,6 +110,7 @@ fun AddEditPetScreen(
         val imagePickerLauncher = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
             uri?.let { viewModel.onImageUriChange(it) }
         }
+        Spacer(modifier = Modifier.size(Dimen.spaceSmall))
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -146,83 +145,47 @@ fun AddEditPetScreen(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         )
 
-        ValueDropDown(
-            value = uiState.selectedSpecies,
-            onValueChange = viewModel::onSpeciesChange,
-            options = uiState.speciesOptions,
-            label = stringResource(R.string.species),
-            modifier = Modifier.fillMaxWidth()
+        Row {
+            ValueDropDown(
+                value = uiState.selectedSpecies,
+                onValueChange = viewModel::onSpeciesChange,
+                options = uiState.speciesOptions,
+                label = stringResource(R.string.species),
+                modifier = Modifier.weight(1f)
+            )
+
+            Spacer(modifier = Modifier.size(Dimen.spaceMedium))
+
+            ValueDropDown(
+                value = uiState.selectedGender,
+                onValueChange = viewModel::onGenderChange,
+                options = uiState.genderOptions,
+                label = stringResource(R.string.gender),
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        CustomOutlinedTextField(
+            value = uiState.breed,
+            onValueChange = viewModel::onBreedChange,
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.breed)) },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         )
 
-        Card(
-            shape = MaterialTheme.shapes.large,
-            modifier = Modifier.fillMaxWidth(),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.background
-            )
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(Dimen.spaceMediumLarge)
-                    .fillMaxWidth()
-            ) {
-                CheckboxWithLabel(
-                    checked = uiState.isDobApprox,
-                    onCheckedChange = viewModel::onDobApproxChange,
-                    label = stringResource(R.string.approximate_date)
-                )
-                AnimatedContent(
-                    targetState = uiState.isDobApprox,
-                    transitionSpec = {
-                        //Caution AI slop
-                        if (targetState) {
-                            (slideInHorizontally(animationSpec = tween(durationMillis = 400)) { fullWidth -> fullWidth / 4 } + fadeIn(animationSpec = tween(durationMillis = 200, delayMillis = 100)))
-                                .togetherWith(slideOutHorizontally(animationSpec = tween(durationMillis = 400)) { fullWidth -> -fullWidth / 4 } + fadeOut(animationSpec = tween(durationMillis = 200)))
-                        } else {
-                            (slideInHorizontally(animationSpec = tween(durationMillis = 400)) { fullWidth -> -fullWidth / 4 } + fadeIn(animationSpec = tween(durationMillis = 200, delayMillis = 100)))
-                                .togetherWith(slideOutHorizontally(animationSpec = tween(durationMillis = 400)) { fullWidth -> fullWidth / 4 } + fadeOut(animationSpec = tween(durationMillis = 200)))
-                        }
-                    },
-                ) {
-                    if (it) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(Dimen.spaceMedium),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            ValueDropDown(
-                                value = uiState.selectedDobMonth,
-                                onValueChange = viewModel::onDobMonthChange,
-                                options = uiState.monthOptions,
-                                label = stringResource(R.string.month),
-                                modifier = Modifier.weight(1f)
-                            )
-                            CustomOutlinedTextField(
-                                value = uiState.dobYear,
-                                onValueChange = viewModel::onDobYearChange,
-                                label = { Text(stringResource(R.string.year)) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    } else {
-                        BirthDatePickerField(
-                            value = viewModel.formatDateForDisplay (millis = uiState.dobMillis, context = context) ,
-                            onClick = { viewModel.onShowModalChange(true) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-            }
-        }
+        DobPicker(
+            onShowModalChange = viewModel::onShowModalChange,
+            onDobApproxChange = viewModel::onDobApproxChange,
+            onDobMonthChange = viewModel::onDobMonthChange,
+            onDobYearChange = viewModel::onDobYearChange,
+            uiState = uiState
+        )
 
         Button(
             onClick = {
-                if (uiState.editMode) {
-                    viewModel.updatePet(addEditPet.petId!!)
-                } else {
-                    viewModel.addPet()
+                when (uiState.editMode) {
+                    true -> addEditPet.petId?.let { viewModel.updatePet(it) }
+                    false -> viewModel.addPet()
                 }
                 navigateToPets()
             },
@@ -322,4 +285,76 @@ private fun BirthDatePickerField(
                 }
             }
     )
+}
+
+@Composable
+fun DobPicker(
+    onShowModalChange: (Boolean) -> Unit,
+    onDobApproxChange: (Boolean) -> Unit,
+    onDobMonthChange: (Int?) -> Unit,
+    onDobYearChange: (String) -> Unit,
+    uiState: AddEditPetUiState,
+) {
+    Card(
+        shape = MaterialTheme.shapes.large,
+        modifier = Modifier.fillMaxWidth(),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.background
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(Dimen.spaceMediumLarge)
+                .fillMaxWidth()
+        ) {
+            CheckboxWithLabel(
+                checked = uiState.isDobApprox,
+                onCheckedChange = onDobApproxChange,
+                label = stringResource(R.string.approximate_date)
+            )
+            AnimatedContent(
+                targetState = uiState.isDobApprox,
+                transitionSpec = {
+                    //Caution AI slop
+                    if (targetState) {
+                        (slideInHorizontally(animationSpec = tween(durationMillis = 400)) { fullWidth -> fullWidth / 4 } + fadeIn(animationSpec = tween(durationMillis = 200, delayMillis = 100)))
+                            .togetherWith(slideOutHorizontally(animationSpec = tween(durationMillis = 400)) { fullWidth -> -fullWidth / 4 } + fadeOut(animationSpec = tween(durationMillis = 200)))
+                    } else {
+                        (slideInHorizontally(animationSpec = tween(durationMillis = 400)) { fullWidth -> -fullWidth / 4 } + fadeIn(animationSpec = tween(durationMillis = 200, delayMillis = 100)))
+                            .togetherWith(slideOutHorizontally(animationSpec = tween(durationMillis = 400)) { fullWidth -> fullWidth / 4 } + fadeOut(animationSpec = tween(durationMillis = 200)))
+                    }
+                },
+            ) { targetState ->
+                if (targetState) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(Dimen.spaceMedium),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ValueDropDown(
+                            value = uiState.selectedDobMonth,
+                            onValueChange = onDobMonthChange,
+                            options = uiState.monthOptions,
+                            label = stringResource(R.string.month),
+                            modifier = Modifier.weight(1f)
+                        )
+                        CustomOutlinedTextField(
+                            value = uiState.dobYear,
+                            onValueChange = onDobYearChange,
+                            label = { Text(stringResource(R.string.year)) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                } else {
+                    BirthDatePickerField(
+                        value = uiState.dobString,
+                        onClick = { onShowModalChange(true) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
+    }
 }
