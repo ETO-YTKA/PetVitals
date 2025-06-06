@@ -10,5 +10,5 @@ data class Medication(
     val frequency: String = "",
     val startDateMillis: Long = 0,
     val endDateMillis: Long = 0,
-    val notes: String = ""
+    val note: String = ""
 )

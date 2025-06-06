@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
+import com.example.petvitals.data.repository.medication.Medication
 import com.example.petvitals.data.repository.pet.DobPrecision
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
@@ -21,7 +22,13 @@ import javax.inject.Inject
 data class PetProfileUiState(
     val pet: Pet = Pet(),
     val dob: String = "",
-    val age: String = ""
+    val age: String = "",
+    val medications: List<Medication> = emptyList(),
+    val updatedHealthNote: String = "",
+    val foodNote: String = "",
+
+    val isHealthNoteInEditMode: Boolean = false,
+    val isFoodNoteInEditMode: Boolean = false
 )
 
 @HiltViewModel
@@ -32,6 +39,28 @@ class PetProfileViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(PetProfileUiState())
     val uiState = _uiState.asStateFlow()
+
+    fun toggleHealthNoteEditMode() {
+        _uiState.update { state ->
+            state.copy(isHealthNoteInEditMode = !state.isHealthNoteInEditMode)
+        }
+    }
+
+    fun onHealthNoteChange(value: String) {
+        _uiState.update { state ->
+            state.copy(updatedHealthNote = value)
+        }
+
+    }
+
+    fun onSaveHealthNoteClick() {
+        viewModelScope.launch {
+            val pet = uiState.value.pet
+            petRepository.updatePet(pet.copy(healthNotes = uiState.value.updatedHealthNote))
+            toggleHealthNoteEditMode()
+            getPetData(pet.id)
+        }
+    }
 
     fun getPetData(petId: String) {
         viewModelScope.launch {
@@ -45,7 +74,8 @@ class PetProfileViewModel @Inject constructor(
                     state.copy(
                         pet = pet,
                         dob = dob,
-                        age = age
+                        age = age,
+                        updatedHealthNote = pet.healthNotes ?: "",
                     )
                 }
             }

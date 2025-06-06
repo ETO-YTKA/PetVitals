@@ -2,18 +2,25 @@ package com.example.petvitals.ui.screens.pet_profile
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,7 +44,9 @@ import com.example.petvitals.PetProfile
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.pet.Gender
 import com.example.petvitals.data.repository.pet.PetSpecies
+import com.example.petvitals.ui.components.ButtonWithIcon
 import com.example.petvitals.ui.components.CustomIconButton
+import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.theme.Dimen
@@ -57,7 +66,7 @@ fun PetProfileScreen(
     }
 
     ScreenLayout(
-        modifier = Modifier,
+        columnModifier = Modifier.verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium),
         topBar = {
@@ -95,65 +104,31 @@ fun PetProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
         ) {
-            val painterRes = if (uiState.pet.species == PetSpecies.CAT) R.drawable.ic_cat
-                else R.drawable.ic_dog
-            val image = uiState.pet.imageString?.let { remember { decodeBase64ToImage(it) } }
-            val imageModifier = Modifier
-                .size(Dimen.petImageProfile)
-                .then(if (image != null) Modifier.clip(CircleShape) else Modifier)
-
-            AsyncImage(
-                model = image,
-                contentDescription = stringResource(R.string.pet_image),
-                contentScale = ContentScale.Crop,
-                fallback = painterResource(painterRes),
-                modifier = imageModifier
-            )
-
-            Row {
-                Text(
-                    text = uiState.pet.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                uiState.pet.gender.let { gender ->
-                    @DrawableRes val painterRes = when (gender) {
-                        Gender.MALE -> R.drawable.ic_male
-                        Gender.FEMALE -> R.drawable.ic_female
-                    }
-                    @StringRes val contentDescription = when (gender) {
-                        Gender.MALE -> R.string.male
-                        Gender.FEMALE -> R.string.female
-                    }
-                    Icon(
-                        painter = painterResource(painterRes),
-                        contentDescription = stringResource(contentDescription),
-                    )
-                }
-            }
-
-            Text(
-                text = uiState.pet.breed,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.alpha(0.7f)
-            )
-
-            Text(
-                text = uiState.age,
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.alpha(0.7f)
-            )
+            ProfilePic(uiState)
+            GeneralInfo(uiState)
         }
 
         SectionCard(
-            title = "Health",
+            title = stringResource(R.string.health),
             icon = painterResource(R.drawable.ic_health_and_safety),
         ) {
             CardItem(
                 title = stringResource(R.string.date_of_birth),
-                information = uiState.dob
+                information = uiState.dob,
+                infoIcon = painterResource(R.drawable.ic_cake)
             )
+
+            Note(
+                title = stringResource(R.string.note),
+                content = uiState.pet.healthNotes,
+                updatedContent = uiState.updatedHealthNote,
+                onValueChange = viewModel::onHealthNoteChange,
+                onEditClick = viewModel::toggleHealthNoteEditMode,
+                onSaveClick = viewModel::onSaveHealthNoteClick,
+                inEditMode = uiState.isHealthNoteInEditMode
+            )
+
+            AddMedicationButton()
         }
     }
 }
@@ -170,9 +145,8 @@ private fun SectionCard(
     ) {
         Column(
             modifier = Modifier.padding(Dimen.spaceMedium),
-            verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
+            verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
         ) {
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
@@ -185,7 +159,6 @@ private fun SectionCard(
                 }
                 Text(text = title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             }
-
             content()
         }
     }
@@ -198,25 +171,184 @@ private fun CardItem(
     modifier: Modifier = Modifier,
     infoIcon: Painter? = null,
 ) {
-    Column(modifier.padding(Dimen.spaceSmall)) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = Modifier.padding(Dimen.spaceMedium),
+            verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium
+            )
 
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.alpha(0.7f)
-        )
-
-        Spacer(modifier = Modifier.width(Dimen.spaceSmall))
-
-        Row {
-            infoIcon?.let {
-                Icon(
-                    painter = it,
-                    contentDescription = null,
-                )
-                Spacer(modifier = Modifier.width(Dimen.spaceSmall))
+            Row {
+                infoIcon?.let {
+                    Icon(
+                        painter = it,
+                        contentDescription = null,
+                    )
+                    Spacer(modifier = Modifier.width(Dimen.spaceSmall))
+                }
+                Text(text = information)
             }
-            Text(text = information)
         }
     }
+}
+
+@Composable
+private fun Note(
+    title: String,
+    content: String?,
+    updatedContent: String,
+    onValueChange: (String) -> Unit,
+    onSaveClick: () -> Unit,
+    onEditClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    inEditMode: Boolean = false
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = modifier
+                .padding(Dimen.spaceMedium)
+                .animateContentSize()
+        ) {
+            //Title adn Edit Button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+
+                IconButton(onClick = onEditClick) {
+                    when (inEditMode) {
+                        true -> {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_close),
+                                contentDescription = stringResource(R.string.cancel),
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                        false -> {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_edit),
+                                contentDescription = stringResource(R.string.edit),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Content Area
+            if (inEditMode) {
+                CustomOutlinedTextField(
+                    value = updatedContent,
+                    onValueChange = onValueChange,
+                    label = { Text(stringResource(R.string.edit_note_content)) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .defaultMinSize(minHeight = 100.dp)
+                )
+
+                Spacer(modifier = Modifier.height(Dimen.spaceMedium))
+
+                ButtonWithIcon(
+                    text = stringResource(R.string.save),
+                    onClick = onSaveClick,
+                    icon = {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_check),
+                            contentDescription = stringResource(R.string.save)
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                Text(
+                    text = if (content.isNullOrEmpty()) stringResource(R.string.empty_note_placeholder)
+                        else content,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (content.isNullOrEmpty()) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        else MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AddMedicationButton() {
+    Button(
+        onClick = { /*TODO*/ },
+    ) {
+        Text(text = stringResource(R.string.add_medication))
+    }
+}
+
+@Composable
+private fun ProfilePic(uiState: PetProfileUiState) {
+    val painterRes = if (uiState.pet.species == PetSpecies.CAT) R.drawable.ic_cat
+    else R.drawable.ic_dog
+    val image = uiState.pet.imageString?.let { remember { decodeBase64ToImage(it) } }
+    val imageModifier = Modifier
+        .size(Dimen.petImageProfile)
+        .then(if (image != null) Modifier.clip(CircleShape) else Modifier)
+
+    AsyncImage(
+        model = image,
+        contentDescription = stringResource(R.string.pet_image),
+        contentScale = ContentScale.Crop,
+        fallback = painterResource(painterRes),
+        modifier = imageModifier
+    )
+}
+
+@Composable
+private fun GeneralInfo(uiState: PetProfileUiState) {
+    Row {
+        Text(
+            text = uiState.pet.name,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        uiState.pet.gender.let { gender ->
+            @DrawableRes val painterRes = when (gender) {
+                Gender.MALE -> R.drawable.ic_male
+                Gender.FEMALE -> R.drawable.ic_female
+            }
+            @StringRes val contentDescription = when (gender) {
+                Gender.MALE -> R.string.male
+                Gender.FEMALE -> R.string.female
+            }
+            Icon(
+                painter = painterResource(painterRes),
+                contentDescription = stringResource(contentDescription),
+            )
+        }
+    }
+
+    Text(
+        text = uiState.pet.breed,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.alpha(0.7f)
+    )
+
+    Text(
+        text = uiState.age,
+        style = MaterialTheme.typography.titleSmall,
+        modifier = Modifier.alpha(0.7f)
+    )
 }

@@ -114,4 +114,10 @@
     <string name="empty_fields_error">Fields cannot be empty</string>
     <string name="email_already_in_use_error">This email is already in use</string>
     <string name="invalid_characters_error">The field must contain only letters and spaces</string>
+    <string name="add_medication">Add Medication</string>
+    <string name="none">None</string>
+    <string name="edit">Edit</string>
+    <string name="edit_note_content">Note content</string>
+    <string name="empty_note_placeholder">This note is empty. Click edit to add content.</string>
+    <string name="health">Health</string>
 </resources>
