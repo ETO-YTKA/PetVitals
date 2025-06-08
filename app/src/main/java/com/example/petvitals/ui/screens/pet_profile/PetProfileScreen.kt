@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,13 +17,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -47,10 +50,14 @@ import com.example.petvitals.data.repository.pet.PetSpecies
 import com.example.petvitals.ui.components.ButtonWithIcon
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
+import com.example.petvitals.ui.components.DatePickerField
+import com.example.petvitals.ui.components.DatePickerModal
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.utils.decodeBase64ToImage
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
 fun PetProfileScreen(
@@ -128,8 +135,46 @@ fun PetProfileScreen(
                 inEditMode = uiState.isHealthNoteInEditMode
             )
 
-            AddMedicationButton()
+            ButtonWithIcon(
+                text = stringResource(R.string.add_medication),
+                onClick = viewModel::toggleMedicationModal,
+                icon = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_add),
+                        contentDescription = stringResource(R.string.add_medication)
+                    )
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
         }
+    }
+
+    if (uiState.showMedicationModal) {
+        MedicationBottomSheet(
+            onDismiss = viewModel::toggleMedicationModal,
+            onNameChange = viewModel::onMedicationNameChange,
+            onDosageChange = viewModel::onMedicationDosageChange,
+            onFrequencyChange = viewModel::onMedicationFrequencyChange,
+            toggleStartDatePicker = viewModel::toggleStartDatePicker,
+            toggleEndDatePicker = viewModel::toggleEndDatePicker,
+            onNoteChange = viewModel::onMedicationNoteChange,
+            onSaveClick = viewModel::toggleMedicationModal,
+            uiState = uiState
+        )
+    }
+
+    if (uiState.showStartDatePicker) {
+        DatePickerModal(
+            onDateSelected = viewModel::onMedicationStartDateChange,
+            onDismiss = { viewModel.toggleStartDatePicker() }
+        )
+    }
+
+    if (uiState.showEndDatePicker) {
+        DatePickerModal(
+            onDateSelected = viewModel::onMedicationEndDateChange,
+            onDismiss = { viewModel.toggleEndDatePicker() }
+        )
     }
 }
 
@@ -289,15 +334,6 @@ private fun Note(
 }
 
 @Composable
-private fun AddMedicationButton() {
-    Button(
-        onClick = { /*TODO*/ },
-    ) {
-        Text(text = stringResource(R.string.add_medication))
-    }
-}
-
-@Composable
 private fun ProfilePic(uiState: PetProfileUiState) {
     val painterRes = if (uiState.pet.species == PetSpecies.CAT) R.drawable.ic_cat
     else R.drawable.ic_dog
@@ -351,4 +387,86 @@ private fun GeneralInfo(uiState: PetProfileUiState) {
         style = MaterialTheme.typography.titleSmall,
         modifier = Modifier.alpha(0.7f)
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MedicationBottomSheet(
+    onDismiss: () -> Unit,
+    uiState: PetProfileUiState,
+    onNameChange: (String) -> Unit,
+    onDosageChange: (String) -> Unit,
+    onFrequencyChange: (String) -> Unit,
+    toggleStartDatePicker: () -> Unit,
+    toggleEndDatePicker: () -> Unit,
+    onNoteChange: (String) -> Unit,
+    onSaveClick: () -> Unit
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(
+            //skipPartiallyExpanded = true
+        ),
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Column(
+            modifier = Modifier.padding(Dimen.spaceMedium),
+            verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
+        ) {
+            CustomOutlinedTextField(
+                value = uiState.medicationName,
+                onValueChange = onNameChange,
+                label = { Text(stringResource(R.string.name)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            CustomOutlinedTextField(
+                value = uiState.medicationDosage,
+                onValueChange = onDosageChange,
+                label = { Text(stringResource(R.string.dosage)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            CustomOutlinedTextField(
+                value = uiState.medicationFrequency,
+                onValueChange = onFrequencyChange,
+                label = { Text(stringResource(R.string.frequency)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            DatePickerField(
+                value = uiState.medicationStartDate?.let {
+                    SimpleDateFormat(
+                        "dd MMMM yyyy",
+                        Locale.getDefault()
+                    ).format(it ) } ?: stringResource(R.string.tap_to_select_date),
+                onClick = toggleStartDatePicker,
+                label = stringResource(R.string.start_date)
+            )
+            DatePickerField(
+                value = uiState.medicationEndDate?.let {
+                    SimpleDateFormat(
+                        "dd MMMM yyyy",
+                        Locale.getDefault()
+                    ).format(it ) } ?: stringResource(R.string.tap_to_select_date),
+                onClick = toggleEndDatePicker,
+                label = stringResource(R.string.end_date)
+            )
+            CustomOutlinedTextField(
+                value = uiState.medicationNote,
+                onValueChange = onNoteChange,
+                label = { Text(stringResource(R.string.note)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(Dimen.spaceMedium))
+            ButtonWithIcon(
+                text = stringResource(R.string.save),
+                onClick = onSaveClick,
+                icon = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_save),
+                        contentDescription = stringResource(R.string.save)
+                    )
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
 }

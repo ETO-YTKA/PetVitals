@@ -1,5 +1,6 @@
 package com.example.petvitals.data.repository.medication
 
+import java.util.Date
 import java.util.UUID
 
 data class Medication(
@@ -8,7 +9,7 @@ data class Medication(
     val name: String = "",
     val dosage: String = "",
     val frequency: String = "",
-    val startDateMillis: Long = 0,
-    val endDateMillis: Long = 0,
+    val startDateMillis: Date = Date(),
+    val endDateMillis: Date = Date(),
     val note: String = ""
 )

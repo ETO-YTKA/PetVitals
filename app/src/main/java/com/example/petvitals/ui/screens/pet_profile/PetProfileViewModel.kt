@@ -25,7 +25,20 @@ data class PetProfileUiState(
     val age: String = "",
     val medications: List<Medication> = emptyList(),
     val updatedHealthNote: String = "",
-    val foodNote: String = "",
+    val updatedFoodNote: String = "",
+
+    val showMedicationModal: Boolean = false,
+    val medicationName: String = "",
+    val medicationDosage: String = "",
+    val medicationFrequency: String = "",
+
+    val medicationStartDate: Long? = null,
+    val showStartDatePicker: Boolean = false,
+
+    val medicationEndDate: Long? = null,
+    val showEndDatePicker: Boolean = false,
+
+    val medicationNote: String = "",
 
     val isHealthNoteInEditMode: Boolean = false,
     val isFoodNoteInEditMode: Boolean = false
@@ -46,11 +59,64 @@ class PetProfileViewModel @Inject constructor(
         }
     }
 
+    fun toggleMedicationModal() {
+        _uiState.update { state ->
+            state.copy(showMedicationModal = !state.showMedicationModal)
+        }
+    }
+
+    fun onMedicationNameChange(value: String) {
+        _uiState.update { state ->
+            state.copy(medicationName = value)
+        }
+    }
+
+    fun onMedicationDosageChange(value: String) {
+        _uiState.update { state ->
+            state.copy(medicationDosage = value)
+        }
+    }
+
+    fun onMedicationFrequencyChange(value: String) {
+        _uiState.update { state ->
+            state.copy(medicationFrequency = value)
+        }
+    }
+
+    fun onMedicationStartDateChange(value: Long?) {
+        _uiState.update { state ->
+            state.copy(medicationStartDate = value)
+        }
+    }
+
+    fun onMedicationEndDateChange(value: Long?) {
+        _uiState.update { state ->
+            state.copy(medicationEndDate = value)
+        }
+    }
+
+    fun onMedicationNoteChange(value: String) {
+        _uiState.update { state ->
+            state.copy(medicationNote = value)
+        }
+    }
+
+    fun toggleStartDatePicker() {
+        _uiState.update { state ->
+            state.copy(showStartDatePicker = !state.showStartDatePicker)
+        }
+    }
+
+    fun toggleEndDatePicker() {
+        _uiState.update { state ->
+            state.copy(showEndDatePicker = !state.showEndDatePicker)
+        }
+    }
+
     fun onHealthNoteChange(value: String) {
         _uiState.update { state ->
             state.copy(updatedHealthNote = value)
         }
-
     }
 
     fun onSaveHealthNoteClick() {
