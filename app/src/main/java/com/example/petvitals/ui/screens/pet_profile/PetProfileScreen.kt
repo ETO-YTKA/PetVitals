@@ -127,7 +127,7 @@ fun PetProfileScreen(
 
             Note(
                 title = stringResource(R.string.note),
-                content = uiState.pet.healthNotes,
+                content = uiState.pet.healthNote,
                 updatedContent = uiState.updatedHealthNote,
                 onValueChange = viewModel::onHealthNoteChange,
                 onEditClick = viewModel::toggleHealthNoteEditMode,
@@ -336,8 +336,8 @@ private fun Note(
 @Composable
 private fun ProfilePic(uiState: PetProfileUiState) {
     val painterRes = if (uiState.pet.species == PetSpecies.CAT) R.drawable.ic_cat
-    else R.drawable.ic_dog
-    val image = uiState.pet.imageString?.let { remember { decodeBase64ToImage(it) } }
+        else R.drawable.ic_dog
+    val image = uiState.pet.avatar?.let { remember { decodeBase64ToImage(it) } }
     val imageModifier = Modifier
         .size(Dimen.petImageProfile)
         .then(if (image != null) Modifier.clip(CircleShape) else Modifier)

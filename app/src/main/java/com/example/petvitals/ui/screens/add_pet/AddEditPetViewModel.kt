@@ -40,8 +40,8 @@ data class AddEditPetUiState(
     val dobString: String = "",
     val selectedDobMonth: Int? = null,
     val dobYear: String = "",
-    val imageUri: Uri? = null,
-    val petImageByteArray: ByteArray? = null,
+    val avatarUri: Uri? = null,
+    val avatarByteArray: ByteArray? = null,
 
     val dobMillis: Long? = null,
 
@@ -133,7 +133,7 @@ class AddEditPetViewModel @Inject constructor(
 
     fun onImageUriChange(uri: Uri?) {
         _uiState.update { state ->
-            state.copy(imageUri = uri)
+            state.copy(avatarUri = uri)
         }
     }
 
@@ -236,7 +236,7 @@ class AddEditPetViewModel @Inject constructor(
             calendar.timeInMillis
         }
 
-        val imageString = uiState.imageUri?.let { processImageUri(context, it) }
+        val imageString = uiState.avatarUri?.let { processImageUri(context, it) }
 
         val dobPrecision = when {
             !isDobApproximate -> DobPrecision.EXACT
@@ -252,7 +252,7 @@ class AddEditPetViewModel @Inject constructor(
             gender = uiState.selectedGender,
             dobMillis = dob,
             dobPrecision = dobPrecision,
-            imageString = imageString
+            avatar = imageString
         )
 
         viewModelScope.launch {
@@ -288,7 +288,7 @@ class AddEditPetViewModel @Inject constructor(
                         selectedDobMonth = month,
                         dobYear = calendar.get(Calendar.YEAR).toString(),
                         editMode = true,
-                        petImageByteArray = pet.imageString?.let { decodeBase64ToImage(it) }
+                        avatarByteArray = pet.avatar?.let { decodeBase64ToImage(it) }
                     )
                 }
             }
@@ -305,9 +305,9 @@ class AddEditPetViewModel @Inject constructor(
             else -> uiState.dobMillis ?: 0
         }
 
-        val image = when {
-            uiState.imageUri != null -> processImageUri(context, uiState.imageUri)
-            uiState.petImageByteArray != null -> Base64.encode(uiState.petImageByteArray)
+        val avatar = when {
+            uiState.avatarUri != null -> processImageUri(context, uiState.avatarUri)
+            uiState.avatarByteArray != null -> Base64.encode(uiState.avatarByteArray)
             else -> null
         }
 
@@ -326,7 +326,7 @@ class AddEditPetViewModel @Inject constructor(
             gender = uiState.selectedGender,
             dobMillis = dobMillis,
             dobPrecision = dobPrecision,
-            imageString = image
+            avatar = avatar
         )
 
         viewModelScope.launch {

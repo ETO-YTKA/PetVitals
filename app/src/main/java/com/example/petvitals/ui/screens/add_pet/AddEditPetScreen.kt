@@ -115,7 +115,7 @@ fun AddEditPetScreen(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            val model = uiState.imageUri ?: uiState.petImageByteArray
+            val model = uiState.avatarUri ?: uiState.avatarByteArray
             AsyncImage(
                 model = model,
                 contentDescription = null,

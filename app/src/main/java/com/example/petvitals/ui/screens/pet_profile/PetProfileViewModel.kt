@@ -122,7 +122,7 @@ class PetProfileViewModel @Inject constructor(
     fun onSaveHealthNoteClick() {
         viewModelScope.launch {
             val pet = uiState.value.pet
-            petRepository.updatePet(pet.copy(healthNotes = uiState.value.updatedHealthNote))
+            petRepository.updatePet(pet.copy(healthNote = uiState.value.updatedHealthNote))
             toggleHealthNoteEditMode()
             getPetData(pet.id)
         }
@@ -141,7 +141,7 @@ class PetProfileViewModel @Inject constructor(
                         pet = pet,
                         dob = dob,
                         age = age,
-                        updatedHealthNote = pet.healthNotes ?: "",
+                        updatedHealthNote = pet.healthNote ?: "",
                     )
                 }
             }

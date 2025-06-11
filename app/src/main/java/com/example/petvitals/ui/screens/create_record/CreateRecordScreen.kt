@@ -305,7 +305,7 @@ private fun PetCard(
         ) {
             val painterRes = if (pet.species == PetSpecies.CAT) R.drawable.ic_cat
                 else R.drawable.ic_dog
-            val image = pet.imageString?.let { remember { decodeBase64ToImage(pet.imageString) } }
+            val image = pet.avatar?.let { remember { decodeBase64ToImage(pet.avatar) } }
             val imageModifier = Modifier
                 .size(24.dp)
                 .then(if (image != null) Modifier.clip(CircleShape) else Modifier)

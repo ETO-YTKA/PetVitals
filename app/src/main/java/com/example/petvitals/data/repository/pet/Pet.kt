@@ -14,8 +14,8 @@ data class Pet(
     val gender: Gender = Gender.MALE,
     val dobMillis: Long = Calendar.getInstance().timeInMillis,
     val dobPrecision: DobPrecision = DobPrecision.EXACT,
-    val imageString: String? = null,
-    val healthNotes: String? = null,
+    val avatar: String? = null,
+    val healthNote: String? = null,
     val foodNote: String? = null
 )
 

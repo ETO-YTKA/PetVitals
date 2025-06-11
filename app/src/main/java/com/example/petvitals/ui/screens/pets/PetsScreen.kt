@@ -111,7 +111,7 @@ private fun PetProfile(pet: Pet, modifier: Modifier = Modifier) {
         ) {
             val fallbackRes = if (pet.species == PetSpecies.CAT) R.drawable.ic_cat
                 else R.drawable.ic_dog
-            val image = pet.imageString?.let { decodeBase64ToImage(it) }
+            val image = pet.avatar?.let { decodeBase64ToImage(it) }
             val imageModifier = Modifier
                 .size(Dimen.petIconSize)
                 .then(if (image != null) Modifier.clip(CircleShape) else Modifier)
