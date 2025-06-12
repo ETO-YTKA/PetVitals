@@ -9,7 +9,14 @@ data class Medication(
     val name: String = "",
     val dosage: String = "",
     val frequency: String = "",
-    val startDateMillis: Date = Date(),
-    val endDateMillis: Date = Date(),
+    val startDate: Date? = null,
+    val endDate: Date? = null,
     val note: String = ""
 )
+
+enum class MedicationStatus {
+    ONGOING,
+    SCHEDULED,
+    COMPLETED,
+    REGULAR
+}

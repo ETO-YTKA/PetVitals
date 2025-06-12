@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,7 +50,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -59,6 +57,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.example.petvitals.AddEditPet
 import com.example.petvitals.R
+import com.example.petvitals.ui.components.CheckboxWithLabel
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.ScreenLayout
@@ -196,33 +195,6 @@ fun AddEditPetScreen(
     }
 }
 
-@Composable
-private fun CheckboxWithLabel(
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    label: String
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
-                onClick = { onCheckedChange(!checked) },
-                role = Role.Checkbox
-            )
-            .padding(vertical = Dimen.spaceSmall)
-    ) {
-        Checkbox(
-            checked = checked,
-            onCheckedChange = onCheckedChange
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge
-        )
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DatePickerModal(
@@ -288,7 +260,7 @@ private fun BirthDatePickerField(
 }
 
 @Composable
-fun DobPicker(
+private fun DobPicker(
     onShowModalChange: (Boolean) -> Unit,
     onDobApproxChange: (Boolean) -> Unit,
     onDobMonthChange: (Int?) -> Unit,

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.medication.Medication
+import com.example.petvitals.data.repository.medication.MedicationRepository
 import com.example.petvitals.data.repository.pet.DobPrecision
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
@@ -27,19 +29,20 @@ data class PetProfileUiState(
     val updatedHealthNote: String = "",
     val updatedFoodNote: String = "",
 
-    val showMedicationModal: Boolean = false,
     val medicationName: String = "",
     val medicationDosage: String = "",
     val medicationFrequency: String = "",
-
-    val medicationStartDate: Long? = null,
-    val showStartDatePicker: Boolean = false,
-
-    val medicationEndDate: Long? = null,
-    val showEndDatePicker: Boolean = false,
-
+    val isMedicationRegular: Boolean = false,
+    val medicationStartDateValue: String? = null,
+    val medicationEndDateValue: String? = null,
     val medicationNote: String = "",
 
+    val medicationStartDate: Long? = null,
+    val medicationEndDate: Long? = null,
+
+    val showMedicationModal: Boolean = false,
+    val showStartDatePicker: Boolean = false,
+    val showEndDatePicker: Boolean = false,
     val isHealthNoteInEditMode: Boolean = false,
     val isFoodNoteInEditMode: Boolean = false
 )
@@ -47,6 +50,7 @@ data class PetProfileUiState(
 @HiltViewModel
 class PetProfileViewModel @Inject constructor(
     private val petRepository: PetRepository,
+    private val medicationRepository: MedicationRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -83,15 +87,39 @@ class PetProfileViewModel @Inject constructor(
         }
     }
 
+    fun toggleRegularMedication(isRegular: Boolean) {
+        _uiState.update { state ->
+            state.copy(isMedicationRegular = isRegular)
+        }
+    }
+
     fun onMedicationStartDateChange(value: Long?) {
         _uiState.update { state ->
-            state.copy(medicationStartDate = value)
+            val startDate = value?.let {
+                SimpleDateFormat(
+                    "dd MMMM yyyy",
+                    Locale.getDefault()
+                ).format(it)
+            }
+            state.copy(
+                medicationStartDate = value,
+                medicationStartDateValue = startDate
+            )
         }
     }
 
     fun onMedicationEndDateChange(value: Long?) {
         _uiState.update { state ->
-            state.copy(medicationEndDate = value)
+            val endDate = value?.let {
+                SimpleDateFormat(
+                    "dd MMMM yyyy",
+                    Locale.getDefault()
+                ).format(it)
+            }
+            state.copy(
+                medicationEndDate = value,
+                medicationEndDateValue = endDate
+            )
         }
     }
 
@@ -128,6 +156,52 @@ class PetProfileViewModel @Inject constructor(
         }
     }
 
+    fun onSaveMedicationClick() {
+        viewModelScope.launch {
+            val petId = uiState.value.pet.id
+            val (startDate, endDate) = when (uiState.value.isMedicationRegular) {
+                true -> {
+                    val startDate = null
+                    val endDate = null
+                    startDate to endDate
+                }
+                false -> {
+                    val startDate = uiState.value.medicationStartDate?.let { Date(it) }
+                    val endDate = uiState.value.medicationEndDate?.let { Date(it) }
+                    startDate to endDate
+                }
+            }
+
+            val medication = Medication(
+                petId = petId,
+                name = uiState.value.medicationName,
+                dosage = uiState.value.medicationDosage,
+                frequency = uiState.value.medicationFrequency,
+                startDate = startDate,
+                endDate = endDate,
+                note = uiState.value.medicationNote
+            )
+
+            medicationRepository.addMedication(medication)
+
+            toggleMedicationModal()
+            getPetData(petId)
+        }
+    }
+
+    fun onDeleteMedicationClick(medication: Medication) {
+        viewModelScope.launch {
+            medicationRepository.deleteMedication(medication)
+
+            val petId = uiState.value.pet.id
+            getPetData(petId)
+        }
+    }
+
+    fun onEditMedicationClick(medication: Medication) {
+
+    }
+
     fun getPetData(petId: String) {
         viewModelScope.launch {
             val pet = petRepository.getPetById(petId)
@@ -142,6 +216,7 @@ class PetProfileViewModel @Inject constructor(
                         dob = dob,
                         age = age,
                         updatedHealthNote = pet.healthNote ?: "",
+                        medications = medicationRepository.getMedications(petId)
                     )
                 }
             }

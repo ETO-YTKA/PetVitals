@@ -3,10 +3,9 @@ package com.example.petvitals.ui.components
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -16,9 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.example.petvitals.R
-import com.example.petvitals.ui.screens.add_pet.AddEditPetViewModel.PastOrPresentSelectableDates
 
 @Composable
 fun DatePickerField(
@@ -33,9 +32,9 @@ fun DatePickerField(
         modifier = modifier.fillMaxWidth(),
         readOnly = true,
         label = { Text(label) },
-        trailingIcon = {
+        leadingIcon = {
             Icon(
-                imageVector = Icons.Default.DateRange,
+                painter = painterResource(R.drawable.ic_calendar_month),
                 contentDescription = null
             )
         },
@@ -56,12 +55,9 @@ fun DatePickerField(
 @Composable
 fun DatePickerModal(
     onDateSelected: (Long?) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    datePickerState: DatePickerState = rememberDatePickerState()
 ) {
-    val datePickerState = rememberDatePickerState(
-        selectableDates = PastOrPresentSelectableDates
-    )
-
     DatePickerDialog(
         onDismissRequest = onDismiss,
         confirmButton = {

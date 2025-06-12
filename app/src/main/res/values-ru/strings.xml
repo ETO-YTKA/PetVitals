@@ -118,4 +118,26 @@
     <string name="breed">Порода</string>
     <string name="male">Самец</string>
     <string name="female">Самка</string>
+    <string name="add_medication">Добавить лекарство</string>
+    <string name="medicines">Лекарства</string>
+    <string name="medication_name">Название</string>
+    <string name="dosage">Дозировка</string>
+    <string name="frequency">Частота приёма</string>
+    <string name="medication_schedule">График приёма</string>
+    <string name="regular">Регулярный</string>
+    <string name="regularly">Регулярно</string>
+    <string name="specific_dates">Конкретные даты</string>
+    <string name="ongoing">Принимается</string>
+    <string name="scheduled">Запланировано</string>
+    <string name="completed">Завершено</string>
+    <string name="start_date">Дата начала</string>
+    <string name="end_date">Дата окончания</string>
+    <string name="health">Здоровье</string>
+    <string name="none">Нет</string>
+    <string name="edit_note_content">Содержимое заметки</string>
+    <string name="empty_note_placeholder">Заметка пуста. Нажмите \"Изменить\", чтобы добавить содержимое.</string>
+    <string name="edit">Изменить</string>
+    <string name="collapse">Свернуть</string>
+    <string name="expand">Развернуть</string>
+    <string name="more_options">Другие опции</string>
 </resources>
