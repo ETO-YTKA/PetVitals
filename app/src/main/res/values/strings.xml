@@ -138,4 +138,8 @@
     <string name="more_options">More options</string>
     <string name="less_than_a_year_old">Less than a year old</string>
     <string name="just_born">Just born</string>
+    <string name="food">Food</string>
+    <string name="add_food">Add food</string>
+    <string name="food_name">Name</string>
+    <string name="portion">Portion</string>
 </resources>

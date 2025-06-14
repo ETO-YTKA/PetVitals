@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -71,6 +72,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.example.petvitals.PetProfile
 import com.example.petvitals.R
+import com.example.petvitals.data.repository.food.Food
 import com.example.petvitals.data.repository.medication.Medication
 import com.example.petvitals.data.repository.medication.MedicationStatus
 import com.example.petvitals.data.repository.pet.Gender
@@ -103,6 +105,7 @@ fun PetProfileScreen(
 
     ScreenLayout(
         horizontalAlignment = Alignment.Start,
+        columnModifier = Modifier.verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium),
         topBar = {
             TopBar(
@@ -132,71 +135,68 @@ fun PetProfileScreen(
             )
         }
     ) {
-        LazyColumn {
-            item {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
-                ) {
-                    ProfilePic(uiState)
-                    GeneralInfo(uiState)
-                }
-            }
-            item {
-                SectionCard(
-                    title = stringResource(R.string.health),
-                    icon = painterResource(R.drawable.ic_health_and_safety),
-                ) {
-                    CardItem(
-                        title = stringResource(R.string.date_of_birth),
-                        information = uiState.dob,
-                        infoIcon = painterResource(R.drawable.ic_cake)
-                    )
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
+        ) {
+            ProfilePic(uiState)
+            GeneralInfo(uiState)
+        }
 
-                    Note(
-                        title = stringResource(R.string.note),
-                        content = uiState.pet.healthNote,
-                        updatedContent = uiState.updatedHealthNote,
-                        onValueChange = viewModel::onHealthNoteChange,
-                        onEditClick = viewModel::toggleHealthNoteEditMode,
-                        onSaveClick = viewModel::onSaveHealthNoteClick,
-                        inEditMode = uiState.isHealthNoteInEditMode
-                    )
-                }
-                Text(
-                    text = stringResource(R.string.medicines),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(vertical = Dimen.spaceMedium)
-                )
-            }
-            items(uiState.medications, key = { it.id }) { medication ->
-                MedicationCard(
-                    medication = medication,
-                    onEditClick = viewModel::onEditMedicationClick,
-                    onDeleteClick = viewModel::onDeleteMedicationClick,
-                    modifier = Modifier.padding(vertical = Dimen.spaceMedium)
-                )
-            }
-            item {
-                ButtonWithIcon(
-                    text = stringResource(R.string.add_medication),
-                    onClick = viewModel::toggleMedicationModal,
-                    icon = {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_add),
-                            contentDescription = stringResource(R.string.add_medication)
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+        SectionCard(
+            title = stringResource(R.string.health),
+            icon = painterResource(R.drawable.ic_health_and_safety),
+        ) {
+            CardItem(
+                title = stringResource(R.string.date_of_birth),
+                information = uiState.dob,
+                infoIcon = painterResource(R.drawable.ic_cake)
+            )
+
+            Note(
+                title = stringResource(R.string.note),
+                content = uiState.pet.healthNote,
+                updatedContent = uiState.updatedHealthNote,
+                onValueChange = viewModel::onHealthNoteChange,
+                onEditClick = viewModel::toggleHealthNoteEditMode,
+                onSaveClick = viewModel::onSaveHealthNoteClick,
+                inEditMode = uiState.isHealthNoteInEditMode
+            )
+
+            MedicationList(
+                uiState = uiState,
+                onEditMedicationClick = viewModel::onEditMedicationClick,
+                onDeleteMedicationClick = viewModel::onDeleteMedicationClick,
+                toggleMedicationModal = viewModel::toggleMedicationModal
+            )
+        }
+
+        SectionCard(
+            title = stringResource(R.string.food),
+            icon = painterResource(R.drawable.ic_pet_supplies)
+        ) {
+            Note(
+                title = stringResource(R.string.note),
+                content = uiState.pet.foodNote,
+                updatedContent = uiState.updatedFoodNote,
+                onValueChange = viewModel::onUpdatedFoodNoteChange,
+                onEditClick = viewModel::toggleFoodNoteEditMode,
+                onSaveClick = viewModel::onSaveFoodNoteClick,
+                inEditMode = uiState.isFoodNoteInEditMode
+            )
+
+            FoodList(
+                uiState = uiState,
+                onEditFoodClick = viewModel::onEditFoodClick,
+                onDeleteFoodClick = viewModel::onDeleteFoodClick,
+                toggleFoodModal = viewModel::toggleFoodModal
+            )
         }
     }
 
-    if (uiState.showMedicationModal) {
-        MedicationBottomSheet(
+    if (uiState.showAddMedicationModal) {
+        AddMedicationBottomSheet(
             onDismiss = viewModel::toggleMedicationModal,
             onNameChange = viewModel::onMedicationNameChange,
             onDosageChange = viewModel::onMedicationDosageChange,
@@ -206,6 +206,18 @@ fun PetProfileScreen(
             toggleEndDatePicker = viewModel::toggleEndDatePicker,
             onNoteChange = viewModel::onMedicationNoteChange,
             onSaveClick = viewModel::onSaveMedicationClick,
+            uiState = uiState
+        )
+    }
+
+    if (uiState.showAddFoodModal) {
+        AddFoodBottomSheet(
+            onDismiss = viewModel::toggleFoodModal,
+            onFoodNameChange = viewModel::onFoodNameChange,
+            onFoodPortionChange = viewModel::onFoodPortionChange,
+            onFoodFrequencyChange = viewModel::onFoodFrequencyChange,
+            onFoodNoteChange = viewModel::onFoodNoteChange,
+            onSaveClick = viewModel::onSaveFoodClick,
             uiState = uiState
         )
     }
@@ -232,7 +244,7 @@ private fun SectionCard(
     icon: Painter? = null,
     content: @Composable () -> Unit
 ) {
-    OutlinedCard(
+    Card(
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
@@ -263,7 +275,7 @@ private fun CardItem(
     modifier: Modifier = Modifier,
     infoIcon: Painter? = null,
 ) {
-    Card(
+    OutlinedCard(
         modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
@@ -301,7 +313,7 @@ private fun Note(
     modifier: Modifier = Modifier,
     inEditMode: Boolean = false
 ) {
-    Card(
+    OutlinedCard(
         modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
@@ -436,7 +448,7 @@ private fun GeneralInfo(uiState: PetProfileUiState) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MedicationBottomSheet(
+private fun AddMedicationBottomSheet(
     onDismiss: () -> Unit,
     uiState: PetProfileUiState,
     onNameChange: (String) -> Unit,
@@ -520,6 +532,73 @@ private fun MedicationBottomSheet(
                 }
             )
             Spacer(modifier = Modifier.height(Dimen.spaceMedium))
+            ButtonWithIcon(
+                text = stringResource(R.string.save),
+                onClick = onSaveClick,
+                icon = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_save),
+                        contentDescription = stringResource(R.string.save)
+                    )
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddFoodBottomSheet(
+    uiState: PetProfileUiState,
+    onDismiss: () -> Unit,
+    onFoodNameChange: (String) -> Unit,
+    onFoodPortionChange: (String) -> Unit,
+    onFoodFrequencyChange: (String) -> Unit,
+    onFoodNoteChange: (String) -> Unit,
+    onSaveClick: () -> Unit
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(
+            skipPartiallyExpanded = true
+        ),
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Column(
+            modifier = Modifier.padding(Dimen.spaceMedium).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
+        ) {
+            CustomOutlinedTextField(
+                value = uiState.foodName,
+                onValueChange = onFoodNameChange,
+                label = { Text(stringResource(R.string.food_name)) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            CustomOutlinedTextField(
+                value = uiState.foodPortion,
+                onValueChange = onFoodPortionChange,
+                label = { Text(stringResource(R.string.portion)) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            CustomOutlinedTextField(
+                value = uiState.foodFrequency,
+                onValueChange = onFoodFrequencyChange,
+                label = { Text(stringResource(R.string.frequency)) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            CustomOutlinedTextField(
+                value = uiState.foodNote,
+                onValueChange = onFoodNoteChange,
+                label = { Text(stringResource(R.string.note)) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Spacer(modifier = Modifier.height(Dimen.spaceMedium))
+
             ButtonWithIcon(
                 text = stringResource(R.string.save),
                 onClick = onSaveClick,
@@ -744,6 +823,118 @@ private fun MedicationCard(
 }
 
 @Composable
+fun FoodCard(
+    food: Food,
+    onEditClick: (Food) -> Unit,
+    onDeleteClick: (Food) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+
+    OutlinedCard(
+        modifier = modifier
+            .fillMaxWidth()
+            .animateContentSize()
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            //Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                //Left side: Food Info
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = food.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    //Display Portion and Frequency
+                    Text(
+                        text = "${food.portion} - ${food.frequency}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                //Right side: action icons
+
+                // More Options Menu
+                var showMenu by remember { mutableStateOf(false) }
+                Box {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = stringResource(R.string.more_options)
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.edit)) },
+                            onClick = {
+                                showMenu = false
+                                onEditClick(food)
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Outlined.Edit,
+                                    contentDescription = null
+                                )
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.delete)) },
+                            onClick = {
+                                showMenu = false
+                                onDeleteClick(food)
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Outlined.Delete,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        )
+                    }
+                }
+
+                // Expand/Collapse Icon Button
+                val rotationAngle by animateFloatAsState(
+                    targetValue = if (isExpanded) 180f else 0f,
+                    label = "FoodCardArrowRotation"
+                )
+                IconButton(onClick = { isExpanded = !isExpanded }) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = if (isExpanded) stringResource(R.string.collapse) else stringResource(R.string.expand),
+                        modifier = Modifier.rotate(rotationAngle)
+                    )
+                }
+            }
+
+            // --- EXPANDED CONTENT (NOTE) ---
+            if (isExpanded && food.note.isNotBlank()) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    thickness = DividerDefaults.Thickness,
+                    color = DividerDefaults.color
+                )
+                Text(
+                    text = food.note,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun MedicationStatusIndicator(status: MedicationStatus) {
     val (text, color) = when (status) {
         MedicationStatus.ONGOING -> stringResource(R.string.ongoing) to MaterialTheme.colorScheme.primary
@@ -777,5 +968,106 @@ private fun DateInfoRow(label: String, dateString: String) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+    }
+}
+
+@Composable
+fun MedicationList(
+    uiState: PetProfileUiState,
+    onEditMedicationClick: (Medication) -> Unit,
+    onDeleteMedicationClick: (Medication) -> Unit,
+    toggleMedicationModal: () -> Unit
+) {
+    OutlinedCard {
+        Column(
+            modifier = Modifier.padding(Dimen.spaceMedium)
+        ) {
+            Text(
+                text = stringResource(R.string.medicines),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(vertical = Dimen.spaceMedium)
+            )
+
+            LazyColumn(
+                modifier = Modifier.heightIn(max = 300.dp)
+            ) {
+                items(
+                    items = uiState.medications,
+                    key = { it.id }
+                ) { medication ->
+                    MedicationCard(
+                        medication = medication,
+                        onEditClick = onEditMedicationClick,
+                        onDeleteClick = onDeleteMedicationClick,
+                        modifier = Modifier.padding(vertical = Dimen.spaceMedium)
+                    )
+                }
+
+                item {
+                    ButtonWithIcon(
+                        text = stringResource(R.string.add_medication),
+                        onClick = toggleMedicationModal,
+                        icon = {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_add),
+                                contentDescription = null
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FoodList(
+    uiState: PetProfileUiState,
+    onEditFoodClick: (Food) -> Unit,
+    onDeleteFoodClick: (Food) -> Unit,
+    toggleFoodModal: () -> Unit
+) {
+    OutlinedCard {
+        Column(
+            modifier = Modifier.padding(Dimen.spaceMedium)
+        ) {
+            Text(
+                text = stringResource(R.string.food),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(Dimen.spaceMedium)
+            )
+            LazyColumn(
+                modifier = Modifier.heightIn(max = 300.dp)
+            ) {
+                items(
+                    items = uiState.food,
+                    key = { it.id }
+                ) { food ->
+                    FoodCard(
+                        food = food,
+                        onEditClick = onEditFoodClick,
+                        onDeleteClick = onDeleteFoodClick,
+                        modifier = Modifier.padding(vertical = Dimen.spaceMedium)
+                    )
+                }
+
+                item {
+                    ButtonWithIcon(
+                        text = stringResource(R.string.add_food),
+                        onClick = toggleFoodModal,
+                        icon = {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_add),
+                                contentDescription = null
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
     }
 }

@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
+import com.example.petvitals.data.repository.food.Food
+import com.example.petvitals.data.repository.food.FoodRepository
 import com.example.petvitals.data.repository.medication.Medication
 import com.example.petvitals.data.repository.medication.MedicationRepository
 import com.example.petvitals.data.repository.pet.DobPrecision
@@ -29,6 +31,7 @@ data class PetProfileUiState(
     val dob: String = "",
     val age: String = "",
     val medications: List<Medication> = emptyList(),
+    val food: List<Food> = emptyList(),
     val updatedHealthNote: String = "",
     val updatedFoodNote: String = "",
 
@@ -43,9 +46,16 @@ data class PetProfileUiState(
     val medicationStartDate: Long? = null,
     val medicationEndDate: Long? = null,
 
-    val showMedicationModal: Boolean = false,
+    val foodName: String = "",
+    val foodPortion: String = "",
+    val foodFrequency: String = "",
+    val foodNote: String = "",
+
+    val showAddMedicationModal: Boolean = false,
+    val showAddFoodModal: Boolean = false,
     val showStartDatePicker: Boolean = false,
     val showEndDatePicker: Boolean = false,
+
     val isHealthNoteInEditMode: Boolean = false,
     val isFoodNoteInEditMode: Boolean = false
 )
@@ -54,6 +64,7 @@ data class PetProfileUiState(
 class PetProfileViewModel @Inject constructor(
     private val petRepository: PetRepository,
     private val medicationRepository: MedicationRepository,
+    private val foodRepository: FoodRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -66,9 +77,21 @@ class PetProfileViewModel @Inject constructor(
         }
     }
 
+    fun toggleFoodNoteEditMode() {
+        _uiState.update { state ->
+            state.copy(isFoodNoteInEditMode = !state.isFoodNoteInEditMode)
+        }
+    }
+
     fun toggleMedicationModal() {
         _uiState.update { state ->
-            state.copy(showMedicationModal = !state.showMedicationModal)
+            state.copy(showAddMedicationModal = !state.showAddMedicationModal)
+        }
+    }
+
+    fun toggleFoodModal() {
+        _uiState.update { state ->
+            state.copy(showAddFoodModal = !state.showAddFoodModal)
         }
     }
 
@@ -132,6 +155,30 @@ class PetProfileViewModel @Inject constructor(
         }
     }
 
+    fun onFoodNameChange(value: String) {
+        _uiState.update { state ->
+            state.copy(foodName = value)
+        }
+    }
+
+    fun onFoodPortionChange(value: String) {
+        _uiState.update { state ->
+            state.copy(foodPortion = value)
+        }
+    }
+
+    fun onFoodFrequencyChange(value: String) {
+        _uiState.update { state ->
+            state.copy(foodFrequency = value)
+        }
+    }
+
+    fun onFoodNoteChange(value: String) {
+        _uiState.update { state ->
+            state.copy(foodNote = value)
+        }
+    }
+
     fun toggleStartDatePicker() {
         _uiState.update { state ->
             state.copy(showStartDatePicker = !state.showStartDatePicker)
@@ -147,6 +194,12 @@ class PetProfileViewModel @Inject constructor(
     fun onHealthNoteChange(value: String) {
         _uiState.update { state ->
             state.copy(updatedHealthNote = value)
+        }
+    }
+
+    fun onUpdatedFoodNoteChange(value: String) {
+        _uiState.update { state ->
+            state.copy(updatedFoodNote = value)
         }
     }
 
@@ -202,7 +255,52 @@ class PetProfileViewModel @Inject constructor(
     }
 
     fun onEditMedicationClick(medication: Medication) {
+        viewModelScope.launch {
+            medicationRepository.updateMedication(medication)
+            getPetData(medication.petId)
+        }
+    }
 
+    fun onSaveFoodNoteClick() {
+        viewModelScope.launch {
+            val pet = uiState.value.pet
+            petRepository.updatePet(pet.copy(foodNote = uiState.value.updatedFoodNote))
+            toggleFoodNoteEditMode()
+            getPetData(pet.id)
+        }
+    }
+
+    fun onSaveFoodClick() {
+        viewModelScope.launch {
+            val petId = uiState.value.pet.id
+
+            val food = Food(
+                petId = petId,
+                name = uiState.value.foodName,
+                portion = uiState.value.foodPortion,
+                frequency = uiState.value.foodFrequency,
+                note = uiState.value.foodNote
+            )
+
+            foodRepository.addFood(food)
+
+            toggleFoodModal()
+            getPetData(petId)
+        }
+    }
+
+    fun onDeleteFoodClick(food: Food) {
+        viewModelScope.launch {
+            foodRepository.deleteFood(food)
+            getPetData(food.petId)
+        }
+    }
+
+    fun onEditFoodClick(food: Food) {
+        viewModelScope.launch {
+            foodRepository.updateFood(food)
+            getPetData(food.petId)
+        }
     }
 
     fun getPetData(petId: String) {
@@ -219,7 +317,8 @@ class PetProfileViewModel @Inject constructor(
                         dob = dob,
                         age = age,
                         updatedHealthNote = pet.healthNote ?: "",
-                        medications = medicationRepository.getMedications(petId)
+                        medications = medicationRepository.getMedications(petId),
+                        food = foodRepository.getFood(petId)
                     )
                 }
             }

@@ -140,4 +140,10 @@
     <string name="collapse">Свернуть</string>
     <string name="expand">Развернуть</string>
     <string name="more_options">Другие опции</string>
+    <string name="less_than_a_year_old">Менее года</string>
+    <string name="just_born">Новорождённый</string>
+    <string name="food">Корм</string>
+    <string name="add_food">Добавить корм</string>
+    <string name="food_name">Название</string>
+    <string name="portion">Порция</string>
 </resources>
