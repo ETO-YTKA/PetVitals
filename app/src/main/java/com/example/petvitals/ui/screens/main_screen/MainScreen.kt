@@ -87,7 +87,7 @@ fun MainAppScreen(
                 val petProfile: PetProfile = backStackEntry.toRoute()
                 PetProfileScreen(
                     petProfile = petProfile,
-                    onPopBackStack = { navController.popBackStack() },
+                    onNavigateToPets = { navController.navigate(route = Pets) },
                     onNavigateToEditPet = { petId -> navController.navigate(route = AddEditPet(petId)) }
                 )
             }

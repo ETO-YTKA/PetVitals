@@ -78,6 +78,7 @@ import com.example.petvitals.data.repository.medication.MedicationStatus
 import com.example.petvitals.data.repository.pet.Gender
 import com.example.petvitals.data.repository.pet.PetSpecies
 import com.example.petvitals.ui.components.ButtonWithIcon
+import com.example.petvitals.ui.components.ConfirmationDialog
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.DatePickerField
@@ -93,7 +94,7 @@ import com.example.petvitals.utils.getMedicationStatus
 @Composable
 fun PetProfileScreen(
     petProfile: PetProfile,
-    onPopBackStack: () -> Unit,
+    onNavigateToPets: () -> Unit,
     onNavigateToEditPet: (String) -> Unit,
     viewModel: PetProfileViewModel = hiltViewModel(),
 ) {
@@ -112,7 +113,7 @@ fun PetProfileScreen(
                 title = { Text(stringResource(R.string.pet_profile)) },
                 navigationIcon = {
                     CustomIconButton(
-                        onClick = onPopBackStack,
+                        onClick = onNavigateToPets,
                         painter = painterResource(R.drawable.ic_arrow_back),
                         contentDescription = stringResource(R.string.back)
                     )
@@ -124,10 +125,7 @@ fun PetProfileScreen(
                         contentDescription = stringResource(R.string.edit_pet)
                     )
                     CustomIconButton(
-                        onClick = {
-                            viewModel.deletePet(petProfile.petId)
-                            onPopBackStack()
-                        },
+                        onClick = viewModel::toggleOnDeleteModal,
                         painter = painterResource(R.drawable.ic_delete_forever),
                         contentDescription = stringResource(R.string.delete_pet)
                     )
@@ -233,6 +231,21 @@ fun PetProfileScreen(
         DatePickerModal(
             onDateSelected = viewModel::onMedicationEndDateChange,
             onDismiss = { viewModel.toggleEndDatePicker() }
+        )
+    }
+
+    if (uiState.showOnDeleteModal) {
+        ConfirmationDialog(
+            onDismissRequest = viewModel::toggleOnDeleteModal,
+            onConfirmation = {
+                viewModel.deletePet(uiState.pet.id)
+                onNavigateToPets()
+            },
+            title = stringResource(R.string.delete_pet),
+            text = stringResource(R.string.delete_pet_confirmation),
+            confirmButtonText = stringResource(R.string.delete),
+            dismissButtonText = stringResource(R.string.cancel),
+            isConfirmButtonDestructive = true
         )
     }
 }

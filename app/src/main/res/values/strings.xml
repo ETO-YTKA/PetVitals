@@ -142,4 +142,6 @@
     <string name="add_food">Add food</string>
     <string name="food_name">Name</string>
     <string name="portion">Portion</string>
+    <string name="confirm">Confirm</string>
+    <string name="delete_pet_confirmation">Are you sure you want to delete your pet?</string>
 </resources>

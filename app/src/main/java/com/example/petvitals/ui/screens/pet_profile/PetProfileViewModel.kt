@@ -55,6 +55,7 @@ data class PetProfileUiState(
     val showAddFoodModal: Boolean = false,
     val showStartDatePicker: Boolean = false,
     val showEndDatePicker: Boolean = false,
+    val showOnDeleteModal: Boolean = false,
 
     val isHealthNoteInEditMode: Boolean = false,
     val isFoodNoteInEditMode: Boolean = false
@@ -71,6 +72,12 @@ class PetProfileViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(PetProfileUiState())
     val uiState = _uiState.asStateFlow()
 
+
+    fun toggleOnDeleteModal() {
+        _uiState.update { state ->
+            state.copy(showOnDeleteModal = !state.showOnDeleteModal)
+        }
+    }
     fun toggleHealthNoteEditMode() {
         _uiState.update { state ->
             state.copy(isHealthNoteInEditMode = !state.isHealthNoteInEditMode)
