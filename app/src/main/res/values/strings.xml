@@ -136,4 +136,6 @@
     <string name="collapse">Collapse</string>
     <string name="expand">Expand</string>
     <string name="more_options">More options</string>
+    <string name="less_than_a_year_old">Less than a year old</string>
+    <string name="just_born">Just born</string>
 </resources>

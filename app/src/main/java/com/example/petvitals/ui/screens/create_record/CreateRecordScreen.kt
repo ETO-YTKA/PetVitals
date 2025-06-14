@@ -141,7 +141,8 @@ fun CreateRecordScreen(
                         painter = painterResource(id = R.drawable.ic_add),
                         contentDescription = null
                     )
-                }
+                },
+                modifier = Modifier.fillMaxWidth()
             )
 
             if (uiState.selectedPets.isNotEmpty()) {
@@ -186,7 +187,8 @@ fun CreateRecordScreen(
                     painter = painterResource(id = R.drawable.ic_check),
                     contentDescription = null
                 )
-            }
+            },
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

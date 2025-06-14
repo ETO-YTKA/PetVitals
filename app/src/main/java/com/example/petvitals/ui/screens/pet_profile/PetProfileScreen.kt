@@ -232,7 +232,7 @@ private fun SectionCard(
     icon: Painter? = null,
     content: @Composable () -> Unit
 ) {
-    Card(
+    OutlinedCard(
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
@@ -266,7 +266,6 @@ private fun CardItem(
     Card(
         modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(
             modifier = Modifier.padding(Dimen.spaceMedium),
@@ -305,7 +304,6 @@ private fun Note(
     Card(
         modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(
             modifier = modifier
@@ -751,7 +749,7 @@ private fun MedicationStatusIndicator(status: MedicationStatus) {
         MedicationStatus.ONGOING -> stringResource(R.string.ongoing) to MaterialTheme.colorScheme.primary
         MedicationStatus.SCHEDULED -> stringResource(R.string.scheduled) to MaterialTheme.colorScheme.secondary
         MedicationStatus.COMPLETED -> stringResource(R.string.completed) to MaterialTheme.colorScheme.onSurfaceVariant
-        MedicationStatus.REGULAR -> stringResource(R.string.regular) to MaterialTheme.colorScheme.tertiary
+        MedicationStatus.REGULAR -> stringResource(R.string.regularly) to MaterialTheme.colorScheme.tertiary
     }
 
     Text(

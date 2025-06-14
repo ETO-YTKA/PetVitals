@@ -16,7 +16,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Calendar
+import java.time.Instant
+import java.time.LocalDate
+import java.time.Period
+import java.time.ZoneId
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
@@ -236,56 +239,38 @@ class PetProfileViewModel @Inject constructor(
     }
 
     fun getPetAge(pet: Pet, context: Context): String {
+        val dobMillis = pet.dobMillis
 
-        val petDob = Calendar.getInstance().apply { timeInMillis = pet.dobMillis }
-        val currentTime = Calendar.getInstance()
+        val today = LocalDate.now()
+        val petBirthDate = Instant.ofEpochMilli(dobMillis)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate()
 
-        val currentYear = currentTime.get(Calendar.YEAR)
-        val currentMonth = currentTime.get(Calendar.MONTH)
-        val currentDay = currentTime.get(Calendar.DAY_OF_MONTH)
+        val period = Period.between(petBirthDate, today)
+        val years = period.years
+        val months = period.months
+        val days = period.days
 
-        val petYear = petDob.get(Calendar.YEAR)
-        val petMonth = petDob.get(Calendar.MONTH)
-        val petDay = petDob.get(Calendar.DAY_OF_MONTH)
-
-        return when {
-            petYear == currentYear -> {
-                when (pet.dobPrecision) {
-                    DobPrecision.EXACT -> {
-                        if (petMonth == currentMonth) {
-                            val days = currentDay - petDay
-                            context.resources.getQuantityString(
-                                R.plurals.days_old_plural,
-                                days,
-                                days
-                            )
-                        } else {
-                            val months = currentMonth - petMonth
-                            context.resources.getQuantityString(
-                                R.plurals.months_old_plural,
-                                months,
-                                months
-                            )
-                        }
-                    }
-                    DobPrecision.YEAR_MONTH -> {
-                        val months = currentMonth - petMonth
-                        context.resources.getQuantityString(
-                            R.plurals.months_old_plural,
-                            months,
-                            months
-                        )
-                    }
-                    DobPrecision.YEAR -> context.resources.getQuantityString(
-                        R.plurals.years_old_plural,
-                        0,
-                        0
-                    )
+        return when (pet.dobPrecision) {
+            DobPrecision.EXACT -> {
+                when {
+                    years >= 1 -> context.resources.getQuantityString(R.plurals.years_old_plural, years, years)
+                    months >= 1 -> context.resources.getQuantityString(R.plurals.months_old_plural, months, months)
+                    days >= 0 -> context.resources.getQuantityString(R.plurals.days_old_plural, days, days)
+                    else -> context.getString(R.string.just_born)
                 }
             }
-            else -> {
-                val years = currentYear - petYear
-                context.resources.getQuantityString(R.plurals.years_old_plural, years, years)
+            DobPrecision.YEAR_MONTH -> {
+                when {
+                    years >= 1 -> context.resources.getQuantityString(R.plurals.years_old_plural, years, years)
+                    else -> context.resources.getQuantityString(R.plurals.months_old_plural, months, months)
+                }
+            }
+            DobPrecision.YEAR -> {
+                when {
+                    years >= 1 -> context.resources.getQuantityString(R.plurals.years_old_plural, years, years)
+                    else -> context.getString(R.string.less_than_a_year_old)
+                }
             }
         }
     }
