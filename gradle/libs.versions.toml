@@ -45,6 +45,7 @@ google-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref
 google-firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 google-firebase-auth = { module = "com.google.firebase:firebase-auth" }
 google-firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
+google-firebase-messaging-ktx = { module = "com.google.firebase:firebase-messaging-ktx" }
 
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 

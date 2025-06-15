@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.google.firebase.analytics)
     implementation(libs.google.firebase.auth)
     implementation(libs.google.firebase.firestore)
+    implementation(libs.google.firebase.messaging.ktx)
 
     implementation(libs.coil.compose)
 

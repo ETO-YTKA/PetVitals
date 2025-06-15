@@ -1,5 +1,10 @@
 package com.example.petvitals.ui.screens.pets
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,12 +25,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.example.petvitals.R
@@ -47,6 +57,10 @@ fun PetsScreen(
     viewModel: PetsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+//    LaunchedEffect(Unit) {
+//        val token = Firebase.messaging.token.await()
+//        Log.d("FCM token:", token)
+//    }
 
     LaunchedEffect(Unit) { viewModel.initialize(onNavigateToSplash) }
 
@@ -71,6 +85,8 @@ fun PetsScreen(
             )
         }
     ) {
+        RequestNotificationPermission()
+
         val pets = uiState.pets
 
         PullToRefreshBox(
@@ -127,6 +143,39 @@ private fun PetProfile(pet: Pet, modifier: Modifier = Modifier) {
             Spacer(modifier = Modifier.height(Dimen.spaceMedium))
 
             Text(text = pet.name)
+        }
+    }
+}
+
+@Composable
+fun RequestNotificationPermission() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val context = LocalContext.current
+        var hasNotificationPermission by remember {
+            mutableStateOf(
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            )
+        }
+
+        // Create the permission launcher
+        val permissionLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+            onResult = { isGranted ->
+                hasNotificationPermission = isGranted
+                if (!isGranted) {
+                    // Optional: Show a Snackbar or message explaining why the
+                    // permission is important if the user denied it.
+                }
+            }
+        )
+
+        LaunchedEffect(key1 = true) {
+            if (!hasNotificationPermission) {
+                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
     }
 }
