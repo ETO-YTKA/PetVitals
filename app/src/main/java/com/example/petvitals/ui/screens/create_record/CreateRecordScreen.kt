@@ -58,6 +58,7 @@ import com.example.petvitals.data.repository.pet.PetSpecies
 import com.example.petvitals.ui.components.ButtonWithIcon
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
+import com.example.petvitals.ui.components.ErrorMessage
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.components.ValueDropDown
@@ -121,8 +122,11 @@ fun CreateRecordScreen(
             value = uiState.title,
             onValueChange = viewModel::onTitleChange,
             label = { Text(stringResource(R.string.title)) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = uiState.isTitleError
         )
+
+        uiState.titleErrorMessage?.let { message -> ErrorMessage(message) }
 
         Spacer(modifier = Modifier.height(Dimen.spaceMedium))
 
@@ -189,13 +193,14 @@ fun CreateRecordScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
+        uiState.descriptionErrorMessage?.let { message -> ErrorMessage(message) }
+
         Spacer(modifier = Modifier.height(Dimen.spaceLarge))
 
         ButtonWithIcon(
             text = stringResource(R.string.create_record),
             onClick = {
-                viewModel.onCreateRecordClick()
-                onNavigateToRecords()
+                viewModel.onCreateRecordClick(onSuccess = onNavigateToRecords)
             },
             icon = {
                 Icon(

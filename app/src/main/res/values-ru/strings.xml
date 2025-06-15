@@ -160,4 +160,6 @@
     <string name="portion_cannot_be_empty_error">Порция не может быть пустой</string>
     <string name="portion_cannot_be_longer_than_error">Порция не может быть длиннее 50 символов</string>
     <string name="select_time">Выберите время</string>
+    <string name="title_too_long">Заголовок не может быть длиннее 50 символов</string>
+    <string name="description_cannot_be_longer_than_error">Описание не может быть длиннее 500 символов</string>
 </resources>

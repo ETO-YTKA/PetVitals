@@ -156,4 +156,6 @@
     <string name="portion_cannot_be_empty_error">Portion cannot be empty</string>
     <string name="portion_cannot_be_longer_than_error">Portion cannot be longer than 50 characters</string>
     <string name="select_time">Select time</string>
+    <string name="title_too_long">Title cannot be longer than 50 characters</string>
+    <string name="description_cannot_be_longer_than_error">Description cannot be longer than 500 characters</string>
 </resources>

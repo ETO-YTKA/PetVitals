@@ -34,7 +34,13 @@ data class CreateRecordUiState(
 
     val showBottomSheet: Boolean = false,
     val showDatePicker: Boolean = false,
-    val showTimePicker: Boolean = false
+    val showTimePicker: Boolean = false,
+
+    val titleErrorMessage: String? = null,
+    val descriptionErrorMessage: String? = null,
+
+    val isTitleError: Boolean = false,
+    val isDescriptionError: Boolean = false
 )
 
 @HiltViewModel
@@ -114,23 +120,63 @@ class CreateRecordViewModel @Inject constructor(
         }
     }
 
-    fun onCreateRecordClick() {
-        val userId = accountService.currentUserId
-        val title = uiState.value.title.takeIf { it.isNotBlank() }
-            ?: context.getString(uiState.value.selectedType.titleResId)
+    private fun validateForm(): Boolean {
+        var isValid = true
+        val title = uiState.value.title
+        val description = uiState.value.description
 
-        val record = Record(
-            userId = userId,
-            title = title,
-            type = uiState.value.selectedType,
-            date = uiState.value.date,
-            description = uiState.value.description,
-            petsId = uiState.value.selectedPets.map { pet -> pet.id },
-            petsName = uiState.value.selectedPets.map { pet -> pet.name }
-        )
+        _uiState.update { state ->
+            state.copy(
+                isDescriptionError = false,
+                isTitleError = false,
+                descriptionErrorMessage = null,
+                titleErrorMessage = null
+            )
+        }
 
-        viewModelScope.launch {
-            recordRepository.createRecord(record)
+
+        if (title.length > 50) {
+            _uiState.update { state ->
+                state.copy(
+                    titleErrorMessage = context.getString(R.string.title_too_long),
+                    isTitleError = true
+                )
+            }
+            isValid = false
+        }
+
+        if (description.length > 500) {
+            _uiState.update { state ->
+                state.copy(
+                    descriptionErrorMessage = context.getString(R.string.description_cannot_be_longer_than_error),
+                    isDescriptionError = true
+                )
+            }
+            isValid = false
+        }
+        return isValid
+    }
+
+    fun onCreateRecordClick(onSuccess: () -> Unit) {
+        if (validateForm()) {
+            val userId = accountService.currentUserId
+            val title = uiState.value.title.takeIf { it.isNotBlank() }
+                ?: context.getString(uiState.value.selectedType.titleResId)
+
+            val record = Record(
+                userId = userId,
+                title = title,
+                type = uiState.value.selectedType,
+                date = uiState.value.date,
+                description = uiState.value.description,
+                petsId = uiState.value.selectedPets.map { pet -> pet.id },
+                petsName = uiState.value.selectedPets.map { pet -> pet.name }
+            )
+
+            viewModelScope.launch {
+                recordRepository.createRecord(record)
+            }
+            onSuccess()
         }
     }
 
