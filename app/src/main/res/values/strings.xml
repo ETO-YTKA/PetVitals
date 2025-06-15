@@ -158,4 +158,9 @@
     <string name="select_time">Select time</string>
     <string name="title_too_long">Title cannot be longer than 50 characters</string>
     <string name="description_cannot_be_longer_than_error">Description cannot be longer than 500 characters</string>
+    <string name="pet_name_cannot_be_empty">Name cannot be empty</string>
+    <string name="pet_name_cannot_be_longer_than_error">Name cannot be longer than 50 characters</string>
+    <string name="breed_cannot_be_longer_than_error">Breed cannot be longer than 100 characters</string>
+    <string name="year_cannot_be_empty">Year cannot be empty</string>
+    <string name="date_of_birth_cannot_be_empty">Date of birth cannot be empty</string>
 </resources>

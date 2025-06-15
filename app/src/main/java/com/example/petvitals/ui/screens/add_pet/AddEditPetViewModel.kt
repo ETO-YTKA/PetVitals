@@ -51,7 +51,17 @@ data class AddEditPetUiState(
 
     val monthOptions: List<DropDownOption<Int?>> = emptyList(),
     val speciesOptions: List<DropDownOption<PetSpecies>> = emptyList(),
-    val genderOptions: List<DropDownOption<Gender>> = emptyList()
+    val genderOptions: List<DropDownOption<Gender>> = emptyList(),
+
+    val nameErrorMessage: String? = null,
+    val breedErrorMessage: String? = null,
+    val dobErrorMessage: String? = null,
+    val dobYearErrorMessage: String? = null,
+
+    val isNameError: Boolean = false,
+    val isBreedError: Boolean = false,
+    val isDobError: Boolean = false,
+    val isDobYearError: Boolean = false
 )
 
 @HiltViewModel
@@ -126,8 +136,11 @@ class AddEditPetViewModel @Inject constructor(
     }
 
     fun onDobYearChange(year: String) {
-        _uiState.update { state ->
-            state.copy(dobYear = year)
+        if (!year.contains(Regex("[^0-9]"))) {
+
+            _uiState.update { state ->
+                state.copy(dobYear = year)
+            }
         }
     }
 
@@ -220,7 +233,77 @@ class AddEditPetViewModel @Inject constructor(
         )
     }
 
-    fun addPet() {
+    private fun isFormValid(): Boolean {
+        var isValid = true
+        _uiState.update {
+            it.copy(
+                isNameError = false,
+                isBreedError = false,
+                isDobError = false,
+                isDobYearError = false,
+                nameErrorMessage = null,
+                breedErrorMessage = null,
+                dobErrorMessage = null,
+                dobYearErrorMessage = null
+            )
+        }
+
+        if (uiState.value.name.isBlank()) {
+            isValid = false
+            _uiState.update {
+                it.copy(
+                    isNameError = true,
+                    nameErrorMessage = context.getString(R.string.pet_name_cannot_be_empty)
+                )
+            }
+        } else if (uiState.value.name.length > 50) {
+            isValid = false
+            _uiState.update {
+                it.copy(
+                    isNameError = true,
+                    nameErrorMessage = context.getString(R.string.pet_name_cannot_be_longer_than_error)
+                )
+            }
+        }
+
+        if (uiState.value.breed.length > 100) {
+            isValid = false
+            _uiState.update {
+                it.copy(
+                    isBreedError = true,
+                    breedErrorMessage = context.getString(R.string.breed_cannot_be_longer_than_error)
+                )
+            }
+        }
+
+        if (uiState.value.isDobApprox) {
+            if (uiState.value.dobYear.isBlank()) {
+                isValid = false
+                _uiState.update {
+                    it.copy(
+                        isDobYearError = true,
+                        dobYearErrorMessage = context.getString(R.string.year_cannot_be_empty)
+                    )
+                }
+            }
+        } else {
+            if (uiState.value.dobMillis == null) {
+                isValid = false
+                _uiState.update {
+                    it.copy(
+                        isDobError = true,
+                        dobErrorMessage = context.getString(R.string.date_of_birth_cannot_be_empty)
+                    )
+                }
+            }
+        }
+
+        return isValid
+    }
+
+    fun addPet(onSuccess: () -> Unit) {
+        if (!isFormValid()) return
+
         val uiState = uiState.value
         val isDobApproximate = uiState.isDobApprox
         val calendar = Calendar.getInstance()
@@ -296,7 +379,12 @@ class AddEditPetViewModel @Inject constructor(
     }
 
     @OptIn(ExperimentalEncodingApi::class)
-    fun updatePet(petId: String) {
+    fun updatePet(
+        petId: String,
+        onSuccess: () -> Unit
+    ) {
+        if (!isFormValid()) return
+
         val uiState = uiState.value
         val dobMillis = when {
             uiState.isDobApprox -> {

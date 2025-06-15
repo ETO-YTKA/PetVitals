@@ -60,6 +60,7 @@ import com.example.petvitals.R
 import com.example.petvitals.ui.components.CheckboxWithLabel
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
+import com.example.petvitals.ui.components.ErrorMessage
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.components.ValueDropDown
@@ -90,7 +91,6 @@ fun AddEditPetScreen(
 
     ScreenLayout(
         columnModifier = Modifier.verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(Dimen.spaceMediumLarge),
         horizontalAlignment = Alignment.CenterHorizontally,
         topBar = {
             val addEditPetTitle = stringResource(if (addEditPet.petId == null) R.string.add_pet else R.string.edit_pet)
@@ -142,7 +142,12 @@ fun AddEditPetScreen(
             modifier = Modifier.fillMaxWidth(),
             label = { Text(stringResource(R.string.name)) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            isError = uiState.isNameError,
         )
+
+        uiState.nameErrorMessage?.let { message -> ErrorMessage(message) }
+
+        Spacer(modifier = Modifier.size(Dimen.spaceMedium))
 
         Row {
             ValueDropDown(
@@ -164,13 +169,20 @@ fun AddEditPetScreen(
             )
         }
 
+        Spacer(modifier = Modifier.size(Dimen.spaceMedium))
+
         CustomOutlinedTextField(
             value = uiState.breed,
             onValueChange = viewModel::onBreedChange,
             modifier = Modifier.fillMaxWidth(),
             label = { Text(stringResource(R.string.breed)) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            isError = uiState.isBreedError,
         )
+
+        uiState.breedErrorMessage?.let { message -> ErrorMessage(message) }
+
+        Spacer(modifier = Modifier.size(Dimen.spaceMediumLarge))
 
         DobPicker(
             onShowModalChange = viewModel::onShowModalChange,
@@ -180,13 +192,14 @@ fun AddEditPetScreen(
             uiState = uiState
         )
 
+        Spacer(modifier = Modifier.size(Dimen.spaceMedium))
+
         Button(
             onClick = {
                 when (uiState.editMode) {
-                    true -> addEditPet.petId?.let { viewModel.updatePet(it) }
-                    false -> viewModel.addPet()
+                    true -> addEditPet.petId?.let { viewModel.updatePet(petId = it, onSuccess = navigateToPets) }
+                    false -> viewModel.addPet(onSuccess = navigateToPets)
                 }
-                navigateToPets()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -232,7 +245,8 @@ private fun DatePickerModal(
 private fun BirthDatePickerField(
     value: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isError: Boolean = false
 ) {
     CustomOutlinedTextField(
         value = value,
@@ -255,7 +269,8 @@ private fun BirthDatePickerField(
                         }
                     }
                 }
-            }
+            },
+        isError = isError
     )
 }
 
@@ -299,32 +314,42 @@ private fun DobPicker(
                 },
             ) { targetState ->
                 if (targetState) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(Dimen.spaceMedium),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        ValueDropDown(
-                            value = uiState.selectedDobMonth,
-                            onValueChange = onDobMonthChange,
-                            options = uiState.monthOptions,
-                            label = stringResource(R.string.month),
-                            modifier = Modifier.weight(1f)
-                        )
-                        CustomOutlinedTextField(
-                            value = uiState.dobYear,
-                            onValueChange = onDobYearChange,
-                            label = { Text(stringResource(R.string.year)) },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                            modifier = Modifier.weight(1f)
-                        )
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(Dimen.spaceMedium),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            ValueDropDown(
+                                value = uiState.selectedDobMonth,
+                                onValueChange = onDobMonthChange,
+                                options = uiState.monthOptions,
+                                label = stringResource(R.string.month),
+                                modifier = Modifier.weight(1f)
+                            )
+                            CustomOutlinedTextField(
+                                value = uiState.dobYear,
+                                onValueChange = onDobYearChange,
+                                label = { Text(stringResource(R.string.year)) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                                modifier = Modifier.weight(1f),
+                                isError = uiState.isDobYearError,
+                            )
+                        }
+
+                        uiState.dobYearErrorMessage?.let { message -> ErrorMessage(message) }
                     }
                 } else {
-                    BirthDatePickerField(
-                        value = uiState.dobString,
-                        onClick = { onShowModalChange(true) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    Column {
+                        BirthDatePickerField(
+                            value = uiState.dobString,
+                            onClick = { onShowModalChange(true) },
+                            modifier = Modifier.fillMaxWidth(),
+                            isError = uiState.isDobError
+                        )
+
+                        uiState.dobErrorMessage?.let { message -> ErrorMessage(message) }
+                    }
                 }
             }
         }

@@ -406,8 +406,10 @@ private fun Note(
 
 @Composable
 private fun ProfilePic(uiState: PetProfileUiState) {
-    val painterRes = if (uiState.pet.species == PetSpecies.CAT) R.drawable.ic_cat
-        else R.drawable.ic_dog
+    val fallBackRes = when(uiState.pet.species) {
+        PetSpecies.CAT -> R.drawable.ic_cat
+        PetSpecies.DOG -> R.drawable.ic_dog
+    }
     val image = uiState.pet.avatar?.let { remember { decodeBase64ToImage(it) } }
     val imageModifier = Modifier
         .size(Dimen.petImageProfile)
@@ -417,7 +419,7 @@ private fun ProfilePic(uiState: PetProfileUiState) {
         model = image,
         contentDescription = stringResource(R.string.pet_image),
         contentScale = ContentScale.Crop,
-        fallback = painterResource(painterRes),
+        fallback = painterResource(fallBackRes),
         modifier = imageModifier
     )
 }
