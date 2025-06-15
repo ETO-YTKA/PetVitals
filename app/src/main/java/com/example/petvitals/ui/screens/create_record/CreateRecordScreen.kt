@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
@@ -26,9 +27,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerLayoutType
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -43,6 +48,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.example.petvitals.R
@@ -70,6 +77,17 @@ fun CreateRecordScreen(
         DatePickerModal(
             onDateSelected = viewModel::onDateChange,
             onDismiss = { viewModel.onShowDatePickerChange(false) }
+        )
+    }
+
+    if (uiState.showTimePicker) {
+        TimePickerModal(
+            onDismissRequest = {
+                viewModel.onShowTimePickerChange(false)
+            },
+            onConfirm = { hours, minutes ->
+                viewModel.onTimeChange(hours, minutes)
+            }
         )
     }
 
@@ -108,22 +126,21 @@ fun CreateRecordScreen(
 
         Spacer(modifier = Modifier.height(Dimen.spaceMedium))
 
-        Row {
-            ValueDropDown(
-                value = uiState.selectedType,
-                onValueChange = viewModel::onTypeChange,
-                options = uiState.typeOptions,
-                label = stringResource(R.string.type),
-                modifier = Modifier.weight(1f)
-            )
-            Spacer(modifier = Modifier.width(Dimen.spaceMedium))
-            DatePickerField(
-                value = viewModel.formatDateForDisplay(millis = uiState.date, context = context),
-                onClick = { viewModel.onShowDatePickerChange(true) },
-                label = stringResource(R.string.date),
-                modifier = Modifier.weight(1f)
-            )
-        }
+        ValueDropDown(
+            value = uiState.selectedType,
+            onValueChange = viewModel::onTypeChange,
+            options = uiState.typeOptions,
+            label = stringResource(R.string.type)
+        )
+
+        Spacer(modifier = Modifier.height(Dimen.spaceMedium))
+
+        DatePickerField(
+            value = viewModel.formatDateForDisplay(date = uiState.date, context = context),
+            onClick = { viewModel.onShowDatePickerChange(true) },
+            label = stringResource(R.string.date),
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(modifier = Modifier.height(Dimen.spaceMedium))
 
@@ -162,8 +179,6 @@ fun CreateRecordScreen(
                 }
             }
         }
-
-
 
         Spacer(modifier = Modifier.height(Dimen.spaceMedium))
 
@@ -241,7 +256,6 @@ private fun DatePickerModal(
         confirmButton = {
             TextButton(onClick = {
                 onDateSelected(datePickerState.selectedDateMillis)
-                onDismiss()
             }) {
                 Text(stringResource(R.string.ok))
             }
@@ -256,6 +270,75 @@ private fun DatePickerModal(
             state = datePickerState,
             showModeToggle = false
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TimePickerModal(
+    onDismissRequest: () -> Unit,
+    onConfirm: (Int, Int) -> Unit
+) {
+    val currentTime = Calendar.getInstance()
+
+    val timePickerState = rememberTimePickerState(
+        initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
+        initialMinute = currentTime.get(Calendar.MINUTE),
+        is24Hour = true,
+    )
+
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false
+        )
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 6.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = stringResource(R.string.select_time),
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 20.dp)
+                )
+
+                TimePicker(
+                    state = timePickerState,
+                    layoutType = TimePickerLayoutType.Vertical
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = onDismissRequest) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TextButton(
+                        onClick = {
+                            onConfirm(timePickerState.hour, timePickerState.minute)
+                            onDismissRequest()
+                        }
+                    ) {
+                        Text(stringResource(R.string.ok))
+                    }
+                }
+            }
+        }
     }
 }
 

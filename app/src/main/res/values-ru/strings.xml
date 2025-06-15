@@ -159,4 +159,5 @@
     <string name="note_cannot_be_longer_than_error">Заметка не может быть длиннее 500 символов</string>
     <string name="portion_cannot_be_empty_error">Порция не может быть пустой</string>
     <string name="portion_cannot_be_longer_than_error">Порция не может быть длиннее 50 символов</string>
+    <string name="select_time">Выберите время</string>
 </resources>

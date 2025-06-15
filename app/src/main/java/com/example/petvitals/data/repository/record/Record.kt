@@ -3,7 +3,7 @@ package com.example.petvitals.data.repository.record
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
 import com.example.petvitals.R
-import java.util.Calendar
+import java.util.Date
 import java.util.UUID
 
 data class Record(
@@ -11,7 +11,7 @@ data class Record(
     val userId: String = "",
     val title: String = "",
     val type: RecordType = RecordType.NOTE,
-    val date: Long = Calendar.getInstance().timeInMillis,
+    val date: Date = Date(),
     val description: String = "",
     val petsId: List<String> = emptyList(),
     val petsName: List<String> = emptyList()

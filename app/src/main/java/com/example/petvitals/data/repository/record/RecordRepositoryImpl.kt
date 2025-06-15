@@ -3,7 +3,6 @@ package com.example.petvitals.data.repository.record
 import com.example.petvitals.data.service.account.AccountService
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
-import com.google.firebase.firestore.toObjects
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -27,13 +26,13 @@ class RecordRepositoryImpl @Inject constructor(
     override suspend fun getAllRecord(): List<Record> {
 
         val userId = accountService.currentUserId
-        var records = firestore
+        val records = firestore
             .collection("users").document(userId)
             .collection("records")
             .get()
             .await()
             .sortedByDescending {
-                it.data["date"] as Long
+                it.getTimestamp("date")?.toDate()
             }
 
         return records.map { it.toObject<Record>() }
@@ -42,18 +41,20 @@ class RecordRepositoryImpl @Inject constructor(
     override suspend fun getRecordsByCondition(cond: String): List<Record> {
 
         val userId = accountService.currentUserId
-        var records = firestore
+        val records = firestore
             .collection("users").document(userId)
             .collection("records")
             .get()
             .await()
-            .toObjects<Record>()
+            .sortedByDescending {
+                it.getTimestamp("date")?.toDate()
+            }
+            .map { it.toObject<Record>() }
 
         val filteredRecords = records.filter { record ->
             record.title.contains(cond)
                 || record.description.contains(cond)
                 || record.petsName.any { it.contains(cond) }
-
         }
         return filteredRecords
     }

@@ -136,7 +136,7 @@ fun RecordsScreen(
             ) {
                 items(
                     count = uiState.recordWithPets.size,
-                    key = { index -> uiState.recordWithPets[index].record.id.toString() }
+                    key = { index -> uiState.recordWithPets[index].record.id }
                 ) { index ->
                     val recordWithPets = uiState.recordWithPets[index]
 

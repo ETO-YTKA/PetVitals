@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
@@ -26,13 +25,16 @@ import javax.inject.Inject
 data class CreateRecordUiState(
     val title: String = "",
     val selectedType: RecordType = RecordType.NOTE,
-    val typeOptions: List<DropDownOption<RecordType>> = emptyList(),
-    val date: Long = Calendar.getInstance().timeInMillis,
-    val showDatePicker: Boolean = false,
+    val date: Date = Date(),
     val description: String = "",
-    val showBottomSheet: Boolean = false,
+    val selectedPets: List<Pet> = emptyList(),
+
     val pets: List<Pet> = emptyList(),
-    val selectedPets: List<Pet> = emptyList()
+    val typeOptions: List<DropDownOption<RecordType>> = emptyList(),
+
+    val showBottomSheet: Boolean = false,
+    val showDatePicker: Boolean = false,
+    val showTimePicker: Boolean = false
 )
 
 @HiltViewModel
@@ -67,14 +69,37 @@ class CreateRecordViewModel @Inject constructor(
         _uiState.update { state ->
             state.copy(showDatePicker = show)
         }
+    }
 
+    fun onShowTimePickerChange(show: Boolean) {
+        _uiState.update { state ->
+            state.copy(showTimePicker = show)
+        }
     }
 
     fun onDateChange(date: Long?) {
-        _uiState.update { state ->
-            state.copy(date = date ?: Calendar.getInstance().timeInMillis)
-        }
+        if (date == null) return
 
+        _uiState.update { state ->
+            state.copy(
+                date = Date(date),
+                showDatePicker = false,
+                showTimePicker = true
+            )
+        }
+    }
+
+    fun onTimeChange(hours: Int, minutes: Int) {
+        val date = uiState.value.date
+        date.hours = hours
+        date.minutes = minutes
+
+        _uiState.update { state ->
+            state.copy(
+                date = date,
+                showTimePicker = false
+            )
+        }
     }
 
     fun onDescriptionChange(description: String) {
@@ -166,9 +191,9 @@ class CreateRecordViewModel @Inject constructor(
         }
     }
 
-    fun formatDateForDisplay(millis: Long?, context: Context): String {
-        return millis?.let {
-            SimpleDateFormat("dd MMMM yyyy", Locale.getDefault()).format(Date(it))
+    fun formatDateForDisplay(date: Date, context: Context): String {
+        return date.let {
+            SimpleDateFormat("dd MMMM yyyy HH:mm", Locale.getDefault()).format(date)
         } ?: context.getString(R.string.tap_to_select_date)
     }
 }

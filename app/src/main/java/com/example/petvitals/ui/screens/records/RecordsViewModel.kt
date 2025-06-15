@@ -104,8 +104,8 @@ class RecordsViewModel @Inject constructor(
         }
     }
 
-    fun formatDateForDisplay(millis: Long): String {
-        return SimpleDateFormat("dd MMMM yyyy", Locale.getDefault()).format(Date(millis))
+    fun formatDateForDisplay(date: Date): String {
+        return SimpleDateFormat("dd MMMM yyyy HH:mm", Locale.getDefault()).format(date)
     }
 
     fun search() {
