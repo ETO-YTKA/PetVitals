@@ -148,4 +148,15 @@
     <string name="portion">Порция</string>
     <string name="confirm">Подтвердить</string>
     <string name="delete_pet_confirmation">Вы уверены, что хотите удалить питомца?</string>
+    <string name="end_date_must_be_after_start_date_error">Дата окончания должна быть после даты начала</string>
+    <string name="start_date_must_be_selected_error">Необходимо выбрать дату начала</string>
+    <string name="name_cannot_be_empty_error">Название не может быть пустым</string>
+    <string name="name_cannot_be_longer_than_error">Название не может быть длиннее 50 символов</string>
+    <string name="dosage_cannot_be_empty_error">Дозировка не может быть пустой</string>
+    <string name="dosage_cannot_be_longer_than_error">Дозировка не может быть длиннее 50 символов</string>
+    <string name="frequency_cannot_be_empty_error">Частота не может быть пустой</string>
+    <string name="frequency_cannot_be_longer_than_error">Частота не может быть длиннее 50 символов</string>
+    <string name="note_cannot_be_longer_than_error">Заметка не может быть длиннее 500 символов</string>
+    <string name="portion_cannot_be_empty_error">Порция не может быть пустой</string>
+    <string name="portion_cannot_be_longer_than_error">Порция не может быть длиннее 50 символов</string>
 </resources>

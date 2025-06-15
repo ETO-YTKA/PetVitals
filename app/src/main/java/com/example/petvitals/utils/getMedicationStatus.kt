@@ -9,8 +9,11 @@ fun getMedicationStatus(startDate: Date?, endDate: Date?): MedicationStatus {
     return when {
         startDate == null && endDate == null -> MedicationStatus.REGULAR
 
-        startDate == null && endDate != null -> {
-            if (now.before(endDate)) MedicationStatus.ONGOING else MedicationStatus.COMPLETED
+        startDate != null && endDate == null -> {
+            when {
+                now.after(startDate) -> MedicationStatus.ONGOING
+                else -> MedicationStatus.SCHEDULED
+            }
         }
 
         else -> {

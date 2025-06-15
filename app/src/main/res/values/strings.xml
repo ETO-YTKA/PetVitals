@@ -144,4 +144,15 @@
     <string name="portion">Portion</string>
     <string name="confirm">Confirm</string>
     <string name="delete_pet_confirmation">Are you sure you want to delete your pet?</string>
+    <string name="end_date_must_be_after_start_date_error">End date must be after start date</string>
+    <string name="start_date_must_be_selected_error">Start date must be selected</string>
+    <string name="name_cannot_be_empty_error">Name cannot be empty</string>
+    <string name="name_cannot_be_longer_than_error">Name cannot be longer than 50 characters</string>
+    <string name="dosage_cannot_be_empty_error">Dosage cannot be empty</string>
+    <string name="dosage_cannot_be_longer_than_error">Dosage cannot be longer than 50 characters</string>
+    <string name="frequency_cannot_be_empty_error">Frequency cannot be empty</string>
+    <string name="frequency_cannot_be_longer_than_error">Frequency cannot be longer than 50 characters</string>
+    <string name="note_cannot_be_longer_than_error">Note cannot be longer than 500 characters</string>
+    <string name="portion_cannot_be_empty_error">Portion cannot be empty</string>
+    <string name="portion_cannot_be_longer_than_error">Portion cannot be longer than 50 characters</string>
 </resources>

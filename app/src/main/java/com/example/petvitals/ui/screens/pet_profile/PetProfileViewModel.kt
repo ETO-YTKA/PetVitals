@@ -58,7 +58,31 @@ data class PetProfileUiState(
     val showOnDeleteModal: Boolean = false,
 
     val isHealthNoteInEditMode: Boolean = false,
-    val isFoodNoteInEditMode: Boolean = false
+    val isFoodNoteInEditMode: Boolean = false,
+
+    val medicationNameErrorMessage: String? = null,
+    val medicationDosageErrorMessage: String? = null,
+    val medicationFrequencyErrorMessage: String? = null,
+    val medicationStartDateErrorMessage: String? = null,
+    val medicationEndDateErrorMessage: String? = null,
+    val medicationNoteErrorMessage: String? = null,
+
+    val foodNameErrorMessage: String? = null,
+    val foodPortionErrorMessage: String? = null,
+    val foodFrequencyErrorMessage: String? = null,
+    val foodNoteErrorMessage: String? = null,
+
+    val isMedicationNameError: Boolean = false,
+    val isMedicationDosageError: Boolean = false,
+    val isMedicationFrequencyError: Boolean = false,
+    val isMedicationStartDateError: Boolean = false,
+    val isMedicationEndDateError: Boolean = false,
+    val isMedicationNoteError: Boolean = false,
+
+    val isFoodNameError: Boolean = false,
+    val isFoodPortionError: Boolean = false,
+    val isFoodFrequencyError: Boolean = false,
+    val isFoodNoteError: Boolean = false,
 )
 
 @HiltViewModel
@@ -102,6 +126,12 @@ class PetProfileViewModel @Inject constructor(
         }
     }
 
+    fun toggleRegularMedication(isRegular: Boolean) {
+        _uiState.update { state ->
+            state.copy(isMedicationRegular = isRegular)
+        }
+    }
+
     fun onMedicationNameChange(value: String) {
         _uiState.update { state ->
             state.copy(medicationName = value)
@@ -117,12 +147,6 @@ class PetProfileViewModel @Inject constructor(
     fun onMedicationFrequencyChange(value: String) {
         _uiState.update { state ->
             state.copy(medicationFrequency = value)
-        }
-    }
-
-    fun toggleRegularMedication(isRegular: Boolean) {
-        _uiState.update { state ->
-            state.copy(isMedicationRegular = isRegular)
         }
     }
 
@@ -219,36 +243,134 @@ class PetProfileViewModel @Inject constructor(
         }
     }
 
-    fun onSaveMedicationClick() {
-        viewModelScope.launch {
-            val petId = uiState.value.pet.id
-            val (startDate, endDate) = when (uiState.value.isMedicationRegular) {
-                true -> {
-                    val startDate = null
-                    val endDate = null
-                    startDate to endDate
-                }
-                false -> {
-                    val startDate = uiState.value.medicationStartDate?.let { Date(it) }
-                    val endDate = uiState.value.medicationEndDate?.let { Date(it) }
-                    startDate to endDate
-                }
+    private fun validateMedicationForm(): Boolean {
+        val currentState = _uiState.value
+        var isValid = true
+
+        _uiState.update { it.copy(
+            isMedicationNameError = false,
+            isMedicationDosageError = false,
+            isMedicationFrequencyError = false,
+            isMedicationStartDateError = false,
+            isMedicationEndDateError = false,
+            isMedicationNoteError = false,
+            medicationNameErrorMessage = null,
+            medicationFrequencyErrorMessage = null,
+            medicationDosageErrorMessage = null,
+            medicationStartDateErrorMessage = null,
+            medicationEndDateErrorMessage = null,
+            medicationNoteErrorMessage = null
+        )}
+
+        if (currentState.medicationName.isBlank()) {
+            _uiState.update { it.copy(
+                isMedicationNameError = true,
+                medicationNameErrorMessage = context.getString(R.string.name_cannot_be_empty_error)
+            ) }
+            isValid = false
+        } else if (currentState.medicationName.length > 50) {
+            _uiState.update { it.copy(
+                isMedicationNameError = true,
+                medicationNameErrorMessage = context.getString(R.string.name_cannot_be_longer_than_error)
+            ) }
+            isValid = false
+        }
+
+        if (currentState.medicationDosage.isBlank()) {
+            _uiState.update { it.copy(
+                isMedicationDosageError = true,
+                medicationDosageErrorMessage = context.getString(R.string.dosage_cannot_be_empty_error)
+            ) }
+            isValid = false
+        } else if (currentState.medicationDosage.length > 50) {
+            _uiState.update { it.copy(
+                isMedicationDosageError = true,
+                medicationDosageErrorMessage = context.getString(R.string.dosage_cannot_be_longer_than_error)
+            ) }
+            isValid = false
+        }
+
+        if (currentState.medicationFrequency.isBlank()) {
+            _uiState.update { it.copy(
+                isMedicationFrequencyError = true,
+                medicationFrequencyErrorMessage = context.getString(R.string.frequency_cannot_be_empty_error)
+            ) }
+            isValid = false
+        } else if (currentState.medicationFrequency.length > 50) {
+            _uiState.update { it.copy(
+                isMedicationFrequencyError = true,
+                medicationFrequencyErrorMessage = context.getString(R.string.frequency_cannot_be_longer_than_error)
+            ) }
+            isValid = false
+        }
+
+        if (currentState.medicationNote.length > 500) {
+            _uiState.update { it.copy(
+                isMedicationNoteError = true,
+                medicationNoteErrorMessage = context.getString(R.string.note_cannot_be_longer_than_error)
+            ) }
+            isValid = false
+        }
+
+        if (!currentState.isMedicationRegular) {
+            val startDate = currentState.medicationStartDate
+            val endDate = currentState.medicationEndDate
+
+            if (startDate == null) {
+                _uiState.update { it.copy(
+                    isMedicationStartDateError = true,
+                    medicationStartDateErrorMessage = context.getString(
+                        R.string.start_date_must_be_selected_error)
+                ) }
+                isValid = false
             }
 
-            val medication = Medication(
-                petId = petId,
-                name = uiState.value.medicationName,
-                dosage = uiState.value.medicationDosage,
-                frequency = uiState.value.medicationFrequency,
-                startDate = startDate,
-                endDate = endDate,
-                note = uiState.value.medicationNote
-            )
+            if (startDate != null && endDate != null && endDate < startDate) {
+                _uiState.update { it.copy(
+                    isMedicationEndDateError = true,
+                    medicationEndDateErrorMessage = context.getString(
+                        R.string.end_date_must_be_after_start_date_error
+                    )
+                ) }
+                isValid = false
+            }
+        }
 
-            medicationRepository.addMedication(medication)
+        return isValid
+    }
 
-            toggleMedicationModal()
-            getPetData(petId)
+    fun onSaveMedicationClick() {
+        if (validateMedicationForm()) {
+            viewModelScope.launch {
+                val petId = uiState.value.pet.id
+                val (startDate, endDate) = when (uiState.value.isMedicationRegular) {
+                    true -> {
+                        val startDate = null
+                        val endDate = null
+                        startDate to endDate
+                    }
+                    false -> {
+                        val startDate = uiState.value.medicationStartDate?.let { Date(it) }
+                        val endDate = uiState.value.medicationEndDate?.let { Date(it) }
+                        startDate to endDate
+                    }
+                }
+
+                val medication = Medication(
+                    petId = petId,
+                    name = uiState.value.medicationName,
+                    dosage = uiState.value.medicationDosage,
+                    frequency = uiState.value.medicationFrequency,
+                    startDate = startDate,
+                    endDate = endDate,
+                    note = uiState.value.medicationNote
+                )
+
+                medicationRepository.addMedication(medication)
+
+                toggleMedicationModal()
+                getPetData(petId)
+            }
         }
     }
 
@@ -277,22 +399,92 @@ class PetProfileViewModel @Inject constructor(
         }
     }
 
+    private fun validateFoodForm(): Boolean {
+        val currentState = _uiState.value
+        var isValid = true
+
+        _uiState.update { it.copy(
+            isFoodNameError = false,
+            isFoodPortionError = false,
+            isFoodFrequencyError = false,
+            isFoodNoteError = false,
+            foodNameErrorMessage = null,
+            foodPortionErrorMessage = null,
+            foodFrequencyErrorMessage = null,
+            foodNoteErrorMessage = null
+        )}
+
+        if (currentState.foodName.isBlank()) {
+            _uiState.update { it.copy(
+                isFoodNameError = true,
+                foodNameErrorMessage = context.getString(R.string.name_cannot_be_empty_error)
+            ) }
+            isValid = false
+        } else if (currentState.foodName.length > 50) {
+            _uiState.update { it.copy(
+                isFoodNameError = true,
+                foodNameErrorMessage = context.getString(R.string.name_cannot_be_longer_than_error)
+            ) }
+            isValid = false
+        }
+
+        if (currentState.foodPortion.isBlank()) {
+            _uiState.update { it.copy(
+                isFoodPortionError = true,
+                foodPortionErrorMessage = context.getString(R.string.portion_cannot_be_empty_error)
+            ) }
+            isValid = false
+        } else if (currentState.foodPortion.length > 50) {
+            _uiState.update { it.copy(
+                isFoodPortionError = true,
+                foodPortionErrorMessage = context.getString(R.string.portion_cannot_be_longer_than_error)
+            ) }
+            isValid = false
+        }
+
+        if (currentState.foodFrequency.isBlank()) {
+            _uiState.update { it.copy(
+                isFoodFrequencyError = true,
+                foodFrequencyErrorMessage = context.getString(R.string.frequency_cannot_be_empty_error)
+            ) }
+            isValid = false
+        } else if (currentState.foodFrequency.length > 50) {
+            _uiState.update { it.copy(
+                isFoodFrequencyError = true,
+                foodFrequencyErrorMessage = context.getString(R.string.frequency_cannot_be_longer_than_error)
+            ) }
+            isValid = false
+        }
+
+        if (currentState.foodNote.length > 500) {
+            _uiState.update { it.copy(
+                isFoodNoteError = true,
+                foodNoteErrorMessage = context.getString(R.string.note_cannot_be_longer_than_error)
+            ) }
+            isValid = false
+        }
+
+        return isValid
+    }
+
     fun onSaveFoodClick() {
-        viewModelScope.launch {
-            val petId = uiState.value.pet.id
+        if (validateFoodForm()) {
+            viewModelScope.launch {
+                val petId = uiState.value.pet.id
 
-            val food = Food(
-                petId = petId,
-                name = uiState.value.foodName,
-                portion = uiState.value.foodPortion,
-                frequency = uiState.value.foodFrequency,
-                note = uiState.value.foodNote
-            )
+                val food = Food(
+                    petId = petId,
+                    name = uiState.value.foodName,
+                    portion = uiState.value.foodPortion,
+                    frequency = uiState.value.foodFrequency,
+                    note = uiState.value.foodNote
+                )
 
-            foodRepository.addFood(food)
+                foodRepository.addFood(food)
 
-            toggleFoodModal()
-            getPetData(petId)
+                toggleFoodModal()
+                getPetData(petId)
+            }
         }
     }
 

@@ -24,7 +24,8 @@ fun DatePickerField(
     value: String,
     onClick: () -> Unit,
     label: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isError: Boolean = false,
 ) {
     CustomOutlinedTextField(
         value = value,
@@ -47,7 +48,8 @@ fun DatePickerField(
                         }
                     }
                 }
-            }
+            },
+        isError = isError
     )
 }
 
