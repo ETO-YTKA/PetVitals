@@ -58,7 +58,6 @@ import com.example.petvitals.data.repository.pet.PetSpecies
 import com.example.petvitals.ui.components.ButtonWithIcon
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
-import com.example.petvitals.ui.components.ErrorMessage
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.components.ValueDropDown
@@ -123,10 +122,13 @@ fun CreateRecordScreen(
             onValueChange = viewModel::onTitleChange,
             label = { Text(stringResource(R.string.title)) },
             modifier = Modifier.fillMaxWidth(),
-            isError = uiState.isTitleError
+            isError = uiState.isTitleError,
+            supportingText = {
+                if (uiState.isTitleError) {
+                    Text(uiState.titleErrorMessage ?: "")
+                }
+            }
         )
-
-        uiState.titleErrorMessage?.let { message -> ErrorMessage(message) }
 
         Spacer(modifier = Modifier.height(Dimen.spaceMedium))
 
@@ -190,10 +192,14 @@ fun CreateRecordScreen(
             value = uiState.description,
             onValueChange = viewModel::onDescriptionChange,
             label = { Text(stringResource(R.string.description)) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = uiState.isDescriptionError,
+            supportingText = {
+                if (uiState.isDescriptionError) {
+                    Text(uiState.descriptionErrorMessage ?: "")
+                }
+            }
         )
-
-        uiState.descriptionErrorMessage?.let { message -> ErrorMessage(message) }
 
         Spacer(modifier = Modifier.height(Dimen.spaceLarge))
 

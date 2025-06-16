@@ -83,7 +83,6 @@ import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.DatePickerField
 import com.example.petvitals.ui.components.DatePickerModal
-import com.example.petvitals.ui.components.ErrorMessage
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.theme.Dimen
@@ -504,10 +503,13 @@ private fun AddMedicationBottomSheet(
                         contentDescription = null
                     )
                 },
-                isError = uiState.isMedicationNameError
+                isError = uiState.isMedicationNameError,
+                supportingText = {
+                    if (uiState.isMedicationNameError) {
+                        Text(uiState.medicationNameErrorMessage ?: "")
+                    }
+                }
             )
-
-            uiState.medicationNameErrorMessage?.let { message -> ErrorMessage(message) }
 
             CustomOutlinedTextField(
                 value = uiState.medicationDosage,
@@ -520,10 +522,13 @@ private fun AddMedicationBottomSheet(
                         contentDescription = null
                     )
                 },
-                isError = uiState.isMedicationDosageError
+                isError = uiState.isMedicationDosageError,
+                supportingText = {
+                    if (uiState.isMedicationDosageError) {
+                        Text(uiState.medicationDosageErrorMessage ?: "")
+                    }
+                }
             )
-
-            uiState.medicationDosageErrorMessage?.let { message -> ErrorMessage(message) }
 
             CustomOutlinedTextField(
                 value = uiState.medicationFrequency,
@@ -536,10 +541,13 @@ private fun AddMedicationBottomSheet(
                         contentDescription = null
                     )
                 },
-                isError = uiState.isMedicationFrequencyError
+                isError = uiState.isMedicationFrequencyError,
+                supportingText = {
+                    if (uiState.isMedicationFrequencyError) {
+                        Text(uiState.medicationFrequencyErrorMessage ?: "")
+                    }
+                }
             )
-
-            uiState.medicationFrequencyErrorMessage?.let { message -> ErrorMessage(message) }
 
             MedicationScheduleCard(
                 uiState = uiState,
@@ -559,10 +567,13 @@ private fun AddMedicationBottomSheet(
                         contentDescription = null
                     )
                 },
-                isError = uiState.isMedicationNoteError
+                isError = uiState.isMedicationNoteError,
+                supportingText = {
+                    if (uiState.isMedicationNoteError) {
+                        Text(uiState.medicationNoteErrorMessage ?: "")
+                    }
+                }
             )
-
-            uiState.medicationNoteErrorMessage?.let { message -> ErrorMessage(message) }
 
             Spacer(modifier = Modifier.height(Dimen.spaceMedium))
             ButtonWithIcon(
@@ -602,42 +613,63 @@ fun AddFoodBottomSheet(
             modifier = Modifier.padding(Dimen.spaceMedium).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
         ) {
+            Text(
+                text = stringResource(R.string.add_food),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+
             CustomOutlinedTextField(
                 value = uiState.foodName,
                 onValueChange = onFoodNameChange,
                 label = { Text(stringResource(R.string.food_name)) },
                 modifier = Modifier.fillMaxWidth(),
-                isError = uiState.isFoodNameError
+                isError = uiState.isFoodNameError,
+                supportingText = {
+                    if (uiState.isFoodNameError) {
+                        Text(uiState.foodNameErrorMessage ?: "")
+                    }
+                }
             )
-
-            uiState.foodNameErrorMessage?.let { message -> ErrorMessage(message) }
 
             CustomOutlinedTextField(
                 value = uiState.foodPortion,
                 onValueChange = onFoodPortionChange,
                 label = { Text(stringResource(R.string.portion)) },
                 modifier = Modifier.fillMaxWidth(),
+                isError = uiState.isFoodPortionError,
+                supportingText = {
+                    if (uiState.isFoodPortionError) {
+                        Text(uiState.foodPortionErrorMessage ?: "")
+                    }
+                }
             )
-
-            uiState.foodPortionErrorMessage?.let { message -> ErrorMessage(message) }
 
             CustomOutlinedTextField(
                 value = uiState.foodFrequency,
                 onValueChange = onFoodFrequencyChange,
                 label = { Text(stringResource(R.string.frequency)) },
                 modifier = Modifier.fillMaxWidth(),
+                isError = uiState.isFoodFrequencyError,
+                supportingText = {
+                    if (uiState.isFoodFrequencyError) {
+                        Text(uiState.foodFrequencyErrorMessage ?: "")
+                    }
+                }
             )
-
-            uiState.foodFrequencyErrorMessage?.let { message -> ErrorMessage(message) }
 
             CustomOutlinedTextField(
                 value = uiState.foodNote,
                 onValueChange = onFoodNoteChange,
                 label = { Text(stringResource(R.string.note)) },
                 modifier = Modifier.fillMaxWidth(),
+                isError = uiState.isFoodNoteError,
+                supportingText = {
+                    if (uiState.isFoodNoteError) {
+                        Text(uiState.foodNoteErrorMessage ?: "")
+                    }
+                }
             )
-
-            uiState.foodNoteErrorMessage?.let { message -> ErrorMessage(message) }
 
             Spacer(modifier = Modifier.height(Dimen.spaceMedium))
 
@@ -712,20 +744,26 @@ private fun MedicationScheduleCard(
                             ?: stringResource(R.string.tap_to_select_date),
                         onClick = toggleStartDatePicker,
                         label = stringResource(R.string.start_date),
-                        isError = uiState.isMedicationStartDateError
+                        isError = uiState.isMedicationStartDateError,
+                        supportingText = {
+                            if (uiState.isMedicationStartDateError) {
+                                Text(uiState.medicationStartDateErrorMessage ?: "")
+                            }
+                        }
                     )
-
-                    uiState.medicationStartDateErrorMessage?.let { message -> ErrorMessage(message) }
 
                     DatePickerField(
                         value = uiState.medicationEndDateValue
                             ?: stringResource(R.string.tap_to_select_date),
                         onClick = toggleEndDatePicker,
                         label = stringResource(R.string.end_date),
-                        isError = uiState.isMedicationEndDateError
+                        isError = uiState.isMedicationEndDateError,
+                        supportingText = {
+                            if (uiState.isMedicationEndDateError) {
+                                Text(uiState.medicationEndDateErrorMessage ?: "")
+                            }
+                        }
                     )
-
-                    uiState.medicationEndDateErrorMessage?.let { message -> ErrorMessage(message) }
                 }
             }
         }

@@ -26,6 +26,7 @@ fun DatePickerField(
     label: String,
     modifier: Modifier = Modifier,
     isError: Boolean = false,
+    supportingText: (@Composable () -> Unit)? = null
 ) {
     CustomOutlinedTextField(
         value = value,
@@ -49,7 +50,8 @@ fun DatePickerField(
                     }
                 }
             },
-        isError = isError
+        isError = isError,
+        supportingText = supportingText
     )
 }
 
