@@ -341,6 +341,7 @@ class AddEditPetViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 petRepository.addPetToUser(pet)
+                onSuccess()
             } catch (e: Exception) {
                 Log.d("AddPetViewModel", "addPet: ${e.message}")
             }
@@ -420,6 +421,7 @@ class AddEditPetViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 petRepository.updatePet(pet)
+                onSuccess()
             } catch (e: Exception) {
                 Log.d("AddPetViewModel", "updatePet: ${e.message}")
             }

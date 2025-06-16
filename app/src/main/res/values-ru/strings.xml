@@ -170,4 +170,7 @@
     <string name="email_not_verified">Эл. почта не подтверждена</string>
     <string name="send_verification_email">Отправить письмо для подтверждения</string>
     <string name="email_not_verified_message">Ваш email ещё не подтверждён. Пожалуйста, проверьте свой профиль.</string>
+    <string name="delete_account_title">Удалить аккаунт?</string>
+    <string name="delete_account_confirmation_message">Это действие необратимо. Для подтверждения введите ваш пароль.</string>
+    <string name="incorrect_password_error">Неправильный пароль</string>
 </resources>
