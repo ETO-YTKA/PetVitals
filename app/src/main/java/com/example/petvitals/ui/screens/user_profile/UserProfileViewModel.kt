@@ -17,14 +17,17 @@ data class UserProfileUiState(
     val username: String = "",
     val email: String = "",
     val password: String = "",
-    val showDeleteAccountModal: Boolean = false
+    val showDeleteAccountModal: Boolean = false,
+
+    val isEmailVerified: Boolean = true,
+    val isPasswordIncorrect: Boolean = false
 )
 
 @HiltViewModel
 class UserProfileViewModel @Inject constructor(
     private val accountService: AccountService,
     private val userRepository: UserRepository,
-    private val petRepository: PetRepository
+    private val petRepository: PetRepository,
 ): PetVitalsAppViewModel() {
 
     private val _uiState = MutableStateFlow(UserProfileUiState())
@@ -42,7 +45,12 @@ class UserProfileViewModel @Inject constructor(
 
     fun deleteAccount() {
         launchCatching {
-            accountService.signIn(uiState.value.email, uiState.value.password)
+            try {
+                accountService.signIn(uiState.value.email, uiState.value.password)
+            } catch (e: Exception) {
+                _uiState.update { state -> state.copy(isPasswordIncorrect = true) }
+                return@launchCatching
+            }
 
             userRepository.deleteCurrentUser()
             petRepository.deleteAllPets()
@@ -68,9 +76,16 @@ class UserProfileViewModel @Inject constructor(
             _uiState.update { state ->
                 state.copy(
                     username = user.username,
-                    email = user.email
+                    email = user.email,
+                    isEmailVerified = accountService.isEmailVerified
                 )
             }
+        }
+    }
+
+    fun sendVerificationEmail() {
+        launchCatching {
+            accountService.sendVerificationEmail()
         }
     }
 }

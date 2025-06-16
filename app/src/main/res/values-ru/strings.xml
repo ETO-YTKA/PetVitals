@@ -167,4 +167,7 @@
     <string name="breed_cannot_be_longer_than_error">Порода не может быть длиннее 100 символов</string>
     <string name="year_cannot_be_empty">Год не может быть пустым</string>
     <string name="date_of_birth_cannot_be_empty">Дата рождения не может быть пустой</string>
+    <string name="email_not_verified">Эл. почта не подтверждена</string>
+    <string name="send_verification_email">Отправить письмо для подтверждения</string>
+    <string name="email_not_verified_message">Ваш email ещё не подтверждён. Пожалуйста, проверьте свой профиль.</string>
 </resources>

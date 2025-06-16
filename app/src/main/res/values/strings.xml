@@ -163,4 +163,10 @@
     <string name="breed_cannot_be_longer_than_error">Breed cannot be longer than 100 characters</string>
     <string name="year_cannot_be_empty">Year cannot be empty</string>
     <string name="date_of_birth_cannot_be_empty">Date of birth cannot be empty</string>
+    <string name="email_not_verified">Email not verified</string>
+    <string name="send_verification_email">Send verification email</string>
+    <string name="email_not_verified_message">Your email is not verified yet. Please check your profile.</string>
+    <string name="delete_account_title">Delete account?</string>
+    <string name="delete_account_confirmation_message">This action is permanent. To confirm, please enter your password.</string>
+    <string name="incorrect_password_error">Incorrect password</string>
 </resources>

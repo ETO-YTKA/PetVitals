@@ -1,7 +1,11 @@
 package com.example.petvitals.data.service.account
 
+import android.content.Context
+import android.widget.Toast
+import com.example.petvitals.R
 import com.example.petvitals.data.repository.user.User
 import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -9,7 +13,8 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class AccountServiceImpl @Inject constructor(
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    @ApplicationContext private val context: Context
 ) : AccountService {
     override val currentUser: Flow<User?>
         get() = callbackFlow {
@@ -24,12 +29,23 @@ class AccountServiceImpl @Inject constructor(
     override val currentUserId: String
         get() = auth.currentUser?.uid.orEmpty()
 
+    override val isEmailVerified: Boolean
+        get() = auth.currentUser?.isEmailVerified ?: false
+
     override fun hasUser(): Boolean {
         return auth.currentUser != null
     }
 
     override suspend fun signIn(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password).await()
+
+        if (!isEmailVerified) {
+            Toast.makeText(
+                context,
+                context.getString(R.string.email_not_verified_message),
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 
     override suspend fun signUp(
@@ -47,5 +63,9 @@ class AccountServiceImpl @Inject constructor(
 
     override suspend fun deleteAccount() {
         auth.currentUser!!.delete().await()
+    }
+
+    override suspend fun sendVerificationEmail() {
+        auth.currentUser?.sendEmailVerification()?.await()
     }
 }
