@@ -23,7 +23,7 @@ class MedicationRepositoryImpl @Inject constructor(
             .map { it.toObject<Medication>() }
     }
 
-    override suspend fun addMedication(medication: Medication) {
+    override suspend fun saveMedication(medication: Medication) {
 
         val userId = accountService.currentUserId
         firestore
@@ -32,16 +32,6 @@ class MedicationRepositoryImpl @Inject constructor(
             .collection("medications").document(medication.id)
             .set(medication)
             .await()
-    }
-
-    override suspend fun updateMedication(medication: Medication) {
-
-        val userId = accountService.currentUserId
-        firestore
-            .collection("users").document(userId)
-            .collection("pets").document(medication.petId)
-            .collection("medications").document(medication.id)
-            .set(medication)
     }
 
     override suspend fun deleteMedication(medication: Medication) {

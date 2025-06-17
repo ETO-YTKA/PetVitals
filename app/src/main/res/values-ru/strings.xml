@@ -174,4 +174,7 @@
     <string name="delete_account_confirmation_message">Это действие необратимо. Для подтверждения введите ваш пароль.</string>
     <string name="incorrect_password_error">Неправильный пароль</string>
     <string name="edit_record">Редактировать запись</string>
+    <string name="nutrition">Питание</string>
+    <string name="edit_medication">Редактировать лекарство</string>
+    <string name="edit_food">Редактировать корм</string>
 </resources>

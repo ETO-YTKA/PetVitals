@@ -22,7 +22,7 @@ fun ConfirmationDialog(
     title: String,
     text: String,
     modifier: Modifier = Modifier,
-    icon: Painter? = painterResource(R.drawable.ic_warning), // Optional icon, defaults to a warning icon
+    icon: Painter? = painterResource(R.drawable.ic_warning),
     confirmButtonText: String = stringResource(R.string.confirm),
     dismissButtonText: String = stringResource(R.string.cancel),
     isConfirmButtonDestructive: Boolean = false

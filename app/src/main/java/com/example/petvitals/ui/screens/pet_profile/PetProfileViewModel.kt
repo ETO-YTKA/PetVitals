@@ -35,17 +35,16 @@ data class PetProfileUiState(
     val updatedHealthNote: String = "",
     val updatedFoodNote: String = "",
 
+    val medicationId: String? = null,
     val medicationName: String = "",
     val medicationDosage: String = "",
     val medicationFrequency: String = "",
     val isMedicationRegular: Boolean = false,
-    val medicationStartDateValue: String? = null,
-    val medicationEndDateValue: String? = null,
-    val medicationNote: String = "",
-
     val medicationStartDate: Long? = null,
     val medicationEndDate: Long? = null,
+    val medicationNote: String = "",
 
+    val foodId: String? = null,
     val foodName: String = "",
     val foodPortion: String = "",
     val foodFrequency: String = "",
@@ -116,13 +115,30 @@ class PetProfileViewModel @Inject constructor(
 
     fun toggleMedicationModal() {
         _uiState.update { state ->
-            state.copy(showAddMedicationModal = !state.showAddMedicationModal)
+            state.copy(
+                showAddMedicationModal = !state.showAddMedicationModal,
+                medicationId = null,
+                medicationName = "",
+                medicationDosage = "",
+                medicationFrequency = "",
+                isMedicationRegular = false,
+                medicationStartDate = null,
+                medicationEndDate = null,
+                medicationNote = ""
+            )
         }
     }
 
     fun toggleFoodModal() {
         _uiState.update { state ->
-            state.copy(showAddFoodModal = !state.showAddFoodModal)
+            state.copy(
+                showAddFoodModal = !state.showAddFoodModal,
+                foodId = null,
+                foodName = "",
+                foodPortion = "",
+                foodFrequency = "",
+                foodNote = ""
+            )
         }
     }
 
@@ -152,30 +168,16 @@ class PetProfileViewModel @Inject constructor(
 
     fun onMedicationStartDateChange(value: Long?) {
         _uiState.update { state ->
-            val startDate = value?.let {
-                SimpleDateFormat(
-                    "dd MMMM yyyy",
-                    Locale.getDefault()
-                ).format(it)
-            }
             state.copy(
-                medicationStartDate = value,
-                medicationStartDateValue = startDate
+                medicationStartDate = value
             )
         }
     }
 
     fun onMedicationEndDateChange(value: Long?) {
         _uiState.update { state ->
-            val endDate = value?.let {
-                SimpleDateFormat(
-                    "dd MMMM yyyy",
-                    Locale.getDefault()
-                ).format(it)
-            }
             state.copy(
-                medicationEndDate = value,
-                medicationEndDateValue = endDate
+                medicationEndDate = value
             )
         }
     }
@@ -340,23 +342,26 @@ class PetProfileViewModel @Inject constructor(
     }
 
     fun onSaveMedicationClick() {
-        if (validateMedicationForm()) {
-            viewModelScope.launch {
-                val petId = uiState.value.pet.id
-                val (startDate, endDate) = when (uiState.value.isMedicationRegular) {
-                    true -> {
-                        val startDate = null
-                        val endDate = null
-                        startDate to endDate
-                    }
-                    false -> {
-                        val startDate = uiState.value.medicationStartDate?.let { Date(it) }
-                        val endDate = uiState.value.medicationEndDate?.let { Date(it) }
-                        startDate to endDate
-                    }
-                }
+        if (!validateMedicationForm()) return
 
-                val medication = Medication(
+        viewModelScope.launch {
+            var medication: Medication
+            val petId = uiState.value.pet.id
+            val (startDate, endDate) = when (uiState.value.isMedicationRegular) {
+                true -> {
+                    val startDate = null
+                    val endDate = null
+                    startDate to endDate
+                }
+                false -> {
+                    val startDate = uiState.value.medicationStartDate?.let { Date(it) }
+                    val endDate = uiState.value.medicationEndDate?.let { Date(it) }
+                    startDate to endDate
+                }
+            }
+
+            if (uiState.value.medicationId == null) {
+                medication = Medication(
                     petId = petId,
                     name = uiState.value.medicationName,
                     dosage = uiState.value.medicationDosage,
@@ -365,12 +370,23 @@ class PetProfileViewModel @Inject constructor(
                     endDate = endDate,
                     note = uiState.value.medicationNote
                 )
-
-                medicationRepository.addMedication(medication)
-
-                toggleMedicationModal()
-                getPetData(petId)
+            } else {
+                medication = Medication(
+                    id = uiState.value.medicationId!!,
+                    petId = petId,
+                    name = uiState.value.medicationName,
+                    dosage = uiState.value.medicationDosage,
+                    frequency = uiState.value.medicationFrequency,
+                    startDate = startDate,
+                    endDate = endDate,
+                    note = uiState.value.medicationNote
+                )
             }
+
+            medicationRepository.saveMedication(medication)
+
+            toggleMedicationModal()
+            getPetData(petId)
         }
     }
 
@@ -384,9 +400,18 @@ class PetProfileViewModel @Inject constructor(
     }
 
     fun onEditMedicationClick(medication: Medication) {
-        viewModelScope.launch {
-            medicationRepository.updateMedication(medication)
-            getPetData(medication.petId)
+        _uiState.update { state ->
+            state.copy(
+                medicationId = medication.id,
+                medicationName = medication.name,
+                medicationDosage = medication.dosage,
+                medicationFrequency = medication.frequency,
+                isMedicationRegular = medication.startDate == null && medication.endDate == null,
+                medicationStartDate = medication.startDate?.time,
+                medicationEndDate = medication.endDate?.time,
+                medicationNote = medication.note,
+                showAddMedicationModal = true,
+            )
         }
     }
 
@@ -470,15 +495,27 @@ class PetProfileViewModel @Inject constructor(
     fun onSaveFoodClick() {
         if (validateFoodForm()) {
             viewModelScope.launch {
+                val food: Food
                 val petId = uiState.value.pet.id
 
-                val food = Food(
-                    petId = petId,
-                    name = uiState.value.foodName,
-                    portion = uiState.value.foodPortion,
-                    frequency = uiState.value.foodFrequency,
-                    note = uiState.value.foodNote
-                )
+                if (uiState.value.foodId == null) {
+                    food = Food(
+                        petId = petId,
+                        name = uiState.value.foodName,
+                        portion = uiState.value.foodPortion,
+                        frequency = uiState.value.foodFrequency,
+                        note = uiState.value.foodNote
+                    )
+                } else {
+                    food = Food(
+                        id = uiState.value.foodId!!,
+                        petId = petId,
+                        name = uiState.value.foodName,
+                        portion = uiState.value.foodPortion,
+                        frequency = uiState.value.foodFrequency,
+                        note = uiState.value.foodNote
+                    )
+                }
 
                 foodRepository.addFood(food)
 
@@ -496,9 +533,15 @@ class PetProfileViewModel @Inject constructor(
     }
 
     fun onEditFoodClick(food: Food) {
-        viewModelScope.launch {
-            foodRepository.updateFood(food)
-            getPetData(food.petId)
+        _uiState.update {
+            it.copy(
+                foodId = food.id,
+                foodName = food.name,
+                foodPortion = food.portion,
+                foodFrequency = food.frequency,
+                foodNote = food.note,
+                showAddFoodModal = true
+            )
         }
     }
 

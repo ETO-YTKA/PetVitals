@@ -170,4 +170,7 @@
     <string name="delete_account_confirmation_message">This action is permanent. To confirm, please enter your password.</string>
     <string name="incorrect_password_error">Incorrect password</string>
     <string name="edit_record">Edit record</string>
+    <string name="nutrition">Nutrition</string>
+    <string name="edit_medication">Edit medication</string>
+    <string name="edit_food">Edit food</string>
 </resources>
