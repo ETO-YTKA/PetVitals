@@ -24,7 +24,7 @@ data class AddEditPet(val petId: String? = null)
 data class PetProfile(val petId: String)
 
 @Serializable
-object CreateRecord
+data class AddEditRecord(val recordId: String? = null)
 
 @Serializable
 object Records

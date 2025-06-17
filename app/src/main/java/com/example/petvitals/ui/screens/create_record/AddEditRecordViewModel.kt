@@ -44,7 +44,7 @@ data class CreateRecordUiState(
 )
 
 @HiltViewModel
-class CreateRecordViewModel @Inject constructor(
+class AddEditRecordViewModel @Inject constructor(
     private val recordRepository: RecordRepository,
     private val accountService: AccountService,
     private val petRepository: PetRepository,
@@ -120,6 +120,25 @@ class CreateRecordViewModel @Inject constructor(
         }
     }
 
+    fun loadRecordData(recordId: String) {
+        viewModelScope.launch {
+            val record = recordRepository.getRecordById(recordId)
+            if (record != null) {
+                _uiState.update { state ->
+                    state.copy(
+                        title = record.title,
+                        selectedType = record.type,
+                        date = record.date,
+                        description = record.description,
+                        selectedPets = record.petsId.mapNotNull { petId ->
+                            petRepository.getPetById(petId)
+                        }
+                    )
+                }
+            }
+        }
+    }
+
     private fun validateForm(): Boolean {
         var isValid = true
         val title = uiState.value.title
@@ -157,13 +176,17 @@ class CreateRecordViewModel @Inject constructor(
         return isValid
     }
 
-    fun onCreateRecordClick(onSuccess: () -> Unit) {
-        if (validateForm()) {
-            val userId = accountService.currentUserId
-            val title = uiState.value.title.takeIf { it.isNotBlank() }
-                ?: context.getString(uiState.value.selectedType.titleResId)
+    fun saveRecord(recordId: String? = null, onSuccess: () -> Unit) {
+        if (!validateForm()) return
 
-            val record = Record(
+        var record: Record
+        val userId = accountService.currentUserId
+        val title = uiState.value.title.takeIf { it.isNotBlank() }
+            ?: context.getString(uiState.value.selectedType.titleResId)
+
+        if (recordId != null) {
+            record = Record(
+                id = recordId,
                 userId = userId,
                 title = title,
                 type = uiState.value.selectedType,
@@ -172,12 +195,22 @@ class CreateRecordViewModel @Inject constructor(
                 petsId = uiState.value.selectedPets.map { pet -> pet.id },
                 petsName = uiState.value.selectedPets.map { pet -> pet.name }
             )
-
-            viewModelScope.launch {
-                recordRepository.createRecord(record)
-            }
-            onSuccess()
+        } else {
+            record = Record(
+                userId = userId,
+                title = title,
+                type = uiState.value.selectedType,
+                date = uiState.value.date,
+                description = uiState.value.description,
+                petsId = uiState.value.selectedPets.map { pet -> pet.id },
+                petsName = uiState.value.selectedPets.map { pet -> pet.name }
+            )
         }
+
+        viewModelScope.launch {
+            recordRepository.saveRecord(record)
+        }
+        onSuccess()
     }
 
     fun populateTypeOptions() {

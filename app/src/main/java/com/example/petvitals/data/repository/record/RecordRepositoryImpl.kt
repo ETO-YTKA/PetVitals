@@ -11,7 +11,7 @@ class RecordRepositoryImpl @Inject constructor(
     private val accountService: AccountService
 ) : RecordRepository {
 
-    override suspend fun createRecord(record: Record) {
+    override suspend fun saveRecord(record: Record) {
 
         firestore
             .collection("users").document(record.userId)
@@ -19,8 +19,14 @@ class RecordRepositoryImpl @Inject constructor(
             .set(record)
     }
 
-    override suspend fun getRecordsByPetId(petId: String): List<Record> {
-        TODO("Not yet implemented")
+    override suspend fun getRecordById(id: String): Record? {
+
+        return firestore
+            .collection("users").document(accountService.currentUserId)
+            .collection("records").document(id)
+            .get()
+            .await()
+            .toObject<Record>()
     }
 
     override suspend fun getAllRecord(): List<Record> {
@@ -57,10 +63,6 @@ class RecordRepositoryImpl @Inject constructor(
                 || record.petsName.any { it.contains(cond) }
         }
         return filteredRecords
-    }
-
-    override suspend fun updateRecord(record: Record) {
-        TODO("Not yet implemented")
     }
 
     override suspend fun deleteRecord(record: Record) {

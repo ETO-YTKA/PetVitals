@@ -21,14 +21,14 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.petvitals.AddEditPet
-import com.example.petvitals.CreateRecord
+import com.example.petvitals.AddEditRecord
 import com.example.petvitals.PetProfile
 import com.example.petvitals.Pets
 import com.example.petvitals.R
 import com.example.petvitals.Records
 import com.example.petvitals.UserProfile
 import com.example.petvitals.ui.screens.add_pet.AddEditPetScreen
-import com.example.petvitals.ui.screens.create_record.CreateRecordScreen
+import com.example.petvitals.ui.screens.create_record.AddEditRecordScreen
 import com.example.petvitals.ui.screens.pet_profile.PetProfileScreen
 import com.example.petvitals.ui.screens.pets.PetsScreen
 import com.example.petvitals.ui.screens.records.RecordsScreen
@@ -91,15 +91,17 @@ fun MainAppScreen(
                     onNavigateToEditPet = { petId -> navController.navigate(route = AddEditPet(petId)) }
                 )
             }
-            composable<CreateRecord> {
-                CreateRecordScreen(
+            composable<AddEditRecord> { backStackEntry ->
+                val addEditRecord: AddEditRecord = backStackEntry.toRoute()
+                AddEditRecordScreen(
+                    addEditRecord = addEditRecord,
                     onNavigateToRecords = { navController.navigate(route = Records) },
                     onPopBackStack = { navController.popBackStack() }
                 )
             }
             composable<Records> {
                 RecordsScreen(
-                    onNavigateToCreateRecord = { navController.navigate(route = CreateRecord) }
+                    onNavigateToAddEditRecord = { recordId -> navController.navigate(route = AddEditRecord(recordId)) }
                 )
             }
         }

@@ -27,7 +27,9 @@ fun <T> ValueDropDown(
     onValueChange: (T) -> Unit,
     options: List<DropDownOption<T>>,
     label: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isError: Boolean = false,
+    supportingText: @Composable (() -> Unit)? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -48,7 +50,9 @@ fun <T> ValueDropDown(
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
                 .menuAnchor(MenuAnchorType.PrimaryEditable)
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            isError = isError,
+            supportingText = supportingText,
         )
 
         ExposedDropdownMenu(

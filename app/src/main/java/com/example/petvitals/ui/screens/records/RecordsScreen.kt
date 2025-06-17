@@ -83,7 +83,7 @@ import com.example.petvitals.utils.decodeBase64ToImage
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecordsScreen(
-    onNavigateToCreateRecord: () -> Unit,
+    onNavigateToAddEditRecord: (String?) -> Unit,
     viewModel: RecordsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -123,7 +123,7 @@ fun RecordsScreen(
                             )
                         } else {
                             CustomIconButton(
-                                onClick = onNavigateToCreateRecord,
+                                onClick = { onNavigateToAddEditRecord(null) },
                                 painter = painterResource(id = R.drawable.ic_note_add),
                                 contentDescription = stringResource(R.string.create_record)
                             )
@@ -150,7 +150,7 @@ fun RecordsScreen(
                         recordWithPets = recordWithPets,
                         recordDate = viewModel.formatDateForDisplay(recordWithPets.record.date),
                         selected = uiState.selectedRecords.contains(recordWithPets.record),
-                        onEditClick = {},
+                        onEditClick = { record -> onNavigateToAddEditRecord(record.id) },
                         onDeleteClick = viewModel::deleteRecord,
                         modifier = Modifier
                             .pointerInput(recordWithPets) {
@@ -266,9 +266,8 @@ private fun RecordCard(
                         )
 
                         Text(
-                            text = "${stringResource(record.type.titleResId)} • $recordDate",
+                            text = "${stringResource(record.type.titleResId)}\n$recordDate",
                             style = MaterialTheme.typography.bodyMedium,
-                            maxLines = 1,
                             modifier = Modifier.alpha(0.7f)
                         )
                     }

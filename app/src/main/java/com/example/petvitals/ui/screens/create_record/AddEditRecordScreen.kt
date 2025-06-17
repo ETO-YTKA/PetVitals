@@ -2,8 +2,6 @@ package com.example.petvitals.ui.screens.create_record
 
 import android.icu.util.Calendar
 import androidx.compose.foundation.border
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -18,8 +16,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -52,12 +48,14 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import com.example.petvitals.AddEditRecord
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetSpecies
 import com.example.petvitals.ui.components.ButtonWithIcon
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
+import com.example.petvitals.ui.components.DatePickerField
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.components.ValueDropDown
@@ -65,13 +63,20 @@ import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.utils.decodeBase64ToImage
 
 @Composable
-fun CreateRecordScreen(
+fun AddEditRecordScreen(
+    addEditRecord: AddEditRecord,
     onPopBackStack: () -> Unit,
     onNavigateToRecords: () -> Unit,
-    viewModel: CreateRecordViewModel = hiltViewModel()
+    viewModel: AddEditRecordViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        addEditRecord.recordId?.let { id ->
+            viewModel.loadRecordData(id)
+        }
+    }
 
     if (uiState.showDatePicker) {
         DatePickerModal(
@@ -104,8 +109,13 @@ fun CreateRecordScreen(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
         topBar = {
+            val title = stringResource(
+            if (addEditRecord.recordId == null) R.string.create_record
+                    else R.string.edit_record
+            )
+
             TopBar(
-                title = { Text(stringResource(R.string.create_record)) },
+                title = { Text(title) },
                 navigationIcon = {
                     CustomIconButton(
                         onClick = onPopBackStack,
@@ -117,6 +127,7 @@ fun CreateRecordScreen(
         },
         columnModifier = Modifier.verticalScroll(rememberScrollState()),
     ) {
+        //Title
         CustomOutlinedTextField(
             value = uiState.title,
             onValueChange = viewModel::onTitleChange,
@@ -130,26 +141,27 @@ fun CreateRecordScreen(
             }
         )
 
-        Spacer(modifier = Modifier.height(Dimen.spaceMedium))
-
+        //Type
         ValueDropDown(
             value = uiState.selectedType,
             onValueChange = viewModel::onTypeChange,
             options = uiState.typeOptions,
-            label = stringResource(R.string.type)
+            label = stringResource(R.string.type),
+            supportingText = {}
         )
 
-        Spacer(modifier = Modifier.height(Dimen.spaceMedium))
-
+        //Date
         DatePickerField(
             value = viewModel.formatDateForDisplay(date = uiState.date, context = context),
             onClick = { viewModel.onShowDatePickerChange(true) },
             label = stringResource(R.string.date),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            supportingText = {}
         )
 
-        Spacer(modifier = Modifier.height(Dimen.spaceMedium))
+        Spacer(modifier = Modifier.height(Dimen.spaceSmall))
 
+        //Attach pets
         Column(
             Modifier
                 .fillMaxWidth()
@@ -188,6 +200,7 @@ fun CreateRecordScreen(
 
         Spacer(modifier = Modifier.height(Dimen.spaceMedium))
 
+        //Description
         CustomOutlinedTextField(
             value = uiState.description,
             onValueChange = viewModel::onDescriptionChange,
@@ -201,54 +214,26 @@ fun CreateRecordScreen(
             }
         )
 
-        Spacer(modifier = Modifier.height(Dimen.spaceLarge))
+        Spacer(modifier = Modifier.height(Dimen.spaceSmall))
 
+        //Save button
         ButtonWithIcon(
-            text = stringResource(R.string.create_record),
+            text = stringResource(R.string.save),
             onClick = {
-                viewModel.onCreateRecordClick(onSuccess = onNavigateToRecords)
+                viewModel.saveRecord(
+                    recordId = addEditRecord.recordId,
+                    onSuccess = onNavigateToRecords
+                )
             },
             icon = {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_check),
+                    painter = painterResource(id = R.drawable.ic_save),
                     contentDescription = null
                 )
             },
             modifier = Modifier.fillMaxWidth()
         )
     }
-}
-
-@Composable
-private fun DatePickerField(
-    value: String,
-    label: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    CustomOutlinedTextField(
-        value = value,
-        onValueChange = { },
-        modifier = modifier,
-        readOnly = true,
-        label = { Text(label) },
-        trailingIcon = {
-            Icon(
-                imageVector = Icons.Default.DateRange,
-                contentDescription = null
-            )
-        },
-        interactionSource = remember { MutableInteractionSource() }
-            .also { interactionSource ->
-                LaunchedEffect(interactionSource) {
-                    interactionSource.interactions.collect {
-                        if (it is PressInteraction.Release) {
-                            onClick()
-                        }
-                    }
-                }
-            }
-    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
