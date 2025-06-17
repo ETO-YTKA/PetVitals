@@ -1,6 +1,5 @@
 package com.example.petvitals.ui.screens.log_in
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,7 +35,7 @@ fun SignInScreen(
     viewModel: LogInViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
+    LocalContext.current
 
     ScreenLayout(
         columnModifier = modifier.verticalScroll(rememberScrollState()),
@@ -70,10 +69,6 @@ fun SignInScreen(
         Button(
             onClick = {
                 viewModel.onLogInClick(onNavigateToSplash = onNavigateToSplash)
-
-                uiState.errorMessage?.let { errorMessage ->
-                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-                }
             }
         ) {
             Text(text = stringResource(R.string.log_in))
