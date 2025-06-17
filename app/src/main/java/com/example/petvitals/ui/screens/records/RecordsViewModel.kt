@@ -49,6 +49,7 @@ class RecordsViewModel @Inject constructor(
 
     fun getRecords() {
         _uiState.update { state -> state.copy(isRefreshing = true) }
+
         viewModelScope.launch {
             val records = recordRepository.getAllRecord()
             val recordWithPets = records.map { record ->
@@ -71,7 +72,7 @@ class RecordsViewModel @Inject constructor(
 
     fun deleteSelectedRecords() {
         viewModelScope.launch {
-            val selectedRecords = _uiState.value.selectedRecords
+            val selectedRecords = uiState.value.selectedRecords
             selectedRecords.forEach { record ->
                 recordRepository.deleteRecord(record)
             }
@@ -82,6 +83,13 @@ class RecordsViewModel @Inject constructor(
                 selectionMode = false,
                 selectedRecords = emptyList()
             )
+        }
+    }
+
+    fun deleteRecord(record: Record) {
+        viewModelScope.launch {
+            recordRepository.deleteRecord(record)
+            getRecords()
         }
     }
 

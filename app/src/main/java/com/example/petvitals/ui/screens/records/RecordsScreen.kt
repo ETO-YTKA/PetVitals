@@ -32,9 +32,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,6 +56,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -67,7 +73,7 @@ import coil3.compose.AsyncImage
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetSpecies
-import com.example.petvitals.data.repository.record.RecordType
+import com.example.petvitals.data.repository.record.Record
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
@@ -141,12 +147,11 @@ fun RecordsScreen(
                     val recordWithPets = uiState.recordWithPets[index]
 
                     RecordCard(
-                        title = recordWithPets.record.title,
-                        description = recordWithPets.record.description,
-                        type = recordWithPets.record.type,
-                        date = viewModel.formatDateForDisplay(recordWithPets.record.date),
+                        recordWithPets = recordWithPets,
+                        recordDate = viewModel.formatDateForDisplay(recordWithPets.record.date),
                         selected = uiState.selectedRecords.contains(recordWithPets.record),
-                        pets = recordWithPets.pets,
+                        onEditClick = {},
+                        onDeleteClick = viewModel::deleteRecord,
                         modifier = Modifier
                             .pointerInput(recordWithPets) {
                                 this.detectTapGestures(
@@ -171,14 +176,16 @@ fun RecordsScreen(
 
 @Composable
 private fun RecordCard(
-    title: String,
-    description: String,
-    type: RecordType,
-    date: String,
-    pets: List<Pet>,
+    recordWithPets: RecordWithPets,
+    recordDate: String,
+    onEditClick: (Record) -> Unit,
+    onDeleteClick: (Record) -> Unit,
     modifier: Modifier = Modifier,
     selected: Boolean = false
 ) {
+    val record = recordWithPets.record
+    val pets = recordWithPets.pets
+
     Card(
         modifier = modifier
             .animateContentSize(
@@ -199,89 +206,140 @@ private fun RecordCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                //Header
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
                     modifier = Modifier.weight(1f)
                 ) {
+                    //Indicator
                     Box(
-                        modifier = Modifier.padding(end = Dimen.spaceMedium)
+                        modifier = Modifier
+                            .padding(end = Dimen.spaceMedium)
+                            .size(30.dp)
                     ) {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .background(
+                                    color = record.type.color,
+                                    shape = RoundedCornerShape(100)
+                                )
+                                .align(Alignment.Center)
+                        )
                         if (selected) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_check),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .align(Alignment.Center)
-                                    .background(
-                                        color = Color(0xff47df00),
-                                        shape = RoundedCornerShape(100)
-                                    )
-                            )
-                        } else {
                             Box(
                                 modifier = Modifier
-                                    .size(24.dp)
+                                    .size(17.dp)
+                                    .align(Alignment.TopEnd)
                                     .background(
-                                        color = type.color,
+                                        color = MaterialTheme.colorScheme.surfaceContainerHighest,
                                         shape = RoundedCornerShape(100)
                                     )
-                                    .align(Alignment.Center)
-                            )
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_check),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .background(
+                                            color = MaterialTheme.colorScheme.primary,
+                                            shape = RoundedCornerShape(100)
+                                        )
+                                        .size(14.dp)
+                                )
+                            }
                         }
                     }
 
+                    //Title, type, date
                     Column(
                         modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = title,
+                            text = record.title,
                             style = MaterialTheme.typography.titleMedium,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
+                        Text(
+                            text = "${stringResource(record.type.titleResId)} • $recordDate",
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 1,
+                            modifier = Modifier.alpha(0.7f)
+                        )
+                    }
+
+
+                    //Expand
+                    if (pets.isNotEmpty() || record.description.isNotEmpty()) {
+
+                        val rotationAngle by animateFloatAsState(
+                            targetValue = if (isExpanded) 180f else 0f,
+                            label = "ArrowRotation"
+                        )
+                        IconButton(
+                            onClick = { isExpanded = !isExpanded }
                         ) {
-                            Text(
-                                text = stringResource(type.titleResId),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1
-                            )
-
-                            Text(
-                                text = "•",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-
-                            Text(
-                                text = date,
-                                style = MaterialTheme.typography.bodyMedium,
-                                maxLines = 1
+                            Icon(
+                                imageVector = Icons.Rounded.KeyboardArrowUp,
+                                contentDescription = stringResource(R.string.expand),
+                                modifier = Modifier.rotate(rotationAngle)
                             )
                         }
                     }
 
-                    val rotationAngle by animateFloatAsState(
-                        targetValue = if (isExpanded) 180f else 0f,
-                        label = "ArrowRotation"
-                    )
-                    IconButton(
-                        onClick = { isExpanded = !isExpanded }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.KeyboardArrowUp,
-                            contentDescription = null,
-                            modifier = Modifier.rotate(rotationAngle)
-                        )
+                    //More options
+                    var showMenu by remember { mutableStateOf(false) }
+                    Box {
+                        IconButton(
+                            onClick = { showMenu = true }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.MoreVert,
+                                contentDescription = stringResource(R.string.more_options)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.edit)) },
+                                onClick = {
+                                    showMenu = false
+                                    onEditClick(record)
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.Edit,
+                                        contentDescription = null
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.delete)) },
+                                onClick = {
+                                    showMenu = false
+                                    onDeleteClick(record)
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.Delete,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
             }
+
+            //Description
             AnimatedContent(
                 targetState = isExpanded,
                 transitionSpec = { // Caution AI slop
@@ -322,21 +380,25 @@ private fun RecordCard(
                     }
                 }
             ) { targetState ->
-                Column {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
+                ) {
                     if (targetState) {
 
-                        FlowRow {
-                            pets.forEach { pet ->
-                                PetCard(pet)
+                        if (pets.isNotEmpty()) {
+                            FlowRow {
+                                pets.forEach { pet ->
+                                    PetCard(pet)
+                                }
                             }
                         }
 
-                        Spacer(modifier = Modifier.size(Dimen.spaceMedium))
-
-                        Text(
-                            text = description,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        if (record.description.isNotEmpty()) {
+                            Text(
+                                text = record.description,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                     }
                 }
             }
@@ -350,7 +412,11 @@ fun PetCard(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier.border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),
+        modifier = modifier.border(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outline,
+            shape = CircleShape
+        ),
         shape = CircleShape,
         colors = CardDefaults.cardColors().copy(
             containerColor = MaterialTheme.colorScheme.background
