@@ -1,6 +1,6 @@
 package com.example.petvitals.data.repository.pet
 
-import androidx.annotation.StringRes
+import androidx.annotation.DrawableRes
 import com.example.petvitals.R
 import java.util.Calendar
 import java.util.UUID
@@ -19,9 +19,9 @@ data class Pet(
     val foodNote: String? = null
 )
 
-enum class PetSpecies(@StringRes val titleRes: Int) {
-    CAT(R.string.cat),
-    DOG(R.string.dog)
+enum class PetSpecies(@DrawableRes val drawableRes: Int) {
+    CAT(R.drawable.ic_cat),
+    DOG(R.drawable.ic_dog)
 }
 
 enum class DobPrecision(val isApproximate: Boolean) {

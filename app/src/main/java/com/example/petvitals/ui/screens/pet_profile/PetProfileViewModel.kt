@@ -11,6 +11,7 @@ import com.example.petvitals.data.repository.medication.MedicationRepository
 import com.example.petvitals.data.repository.pet.DobPrecision
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
+import com.example.petvitals.data.repository.user.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +28,7 @@ import java.util.Locale
 import javax.inject.Inject
 
 data class PetProfileUiState(
+    //Main screen
     val pet: Pet = Pet(),
     val dob: String = "",
     val age: String = "",
@@ -35,6 +37,7 @@ data class PetProfileUiState(
     val updatedHealthNote: String = "",
     val updatedFoodNote: String = "",
 
+    //Medication
     val medicationId: String? = null,
     val medicationName: String = "",
     val medicationDosage: String = "",
@@ -44,21 +47,26 @@ data class PetProfileUiState(
     val medicationEndDate: Long? = null,
     val medicationNote: String = "",
 
+    //Food modal
     val foodId: String? = null,
     val foodName: String = "",
     val foodPortion: String = "",
     val foodFrequency: String = "",
     val foodNote: String = "",
 
+    //Modals modal
     val showAddMedicationModal: Boolean = false,
     val showAddFoodModal: Boolean = false,
     val showStartDatePicker: Boolean = false,
     val showEndDatePicker: Boolean = false,
     val showOnDeleteModal: Boolean = false,
+    val showShareModal: Boolean = false,
 
+    //States
     val isHealthNoteInEditMode: Boolean = false,
     val isFoodNoteInEditMode: Boolean = false,
 
+    //Medication error messages
     val medicationNameErrorMessage: String? = null,
     val medicationDosageErrorMessage: String? = null,
     val medicationFrequencyErrorMessage: String? = null,
@@ -66,11 +74,13 @@ data class PetProfileUiState(
     val medicationEndDateErrorMessage: String? = null,
     val medicationNoteErrorMessage: String? = null,
 
+    //Food error messages
     val foodNameErrorMessage: String? = null,
     val foodPortionErrorMessage: String? = null,
     val foodFrequencyErrorMessage: String? = null,
     val foodNoteErrorMessage: String? = null,
 
+    //Medication error states
     val isMedicationNameError: Boolean = false,
     val isMedicationDosageError: Boolean = false,
     val isMedicationFrequencyError: Boolean = false,
@@ -78,10 +88,15 @@ data class PetProfileUiState(
     val isMedicationEndDateError: Boolean = false,
     val isMedicationNoteError: Boolean = false,
 
+    //Food error states
     val isFoodNameError: Boolean = false,
     val isFoodPortionError: Boolean = false,
     val isFoodFrequencyError: Boolean = false,
     val isFoodNoteError: Boolean = false,
+
+    //Share modal
+    val email: String = "",
+    val users: Map<String, Boolean> = emptyMap()
 )
 
 @HiltViewModel
@@ -89,6 +104,7 @@ class PetProfileViewModel @Inject constructor(
     private val petRepository: PetRepository,
     private val medicationRepository: MedicationRepository,
     private val foodRepository: FoodRepository,
+    private val userRepository: UserRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -147,6 +163,72 @@ class PetProfileViewModel @Inject constructor(
             state.copy(isMedicationRegular = isRegular)
         }
     }
+
+    fun toggleShareModal() {
+        _uiState.update { state ->
+            state.copy(showShareModal = !state.showShareModal)
+        }
+    }
+
+    fun onEmailChange(value: String) {
+        _uiState.update { state ->
+            state.copy(email = value)
+        }
+    }
+
+//    fun sharePet() {
+//        val pet = uiState.value.pet
+//        val email = uiState.value.email
+//        val petWithShareUser = pet.copy(
+//            sharedWith = pet.sharedWith.plus(Pair(email, false))
+//        )
+//
+//
+//        viewModelScope.launch {
+//            val currentUser = userRepository.getCurrentUser()
+//            if (currentUser?.email == email) {
+//                Toast.makeText(
+//                    context,
+//                    context.getString(R.string.cannot_share_with_yourself),
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//                return@launch
+//            }
+//
+//            if (pet.sharedWith.contains(email)) {
+//                Toast.makeText(
+//                    context,
+//                    context.getString(R.string.already_shared_with_user),
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//                return@launch
+//            }
+//
+//            val isUserExists = userRepository.isUserExists(email)
+//
+//            if (isUserExists) {
+//                petRepository.updatePet(petWithShareUser)
+//
+//                _uiState.update { state ->
+//                    state.copy(
+//                        users = state.users.plus(Pair(email, false))
+//                    )
+//                }
+//
+//                Toast.makeText(
+//                    context,
+//                    context.getString(R.string.pet_shared_successfully),
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            } else {
+//                Toast.makeText(
+//                    context,
+//                    context.getString(R.string.user_does_not_exist),
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            }
+//        }
+//    }
 
     fun onMedicationNameChange(value: String) {
         _uiState.update { state ->

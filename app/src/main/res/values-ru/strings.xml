@@ -177,4 +177,9 @@
     <string name="nutrition">Питание</string>
     <string name="edit_medication">Редактировать лекарство</string>
     <string name="edit_food">Редактировать корм</string>
+    <string name="share">Поделиться</string>
+    <string name="pet_shared_successfully">Доступ успешно предоставлен</string>
+    <string name="user_does_not_exist">Пользователь с такой почтой не найден. Проверьте адрес.</string>
+    <string name="cannot_share_with_yourself">Вы не можете поделиться питомцем с самим собой.</string>
+    <string name="already_shared_with_user">Доступ к этому питомцу уже предоставлен данному пользователю.</string>
 </resources>

@@ -173,4 +173,9 @@
     <string name="nutrition">Nutrition</string>
     <string name="edit_medication">Edit medication</string>
     <string name="edit_food">Edit food</string>
+    <string name="share">Share</string>
+    <string name="pet_shared_successfully">Pet shared successfully</string>
+    <string name="user_does_not_exist">User with this email does not exist. Please check the email.</string>
+    <string name="cannot_share_with_yourself">You cannot share a pet with yourself.</string>
+    <string name="already_shared_with_user">This pet has already been shared with this user.</string>
 </resources>
