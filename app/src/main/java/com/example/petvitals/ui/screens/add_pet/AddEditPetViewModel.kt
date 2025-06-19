@@ -13,6 +13,9 @@ import com.example.petvitals.data.repository.pet.Gender
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
 import com.example.petvitals.data.repository.pet.PetSpecies
+import com.example.petvitals.data.repository.pet_permissions.PermissionLevel
+import com.example.petvitals.data.repository.pet_permissions.PetPermissionRepository
+import com.example.petvitals.data.repository.pet_permissions.PetPermissions
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.ui.components.DropDownOption
 import com.example.petvitals.utils.decodeBase64ToImage
@@ -68,6 +71,7 @@ data class AddEditPetUiState(
 class AddEditPetViewModel @Inject constructor(
     private val petRepository: PetRepository,
     private val accountService: AccountService,
+    private val petPermissionRepository: PetPermissionRepository,
     @ApplicationContext private val context: Context
 ): ViewModel() {
     private val _uiState = MutableStateFlow(AddEditPetUiState())
@@ -301,53 +305,6 @@ class AddEditPetViewModel @Inject constructor(
         return isValid
     }
 
-    fun addPet(onSuccess: () -> Unit) {
-        if (!isFormValid()) return
-
-        val uiState = uiState.value
-        val isDobApproximate = uiState.isDobApprox
-        val calendar = Calendar.getInstance()
-
-        val dob = if (isDobApproximate) {
-            val year = uiState.dobYear.toInt()
-            val month = uiState.selectedDobMonth ?: 0
-            val day = 1
-            calendar.set(year, month, day)
-            calendar.timeInMillis
-        } else {
-            uiState.dobMillis?.let { calendar.timeInMillis = it }
-            calendar.timeInMillis
-        }
-
-        val imageString = uiState.avatarUri?.let { processImageUri(context, it) }
-
-        val dobPrecision = when {
-            !isDobApproximate -> DobPrecision.EXACT
-            uiState.selectedDobMonth != null -> DobPrecision.YEAR_MONTH
-            else -> DobPrecision.YEAR
-        }
-
-        val pet = Pet(
-            userId = accountService.currentUserId,
-            name = uiState.name,
-            species = uiState.selectedSpecies,
-            breed = uiState.breed,
-            gender = uiState.selectedGender,
-            dobMillis = dob,
-            dobPrecision = dobPrecision,
-            avatar = imageString
-        )
-
-        viewModelScope.launch {
-            try {
-                petRepository.addPetToUser(pet)
-                onSuccess()
-            } catch (e: Exception) {
-                Log.d("AddPetViewModel", "addPet: ${e.message}")
-            }
-        }
-    }
-
     fun loadPetData(petId: String) {
         viewModelScope.launch {
             val pet = petRepository.getPetById(petId)
@@ -380,13 +337,15 @@ class AddEditPetViewModel @Inject constructor(
     }
 
     @OptIn(ExperimentalEncodingApi::class)
-    fun updatePet(
-        petId: String,
+    fun savePet(
+        petId: String?,
         onSuccess: () -> Unit
     ) {
         if (!isFormValid()) return
 
         val uiState = uiState.value
+        val userId = accountService.currentUserId
+
         val dobMillis = when {
             uiState.isDobApprox -> {
                 approxDobToMillis(uiState.selectedDobMonth, uiState.dobYear.toInt())
@@ -406,9 +365,7 @@ class AddEditPetViewModel @Inject constructor(
             else -> DobPrecision.YEAR
         }
 
-        val pet = Pet(
-            id = petId,
-            userId = accountService.currentUserId,
+        val basePet = Pet(
             name = uiState.name,
             species = uiState.selectedSpecies,
             breed = uiState.breed,
@@ -418,12 +375,30 @@ class AddEditPetViewModel @Inject constructor(
             avatar = avatar
         )
 
+        val isNewPet = petId == null
+        val petToSave = if (isNewPet) basePet else basePet.copy(id = petId)
+
         viewModelScope.launch {
             try {
-                petRepository.updatePet(pet)
+                petRepository.savePet(petToSave)
+
+                if (isNewPet) {
+                    val petPermissions = PetPermissions(
+                        userId = userId,
+                        petId = petToSave.id,
+                        permissionLevel = PermissionLevel.OWNER
+                    )
+
+                    try {
+                        petPermissionRepository.savePetPermission(petPermissions)
+                    } catch (e: Exception) {
+                        Log.e("AddEditPetViewModel", "Error saving UserPet for new pet: ${e.message}", e)
+                        return@launch
+                    }
+                }
                 onSuccess()
             } catch (e: Exception) {
-                Log.d("AddPetViewModel", "updatePet: ${e.message}")
+                Log.e("AddEditPetViewModel", "Error saving Pet: ${e.message}", e)
             }
         }
     }

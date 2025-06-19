@@ -200,12 +200,7 @@ fun AddEditPetScreen(
         Spacer(modifier = Modifier.size(Dimen.spaceMedium))
 
         Button(
-            onClick = {
-                when (uiState.editMode) {
-                    true -> addEditPet.petId?.let { viewModel.updatePet(petId = it, onSuccess = navigateToPets) }
-                    false -> viewModel.addPet(onSuccess = navigateToPets)
-                }
-            },
+            onClick = { viewModel.savePet(addEditPet.petId, navigateToPets) },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = stringResource(R.string.save))

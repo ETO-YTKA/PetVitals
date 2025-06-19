@@ -7,7 +7,6 @@ import java.util.UUID
 
 data class Pet(
     val id: String = UUID.randomUUID().toString(),
-    val userId: String = "",
     val name: String = "",
     val species: PetSpecies = PetSpecies.CAT,
     val breed: String = "",

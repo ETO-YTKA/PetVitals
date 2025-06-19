@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
+import com.example.petvitals.data.repository.pet_permissions.PetPermissionRepository
 import com.example.petvitals.data.repository.record.Record
 import com.example.petvitals.data.repository.record.RecordRepository
 import com.example.petvitals.data.repository.record.RecordType
@@ -48,6 +49,7 @@ class AddEditRecordViewModel @Inject constructor(
     private val recordRepository: RecordRepository,
     private val accountService: AccountService,
     private val petRepository: PetRepository,
+    private val petPermissionRepository: PetPermissionRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -179,38 +181,28 @@ class AddEditRecordViewModel @Inject constructor(
     fun saveRecord(recordId: String? = null, onSuccess: () -> Unit) {
         if (!validateForm()) return
 
-        var record: Record
         val userId = accountService.currentUserId
         val title = uiState.value.title.takeIf { it.isNotBlank() }
             ?: context.getString(uiState.value.selectedType.titleResId)
 
+        val record = Record(
+            userId = userId,
+            title = title,
+            type = uiState.value.selectedType,
+            date = uiState.value.date,
+            description = uiState.value.description,
+            petsId = uiState.value.selectedPets.map { pet -> pet.id },
+        )
+
+        //if editing
         if (recordId != null) {
-            record = Record(
-                id = recordId,
-                userId = userId,
-                title = title,
-                type = uiState.value.selectedType,
-                date = uiState.value.date,
-                description = uiState.value.description,
-                petsId = uiState.value.selectedPets.map { pet -> pet.id },
-                petsName = uiState.value.selectedPets.map { pet -> pet.name }
-            )
-        } else {
-            record = Record(
-                userId = userId,
-                title = title,
-                type = uiState.value.selectedType,
-                date = uiState.value.date,
-                description = uiState.value.description,
-                petsId = uiState.value.selectedPets.map { pet -> pet.id },
-                petsName = uiState.value.selectedPets.map { pet -> pet.name }
-            )
+            record.copy(id = recordId)
         }
 
         viewModelScope.launch {
             recordRepository.saveRecord(record)
+            onSuccess()
         }
-        onSuccess()
     }
 
     fun populateTypeOptions() {
@@ -253,7 +245,11 @@ class AddEditRecordViewModel @Inject constructor(
     fun getPets() {
         viewModelScope.launch {
             _uiState.update { state ->
-                state.copy(pets = petRepository.getUserPets())
+                state.copy(
+                    pets = petPermissionRepository.getCurrentUserPets().map { userPet ->
+                        petRepository.getPetById(userPet.petId)!!
+                    }
+                )
             }
         }
     }

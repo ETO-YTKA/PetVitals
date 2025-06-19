@@ -13,8 +13,7 @@ data class Record(
     val type: RecordType = RecordType.NOTE,
     val date: Date = Date(),
     val description: String = "",
-    val petsId: List<String> = emptyList(),
-    val petsName: List<String> = emptyList()
+    val petsId: List<String> = emptyList()
 )
 
 enum class RecordType(@StringRes val titleResId: Int, val color: Color) {

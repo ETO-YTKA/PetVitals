@@ -58,9 +58,8 @@ class RecordRepositoryImpl @Inject constructor(
             .map { it.toObject<Record>() }
 
         val filteredRecords = records.filter { record ->
-            record.title.contains(cond)
-                || record.description.contains(cond)
-                || record.petsName.any { it.contains(cond) }
+            record.title.lowercase().contains(cond)
+                || record.description.lowercase().contains(cond)
         }
         return filteredRecords
     }

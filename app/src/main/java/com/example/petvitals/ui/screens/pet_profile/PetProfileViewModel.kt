@@ -11,7 +11,6 @@ import com.example.petvitals.data.repository.medication.MedicationRepository
 import com.example.petvitals.data.repository.pet.DobPrecision
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
-import com.example.petvitals.data.repository.user.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -104,7 +103,6 @@ class PetProfileViewModel @Inject constructor(
     private val petRepository: PetRepository,
     private val medicationRepository: MedicationRepository,
     private val foodRepository: FoodRepository,
-    private val userRepository: UserRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -321,7 +319,7 @@ class PetProfileViewModel @Inject constructor(
     fun onSaveHealthNoteClick() {
         viewModelScope.launch {
             val pet = uiState.value.pet
-            petRepository.updatePet(pet.copy(healthNote = uiState.value.updatedHealthNote))
+            petRepository.savePet(pet.copy(healthNote = uiState.value.updatedHealthNote))
             toggleHealthNoteEditMode()
             getPetData(pet.id)
         }
@@ -500,7 +498,7 @@ class PetProfileViewModel @Inject constructor(
     fun onSaveFoodNoteClick() {
         viewModelScope.launch {
             val pet = uiState.value.pet
-            petRepository.updatePet(pet.copy(foodNote = uiState.value.updatedFoodNote))
+            petRepository.savePet(pet.copy(foodNote = uiState.value.updatedFoodNote))
             toggleFoodNoteEditMode()
             getPetData(pet.id)
         }

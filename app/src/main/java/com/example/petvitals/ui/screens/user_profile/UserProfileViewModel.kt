@@ -53,7 +53,7 @@ class UserProfileViewModel @Inject constructor(
             }
 
             userRepository.deleteCurrentUser()
-            petRepository.deleteAllPets()
+            petRepository.deleteAllUserPetsPets()
 
             accountService.deleteAccount()
         }
