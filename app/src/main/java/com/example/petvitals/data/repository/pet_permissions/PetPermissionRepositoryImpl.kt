@@ -52,4 +52,15 @@ class PetPermissionRepositoryImpl @Inject constructor(
             .set(petPermissions)
             .await()
     }
+
+    override suspend fun deletePetPermissionByUserPetIds(petId: String, userId: String) {
+
+        firestore
+            .collection("petPermission")
+            .whereEqualTo("petId", petId)
+            .whereEqualTo("userId", userId)
+            .get()
+            .await()
+            .forEach { it.reference.delete() }
+    }
 }

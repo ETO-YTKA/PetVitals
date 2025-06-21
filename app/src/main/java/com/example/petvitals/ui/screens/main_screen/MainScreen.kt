@@ -26,12 +26,14 @@ import com.example.petvitals.PetProfile
 import com.example.petvitals.Pets
 import com.example.petvitals.R
 import com.example.petvitals.Records
+import com.example.petvitals.SharePet
 import com.example.petvitals.UserProfile
 import com.example.petvitals.ui.screens.add_pet.AddEditPetScreen
 import com.example.petvitals.ui.screens.create_record.AddEditRecordScreen
 import com.example.petvitals.ui.screens.pet_profile.PetProfileScreen
 import com.example.petvitals.ui.screens.pets.PetsScreen
 import com.example.petvitals.ui.screens.records.RecordsScreen
+import com.example.petvitals.ui.screens.share_pet.SharePetScreen
 import com.example.petvitals.ui.screens.user_profile.UserProfileScreen
 
 @Composable
@@ -63,18 +65,16 @@ fun MainAppScreen(
                     onNavigateToSplash = onNavigateToSplash,
                     onNavigateToAddPet = { navController.navigate(route = AddEditPet()) },
                     onNavigateToPetProfile = { petId ->
-                        navController.navigate(
-                            route = PetProfile(
-                                petId
-                            )
-                        )
+                        navController.navigate(route = PetProfile(petId))
                     },
                     onNavigateToUserProfile = { navController.navigate(route = UserProfile) }
                 )
             }
+
             composable<UserProfile> {
                 UserProfileScreen(onPopBackStack = { navController.popBackStack() })
             }
+
             composable<AddEditPet> { backStackEntry ->
                 val addEditPet: AddEditPet = backStackEntry.toRoute()
                 AddEditPetScreen(
@@ -83,14 +83,17 @@ fun MainAppScreen(
                     onPopBackStack = { navController.popBackStack() }
                 )
             }
+
             composable<PetProfile> { backStackEntry ->
                 val petProfile: PetProfile = backStackEntry.toRoute()
                 PetProfileScreen(
                     petProfile = petProfile,
                     onNavigateToPets = { navController.navigate(route = Pets) },
-                    onNavigateToEditPet = { petId -> navController.navigate(route = AddEditPet(petId)) }
+                    onNavigateToEditPet = { petId -> navController.navigate(route = AddEditPet(petId)) },
+                    onNavigateToSharePet = { petId -> navController.navigate(route = SharePet(petId)) }
                 )
             }
+
             composable<AddEditRecord> { backStackEntry ->
                 val addEditRecord: AddEditRecord = backStackEntry.toRoute()
                 AddEditRecordScreen(
@@ -99,9 +102,18 @@ fun MainAppScreen(
                     onPopBackStack = { navController.popBackStack() }
                 )
             }
+
             composable<Records> {
                 RecordsScreen(
                     onNavigateToAddEditRecord = { recordId -> navController.navigate(route = AddEditRecord(recordId)) }
+                )
+            }
+
+            composable<SharePet> { backStackEntry ->
+                val sharePet: SharePet = backStackEntry.toRoute()
+                SharePetScreen(
+                    petId = sharePet.petId,
+                    onPopBackStack = { navController.popBackStack() }
                 )
             }
         }

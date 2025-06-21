@@ -179,7 +179,18 @@
     <string name="edit_food">Редактировать корм</string>
     <string name="share">Поделиться</string>
     <string name="pet_shared_successfully">Доступ успешно предоставлен</string>
-    <string name="user_does_not_exist">Пользователь с такой почтой не найден. Проверьте адрес.</string>
-    <string name="cannot_share_with_yourself">Вы не можете поделиться питомцем с самим собой.</string>
-    <string name="already_shared_with_user">Доступ к этому питомцу уже предоставлен данному пользователю.</string>
+    <string name="user_does_not_exist_error">Пользователь с такой почтой не найден. Проверьте адрес.</string>
+    <string name="cannot_share_with_yourself_error">Вы не можете поделиться питомцем с самим собой.</string>
+    <string name="already_shared_with_user_error">Доступ к этому питомцу уже предоставлен данному пользователю.</string>
+    <string name="permission_level_owner">Владелец</string>
+    <string name="permission_level_editor">Редактор</string>
+    <string name="permission_level_viewer">Только просмотр</string>
+    <string name="pet_sharing">Поделиться питомцем</string>
+    <string name="who_has_access">Кто имеет доступ</string>
+    <string name="only_you_have_access">Только вы! Пригласите друзей или семью, чтобы вместе заботиться о питомце.</string>
+    <string name="invite_new_user">Пригласить пользователя</string>
+    <string name="pet_sharing_add">Добавить</string>
+    <string name="remove_access">Закрыть доступ</string>
+    <string name="shared_with_user">Доступ для %1$s успешно предоставлен!</string>
+    <string name="something_went_wrong_error">Ой! Что-то пошло не так. Пожалуйста, попробуйте снова.</string>
 </resources>

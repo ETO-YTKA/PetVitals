@@ -3,6 +3,7 @@ package com.example.petvitals.data.repository.user
 import com.example.petvitals.data.service.account.AccountService
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
+import com.google.firebase.firestore.toObjects
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -28,6 +29,26 @@ class UserRepositoryImpl @Inject constructor(
             .await()
 
         return userDoc.toObject<User>()
+    }
+
+    override suspend fun getUserById(userId: String): User? {
+
+        return firestore
+            .collection("users").document(userId)
+            .get()
+            .await()
+            .toObject<User>()
+    }
+
+    override suspend fun getUserByEmail(email: String): User? {
+
+        return firestore
+            .collection("users")
+            .whereEqualTo("email", email)
+            .get()
+            .await()
+            .toObjects<User>()
+            .firstOrNull()
     }
 
     override suspend fun deleteCurrentUser() {

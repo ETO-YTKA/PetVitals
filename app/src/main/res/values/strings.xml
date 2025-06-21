@@ -175,7 +175,18 @@
     <string name="edit_food">Edit food</string>
     <string name="share">Share</string>
     <string name="pet_shared_successfully">Pet shared successfully</string>
-    <string name="user_does_not_exist">User with this email does not exist. Please check the email.</string>
-    <string name="cannot_share_with_yourself">You cannot share a pet with yourself.</string>
-    <string name="already_shared_with_user">This pet has already been shared with this user.</string>
+    <string name="user_does_not_exist_error">User with this email does not exist. Please check the email.</string>
+    <string name="cannot_share_with_yourself_error">You cannot share a pet with yourself.</string>
+    <string name="already_shared_with_user_error">This pet has already been shared with this user.</string>
+    <string name="permission_level_owner">Owner</string>
+    <string name="permission_level_editor">Editor</string>
+    <string name="permission_level_viewer">Viewer</string>
+    <string name="pet_sharing">Share Pet</string>
+    <string name="who_has_access">Who has access</string>
+    <string name="only_you_have_access">Just you! Invite friends or family to help care for your pet.</string>
+    <string name="invite_new_user">Invite Someone</string>
+    <string name="pet_sharing_add">Add</string>
+    <string name="remove_access">Remove Access</string>
+    <string name="shared_with_user">Successfully shared!</string>
+    <string name="something_went_wrong_error">Oops! Something went wrong. Please try again.</string>
 </resources>

@@ -5,4 +5,5 @@ interface PetPermissionRepository {
     suspend fun getCurrentUserPetById(petId: String): PetPermissions?
     suspend fun getUsersByPetId(petId: String): List<PetPermissions>
     suspend fun savePetPermission(petPermissions: PetPermissions)
+    suspend fun deletePetPermissionByUserPetIds(petId: String, userId: String)
 }

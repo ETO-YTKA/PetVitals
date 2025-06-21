@@ -31,3 +31,6 @@ object Records
 
 @Serializable
 object MainApp
+
+@Serializable
+data class SharePet(val petId: String)

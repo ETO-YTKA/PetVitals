@@ -14,7 +14,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
@@ -29,14 +28,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DividerDefaults
@@ -52,7 +49,6 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -101,6 +97,7 @@ fun PetProfileScreen(
     petProfile: PetProfile,
     onNavigateToPets: () -> Unit,
     onNavigateToEditPet: (String) -> Unit,
+    onNavigateToSharePet: (String) -> Unit,
     viewModel: PetProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -142,7 +139,7 @@ fun PetProfileScreen(
                                 text = { Text(stringResource(R.string.share)) },
                                 onClick = {
                                     isExpanded = false
-                                    viewModel.toggleShareModal()
+                                    onNavigateToSharePet(petProfile.petId)
                                 },
                                 leadingIcon = {
                                     Icon(
@@ -296,16 +293,6 @@ fun PetProfileScreen(
             confirmButtonText = stringResource(R.string.delete),
             dismissButtonText = stringResource(R.string.cancel),
             isConfirmButtonDestructive = true
-        )
-    }
-
-    if (uiState.showShareModal) {
-        ShareModal(
-            uiState = uiState,
-            onDismissRequest = viewModel::toggleShareModal,
-            onEmailChange = viewModel::onEmailChange,
-            onDeleteUserClick = {},
-            onShareClick = {}
         )
     }
 }
@@ -1291,81 +1278,6 @@ fun FoodList(
                         }
                     }
                 }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ShareModal(
-    uiState: PetProfileUiState,
-    onEmailChange: (String) -> Unit,
-    onShareClick: () -> Unit,
-    onDeleteUserClick: () -> Unit,
-    onDismissRequest: () -> Unit
-) {
-    BasicAlertDialog(
-        onDismissRequest = onDismissRequest
-    ) {
-        Surface(
-            shape = RoundedCornerShape(Dimen.spaceLarge),
-            tonalElevation = 4.dp,
-        ) {
-            Column(
-                modifier = Modifier.padding(Dimen.spaceLarge),
-                verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
-            ) {
-                FlowRow {
-                    uiState.users.forEach { user ->
-                       UserCard(
-                           email = user.key,
-                           onDeleteClick = {  }
-                       )
-                    }
-                }
-
-                CustomOutlinedTextField(
-                    value = uiState.email,
-                    onValueChange = onEmailChange,
-                    label = { Text(stringResource(R.string.email)) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-
-                ButtonWithIcon(
-                    text = stringResource(R.string.share),
-                    onClick = onShareClick,
-                    modifier = Modifier.fillMaxWidth(),
-                    icon = {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_share),
-                            contentDescription = null
-                        )
-                    },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun UserCard(
-    email: String,
-    onDeleteClick: () -> Unit,
-) {
-    Card {
-        Row {
-            Text(
-                text = email,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            IconButton(
-                onClick = onDeleteClick
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_close),
-                    contentDescription = null
-                )
             }
         }
     }

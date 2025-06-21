@@ -53,7 +53,7 @@ data class PetProfileUiState(
     val foodFrequency: String = "",
     val foodNote: String = "",
 
-    //Modals modal
+    //Modals state
     val showAddMedicationModal: Boolean = false,
     val showAddFoodModal: Boolean = false,
     val showStartDatePicker: Boolean = false,
@@ -92,10 +92,6 @@ data class PetProfileUiState(
     val isFoodPortionError: Boolean = false,
     val isFoodFrequencyError: Boolean = false,
     val isFoodNoteError: Boolean = false,
-
-    //Share modal
-    val email: String = "",
-    val users: Map<String, Boolean> = emptyMap()
 )
 
 @HiltViewModel
@@ -108,7 +104,6 @@ class PetProfileViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(PetProfileUiState())
     val uiState = _uiState.asStateFlow()
-
 
     fun toggleOnDeleteModal() {
         _uiState.update { state ->
@@ -161,72 +156,6 @@ class PetProfileViewModel @Inject constructor(
             state.copy(isMedicationRegular = isRegular)
         }
     }
-
-    fun toggleShareModal() {
-        _uiState.update { state ->
-            state.copy(showShareModal = !state.showShareModal)
-        }
-    }
-
-    fun onEmailChange(value: String) {
-        _uiState.update { state ->
-            state.copy(email = value)
-        }
-    }
-
-//    fun sharePet() {
-//        val pet = uiState.value.pet
-//        val email = uiState.value.email
-//        val petWithShareUser = pet.copy(
-//            sharedWith = pet.sharedWith.plus(Pair(email, false))
-//        )
-//
-//
-//        viewModelScope.launch {
-//            val currentUser = userRepository.getCurrentUser()
-//            if (currentUser?.email == email) {
-//                Toast.makeText(
-//                    context,
-//                    context.getString(R.string.cannot_share_with_yourself),
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//                return@launch
-//            }
-//
-//            if (pet.sharedWith.contains(email)) {
-//                Toast.makeText(
-//                    context,
-//                    context.getString(R.string.already_shared_with_user),
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//                return@launch
-//            }
-//
-//            val isUserExists = userRepository.isUserExists(email)
-//
-//            if (isUserExists) {
-//                petRepository.updatePet(petWithShareUser)
-//
-//                _uiState.update { state ->
-//                    state.copy(
-//                        users = state.users.plus(Pair(email, false))
-//                    )
-//                }
-//
-//                Toast.makeText(
-//                    context,
-//                    context.getString(R.string.pet_shared_successfully),
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            } else {
-//                Toast.makeText(
-//                    context,
-//                    context.getString(R.string.user_does_not_exist),
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            }
-//        }
-//    }
 
     fun onMedicationNameChange(value: String) {
         _uiState.update { state ->
