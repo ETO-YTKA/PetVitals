@@ -35,8 +35,10 @@ import com.example.petvitals.data.repository.pet_permissions.PermissionLevel
 import com.example.petvitals.ui.components.ButtonWithIcon
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
+import com.example.petvitals.ui.components.DropDownOption
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
+import com.example.petvitals.ui.components.ValueDropDown
 import com.example.petvitals.ui.theme.Dimen
 
 @Composable
@@ -122,8 +124,10 @@ fun SharePetScreen(
 
             item {
                 InviteUserForm(
+                    uiState = uiState,
                     email = uiState.email,
                     onEmailChange = viewModel::onEmailChange,
+                    onPermissionLevelChange = viewModel::onPermissionLevelChange,
                     onShareClick = { viewModel.onShareClick() },
                     isLoading = uiState.isLoading,
                     errorMessage = uiState.shareErrorMessage
@@ -134,7 +138,7 @@ fun SharePetScreen(
 }
 
 @Composable
-fun SectionHeader(
+private fun SectionHeader(
     title: String,
     icon: @Composable () -> Unit,
     modifier: Modifier = Modifier
@@ -154,7 +158,7 @@ fun SectionHeader(
 }
 
 @Composable
-fun UserPermissionCard(
+private fun UserPermissionCard(
     username: String,
     permissionLevel: PermissionLevel,
     modifier: Modifier = Modifier,
@@ -196,9 +200,11 @@ fun UserPermissionCard(
 }
 
 @Composable
-fun InviteUserForm(
+private fun InviteUserForm(
+    uiState: SharePetUiState,
     email: String,
     onEmailChange: (String) -> Unit,
+    onPermissionLevelChange: (PermissionLevel) -> Unit,
     onShareClick: () -> Unit,
     modifier: Modifier = Modifier,
     isLoading: Boolean,
@@ -207,7 +213,7 @@ fun InviteUserForm(
     OutlinedCard(modifier = modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(Dimen.spaceLarge),
-            verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
+            verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
         ) {
             CustomOutlinedTextField(
                 value = email,
@@ -216,6 +222,23 @@ fun InviteUserForm(
                 modifier = Modifier.fillMaxWidth(),
                 isError = errorMessage != null,
                 supportingText = { errorMessage?.let { Text(it) } }
+            )
+
+            ValueDropDown(
+                value = uiState.permissionLevel,
+                onValueChange = onPermissionLevelChange,
+                options = listOf(
+                    DropDownOption(
+                        display = stringResource(PermissionLevel.EDITOR.nameResId),
+                        value = PermissionLevel.EDITOR
+                    ),
+                    DropDownOption(
+                        display = stringResource(PermissionLevel.VIEWER.nameResId),
+                        value = PermissionLevel.VIEWER
+                    )
+                ),
+                label = stringResource(R.string.permission_level),
+                supportingText = { Text("") }
             )
 
             ButtonWithIcon(

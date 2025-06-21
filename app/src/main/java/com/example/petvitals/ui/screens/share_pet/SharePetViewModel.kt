@@ -24,6 +24,7 @@ data class SharePetUiState(
 
     val petId: String = "",
     val email: String = "",
+    val permissionLevel: PermissionLevel = PermissionLevel.VIEWER,
     val userPermissions: List<UserPermission> = emptyList(),
 
     val shareErrorMessage: String? = null
@@ -84,6 +85,12 @@ class SharePetViewModel @Inject constructor(
         }
     }
 
+    fun onPermissionLevelChange(value: PermissionLevel) {
+        _uiState.update { state ->
+            state.copy(permissionLevel = value)
+        }
+    }
+
     fun onShareClick() {
         _uiState.update { state ->
             state.copy(isLoading = true)
@@ -128,7 +135,7 @@ class SharePetViewModel @Inject constructor(
                     val petPermission = PetPermissions(
                         userId = targetUser.id,
                         petId = petId,
-                        permissionLevel = PermissionLevel.VIEWER
+                        permissionLevel = uiState.value.permissionLevel
                     )
 
                     try {

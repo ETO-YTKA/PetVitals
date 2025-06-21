@@ -193,4 +193,5 @@
     <string name="remove_access">Закрыть доступ</string>
     <string name="shared_with_user">Доступ для %1$s успешно предоставлен!</string>
     <string name="something_went_wrong_error">Ой! Что-то пошло не так. Пожалуйста, попробуйте снова.</string>
+    <string name="permission_level">Уровень доступа</string>
 </resources>
