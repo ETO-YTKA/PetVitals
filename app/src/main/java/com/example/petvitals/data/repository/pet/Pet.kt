@@ -1,7 +1,10 @@
 package com.example.petvitals.data.repository.pet
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import com.example.petvitals.R
+import com.example.petvitals.data.repository.pet_permissions.PermissionLevel
+import com.google.firebase.firestore.Exclude
 import java.util.Calendar
 import java.util.UUID
 
@@ -15,12 +18,14 @@ data class Pet(
     val dobPrecision: DobPrecision = DobPrecision.EXACT,
     val avatar: String? = null,
     val healthNote: String? = null,
-    val foodNote: String? = null
+    val foodNote: String? = null,
+    @get:Exclude
+    val currentUserPermission: PermissionLevel = PermissionLevel.OWNER
 )
 
-enum class PetSpecies(@DrawableRes val drawableRes: Int) {
-    CAT(R.drawable.ic_cat),
-    DOG(R.drawable.ic_dog)
+enum class PetSpecies(@DrawableRes val drawableRes: Int, @StringRes val stringRes: Int) {
+    CAT(R.drawable.ic_cat, R.string.cat),
+    DOG(R.drawable.ic_dog, R.string.dog)
 }
 
 enum class DobPrecision(val isApproximate: Boolean) {

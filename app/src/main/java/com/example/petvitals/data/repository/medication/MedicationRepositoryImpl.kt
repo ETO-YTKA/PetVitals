@@ -13,9 +13,8 @@ class MedicationRepositoryImpl @Inject constructor(
 
     override suspend fun getMedications(petId: String): List<Medication> {
 
-        val userId = accountService.currentUserId
+        accountService.currentUserId
         return firestore
-            .collection("users").document(userId)
             .collection("pets").document(petId)
             .collection("medications")
             .get()
@@ -25,9 +24,8 @@ class MedicationRepositoryImpl @Inject constructor(
 
     override suspend fun saveMedication(medication: Medication) {
 
-        val userId = accountService.currentUserId
+        accountService.currentUserId
         firestore
-            .collection("users").document(userId)
             .collection("pets").document(medication.petId)
             .collection("medications").document(medication.id)
             .set(medication)
@@ -36,9 +34,8 @@ class MedicationRepositoryImpl @Inject constructor(
 
     override suspend fun deleteMedication(medication: Medication) {
 
-        val userId = accountService.currentUserId
+        accountService.currentUserId
         firestore
-            .collection("users").document(userId)
             .collection("pets").document(medication.petId)
             .collection("medications").document(medication.id)
             .delete()

@@ -29,9 +29,23 @@ class PetRepositoryImpl @Inject constructor(
     override suspend fun deletePet(petId: String) {
 
         firestore
+            .collection("petPermissions")
+            .whereEqualTo("petId", petId)
+            .get()
+            .await()
+            .forEach {
+                firestore
+                    .collection("petPermissions").document(it.id)
+                    .delete()
+                    .await()
+            }
+
+        firestore
             .collection("pets").document(petId)
             .delete()
             .await()
+
+
     }
 
     override suspend fun deleteAllUserPetsPets() {

@@ -45,6 +45,19 @@ class PetPermissionRepositoryImpl @Inject constructor(
             .map { it.toObject<PetPermissions>() }
     }
 
+    override suspend fun getCurrentUserPermissionLevel(petId: String): PermissionLevel {
+
+        val userId = accountService.currentUserId
+        return firestore
+                .collection("petPermission")
+                .whereEqualTo("petId", petId)
+                .whereEqualTo("userId", userId)
+                .get()
+                .await()
+                .toObjects<PetPermissions>()
+                .first().permissionLevel
+    }
+
     override suspend fun savePetPermission(petPermissions: PetPermissions) {
 
         firestore

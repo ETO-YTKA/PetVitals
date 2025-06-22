@@ -44,9 +44,10 @@ class PetsViewModel @Inject constructor(
     fun refreshPets() {
         _uiState.update { state -> state.copy(isRefreshing = true) }
         viewModelScope.launch {
-            val pets = petPermissionRepository.getCurrentUserPets().map { userPet ->
-                petRepository.getPetById(userPet.petId)!!
-            }
+            val pets = petPermissionRepository.getCurrentUserPets().mapNotNull { userPet ->
+                val pet = petRepository.getPetById(userPet.petId)
+                pet?.let { pet.copy(currentUserPermission = userPet.permissionLevel) }
+            }.sortedBy { it.currentUserPermission }
 
             _uiState.update { state -> state.copy(pets = pets, isRefreshing = false) }
         }

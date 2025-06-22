@@ -7,18 +7,26 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -35,12 +43,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetSpecies
+import com.example.petvitals.data.repository.pet_permissions.PermissionLevel
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
@@ -85,7 +96,7 @@ fun PetsScreen(
             )
         }
     ) {
-        RequestNotificationPermission()
+        //RequestNotificationPermission()
 
         val pets = uiState.pets
 
@@ -93,18 +104,33 @@ fun PetsScreen(
             isRefreshing = uiState.isRefreshing,
             onRefresh = { viewModel.refreshPets() }
         ) {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = Dimen.petIconSize),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(pets.size) { index ->
-                    val pet = pets[index]
-                    PetProfile(
-                        pet = pet,
-                        modifier = Modifier.clickable(
-                            onClick = { onNavigateToPetProfile(pet.id) }
-                        )
+            //show text if empty
+            if (pets.isEmpty() && !uiState.isRefreshing) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.no_pets_added_yet),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(vertical = Dimen.spaceMedium),
+                    verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
+                ) {
+                    items(
+                        items = pets,
+                        key = { pet -> pet.id }
+                    ) { pet ->
+                        PetListItem(
+                            pet = pet,
+                            modifier = Modifier.clickable { onNavigateToPetProfile(pet.id) }
+                        )
+                    }
                 }
             }
         }
@@ -112,38 +138,98 @@ fun PetsScreen(
 }
 
 @Composable
-private fun PetProfile(pet: Pet, modifier: Modifier = Modifier) {
+fun PetListItem(
+    pet: Pet,
+    modifier: Modifier = Modifier
+) {
+    val isShared = pet.currentUserPermission != PermissionLevel.OWNER
+
     Card(
-        modifier = modifier
-            .padding(Dimen.spaceMedium)
-            .clip(RoundedCornerShape(Dimen.petIconCornerRadiusPercent))
+        modifier = modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = if (isShared) {
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+        } else {
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(Dimen.spaceMedium),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+        Row(
+            modifier = Modifier.padding(Dimen.spaceMedium),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            val fallbackRes = if (pet.species == PetSpecies.CAT) R.drawable.ic_cat
-                else R.drawable.ic_dog
+            //Pet avatar
+            val fallbackRes = when (pet.species) {
+                PetSpecies.CAT -> R.drawable.ic_cat
+                PetSpecies.DOG -> R.drawable.ic_dog
+            }
             val image = pet.avatar?.let { decodeBase64ToImage(it) }
-            val imageModifier = Modifier
-                .size(Dimen.petIconSize)
-                .then(if (image != null) Modifier.clip(CircleShape) else Modifier)
 
             AsyncImage(
                 model = image,
-                contentDescription = null,
+                contentDescription = pet.name,
                 contentScale = ContentScale.Crop,
                 fallback = painterResource(fallbackRes),
-                modifier = imageModifier
+                modifier = Modifier
+                    .size(64.dp)
+                    .then(if (image != null) Modifier.clip(CircleShape) else Modifier)
             )
 
-            Spacer(modifier = Modifier.height(Dimen.spaceMedium))
+            Spacer(modifier = Modifier.width(Dimen.spaceMedium))
 
-            Text(text = pet.name)
+            //Name, species, and permission Level
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = pet.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = stringResource(pet.species.stringRes),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                if (isShared) {
+                    PermissionRow(permissionLevel = pet.currentUserPermission)
+                }
+            }
+
+            Icon(
+                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                contentDescription = stringResource(R.string.view_profile),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
+    }
+}
+
+@Composable
+private fun PermissionRow(permissionLevel: PermissionLevel, modifier: Modifier = Modifier) {
+    val (icon, text) = when (permissionLevel) {
+        PermissionLevel.EDITOR -> painterResource(R.drawable.ic_edit) to stringResource(R.string.permission_level_editor)
+        PermissionLevel.VIEWER -> painterResource(R.drawable.ic_rounded_visibility) to stringResource(R.string.permission_level_viewer)
+        else -> return
+    }
+
+    Row(
+        modifier = modifier.padding(top = Dimen.spaceSmall),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
+    ) {
+        Icon(
+            painter = icon,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+            tint = MaterialTheme.colorScheme.secondary
+        )
+
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.secondary
+        )
     }
 }
 

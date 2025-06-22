@@ -135,7 +135,7 @@
     <string name="health">Здоровье</string>
     <string name="none">Нет</string>
     <string name="edit_note_content">Содержимое заметки</string>
-    <string name="empty_note_placeholder">Заметка пуста. Нажмите \"Изменить\", чтобы добавить содержимое.</string>
+    <string name="empty_note_placeholder_for_editor">Заметка пуста. Нажмите \"Изменить\", чтобы добавить содержимое.</string>
     <string name="edit">Изменить</string>
     <string name="collapse">Свернуть</string>
     <string name="expand">Развернуть</string>
@@ -191,7 +191,10 @@
     <string name="invite_new_user">Пригласить пользователя</string>
     <string name="pet_sharing_add">Добавить</string>
     <string name="remove_access">Закрыть доступ</string>
-    <string name="shared_with_user">Доступ для %1$s успешно предоставлен!</string>
+    <string name="shared_with_user">Доступ успешно предоставлен!</string>
     <string name="something_went_wrong_error">Ой! Что-то пошло не так. Пожалуйста, попробуйте снова.</string>
     <string name="permission_level">Уровень доступа</string>
+    <string name="empty_note_for_viewer">Заметка пуста.</string>
+    <string name="view_profile">Посмотреть профиль</string>
+    <string name="no_pets_added_yet">У вас пока нет питомцев</string>
 </resources>

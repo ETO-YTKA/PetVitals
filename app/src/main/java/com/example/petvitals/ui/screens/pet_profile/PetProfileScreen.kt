@@ -77,6 +77,7 @@ import com.example.petvitals.data.repository.food.Food
 import com.example.petvitals.data.repository.medication.Medication
 import com.example.petvitals.data.repository.medication.MedicationStatus
 import com.example.petvitals.data.repository.pet.Gender
+import com.example.petvitals.data.repository.pet_permissions.PermissionLevel
 import com.example.petvitals.ui.components.ButtonWithIcon
 import com.example.petvitals.ui.components.ConfirmationDialog
 import com.example.petvitals.ui.components.CustomIconButton
@@ -121,6 +122,8 @@ fun PetProfileScreen(
                     )
                 },
                 actions = {
+                    if (uiState.permissionLevel != PermissionLevel.OWNER) return@TopBar
+
                     var isExpanded by remember { mutableStateOf(false) }
                     Box {
                         IconButton(
@@ -206,7 +209,8 @@ fun PetProfileScreen(
                 onValueChange = viewModel::onHealthNoteChange,
                 onEditClick = viewModel::toggleHealthNoteEditMode,
                 onSaveClick = viewModel::onSaveHealthNoteClick,
-                inEditMode = uiState.isHealthNoteInEditMode
+                inEditMode = uiState.isHealthNoteInEditMode,
+                permissionLevel = uiState.permissionLevel
             )
 
             MedicationList(
@@ -228,7 +232,8 @@ fun PetProfileScreen(
                 onValueChange = viewModel::onUpdatedFoodNoteChange,
                 onEditClick = viewModel::toggleFoodNoteEditMode,
                 onSaveClick = viewModel::onSaveFoodNoteClick,
-                inEditMode = uiState.isFoodNoteInEditMode
+                inEditMode = uiState.isFoodNoteInEditMode,
+                permissionLevel = uiState.permissionLevel
             )
 
             FoodList(
@@ -371,7 +376,8 @@ private fun Note(
     onSaveClick: () -> Unit,
     onEditClick: () -> Unit,
     modifier: Modifier = Modifier,
-    inEditMode: Boolean = false
+    inEditMode: Boolean = false,
+    permissionLevel: PermissionLevel
 ) {
     OutlinedCard(
         modifier = modifier.fillMaxWidth(),
@@ -393,21 +399,23 @@ private fun Note(
                     style = MaterialTheme.typography.titleMedium,
                 )
 
-                IconButton(onClick = onEditClick) {
-                    when (inEditMode) {
-                        true -> {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_close),
-                                contentDescription = stringResource(R.string.cancel),
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                        }
-                        false -> {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_edit),
-                                contentDescription = stringResource(R.string.edit),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
+                if (permissionLevel != PermissionLevel.VIEWER) {
+                    IconButton(onClick = onEditClick) {
+                        when (inEditMode) {
+                            true -> {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_close),
+                                    contentDescription = stringResource(R.string.cancel),
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                            false -> {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_edit),
+                                    contentDescription = stringResource(R.string.edit),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                     }
                 }
@@ -438,12 +446,20 @@ private fun Note(
                     modifier = Modifier.fillMaxWidth()
                 )
             } else {
+                val text = when {
+                    permissionLevel == PermissionLevel.VIEWER -> stringResource(R.string.empty_note_for_viewer)
+                    content.isNullOrEmpty() -> stringResource(R.string.empty_note_placeholder_for_editor)
+                    else -> content
+                }
+                val color = when {
+                    content.isNullOrEmpty() -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    else -> MaterialTheme.colorScheme.onSurface
+                }
+
                 Text(
-                    text = if (content.isNullOrEmpty()) stringResource(R.string.empty_note_placeholder)
-                        else content,
+                    text = text,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (content.isNullOrEmpty()) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        else MaterialTheme.colorScheme.onSurface
+                    color = color
                 )
             }
         }
@@ -839,6 +855,7 @@ private fun MedicationCard(
     medication: Medication,
     onEditClick: (Medication) -> Unit,
     onDeleteClick: (Medication) -> Unit,
+    permissionLevel: PermissionLevel,
     modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -892,45 +909,47 @@ private fun MedicationCard(
                 }
 
                 //More options
-                var showMenu by remember { mutableStateOf(false) }
-                Box {
-                    IconButton(onClick = { showMenu = true }) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = stringResource(R.string.more_options)
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.edit)) },
-                            onClick = {
-                                showMenu = false
-                                onEditClick(medication)
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Outlined.Edit,
-                                    contentDescription = null
-                                )
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.delete)) },
-                            onClick = {
-                                showMenu = false
-                                onDeleteClick(medication)
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Outlined.Delete,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        )
+                if (permissionLevel != PermissionLevel.VIEWER) {
+                    var showMenu by remember { mutableStateOf(false) }
+                    Box {
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = stringResource(R.string.more_options)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.edit)) },
+                                onClick = {
+                                    showMenu = false
+                                    onEditClick(medication)
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.Edit,
+                                        contentDescription = null
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.delete)) },
+                                onClick = {
+                                    showMenu = false
+                                    onDeleteClick(medication)
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.Delete,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -980,6 +999,7 @@ fun FoodCard(
     food: Food,
     onEditClick: (Food) -> Unit,
     onDeleteClick: (Food) -> Unit,
+    permissionLevel: PermissionLevel,
     modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -1030,45 +1050,47 @@ fun FoodCard(
                 }
 
                 // More Options Menu
-                var showMenu by remember { mutableStateOf(false) }
-                Box {
-                    IconButton(onClick = { showMenu = true }) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = stringResource(R.string.more_options)
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.edit)) },
-                            onClick = {
-                                showMenu = false
-                                onEditClick(food)
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Outlined.Edit,
-                                    contentDescription = null
-                                )
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.delete)) },
-                            onClick = {
-                                showMenu = false
-                                onDeleteClick(food)
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Outlined.Delete,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        )
+                if (permissionLevel != PermissionLevel.VIEWER) {
+                    var showMenu by remember { mutableStateOf(false) }
+                    Box {
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = stringResource(R.string.more_options)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.edit)) },
+                                onClick = {
+                                    showMenu = false
+                                    onEditClick(food)
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.Edit,
+                                        contentDescription = null
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.delete)) },
+                                onClick = {
+                                    showMenu = false
+                                    onDeleteClick(food)
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.Delete,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -1180,22 +1202,25 @@ fun MedicationList(
                                 medication = medication,
                                 onEditClick = onEditMedicationClick,
                                 onDeleteClick = onDeleteMedicationClick,
+                                permissionLevel = uiState.permissionLevel,
                                 modifier = Modifier.padding(vertical = Dimen.spaceMedium)
                             )
                         }
 
-                        item {
-                            ButtonWithIcon(
-                                text = stringResource(R.string.add_medication),
-                                onClick = toggleMedicationModal,
-                                icon = {
-                                    Icon(
-                                        painter = painterResource(R.drawable.ic_add),
-                                        contentDescription = null
-                                    )
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                        if (uiState.permissionLevel != PermissionLevel.VIEWER) {
+                            item {
+                                ButtonWithIcon(
+                                    text = stringResource(R.string.add_medication),
+                                    onClick = toggleMedicationModal,
+                                    icon = {
+                                        Icon(
+                                            painter = painterResource(R.drawable.ic_add),
+                                            contentDescription = null
+                                        )
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
                         }
                     }
                 }
@@ -1259,22 +1284,25 @@ fun FoodList(
                                 food = food,
                                 onEditClick = onEditFoodClick,
                                 onDeleteClick = onDeleteFoodClick,
+                                permissionLevel = uiState.permissionLevel,
                                 modifier = Modifier.padding(vertical = Dimen.spaceMedium)
                             )
                         }
 
-                        item {
-                            ButtonWithIcon(
-                                text = stringResource(R.string.add_food),
-                                onClick = toggleFoodModal,
-                                icon = {
-                                    Icon(
-                                        painter = painterResource(R.drawable.ic_add),
-                                        contentDescription = null
-                                    )
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                        if (uiState.permissionLevel != PermissionLevel.VIEWER) {
+                            item {
+                                ButtonWithIcon(
+                                    text = stringResource(R.string.add_food),
+                                    onClick = toggleFoodModal,
+                                    icon = {
+                                        Icon(
+                                            painter = painterResource(R.drawable.ic_add),
+                                            contentDescription = null
+                                        )
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
                         }
                     }
                 }

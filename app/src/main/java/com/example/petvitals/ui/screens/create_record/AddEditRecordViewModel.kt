@@ -185,7 +185,7 @@ class AddEditRecordViewModel @Inject constructor(
         val title = uiState.value.title.takeIf { it.isNotBlank() }
             ?: context.getString(uiState.value.selectedType.titleResId)
 
-        val record = Record(
+        val baseRecord = Record(
             userId = userId,
             title = title,
             type = uiState.value.selectedType,
@@ -194,9 +194,9 @@ class AddEditRecordViewModel @Inject constructor(
             petsId = uiState.value.selectedPets.map { pet -> pet.id },
         )
 
-        //if editing
-        if (recordId != null) {
-            record.copy(id = recordId)
+        val record = when (recordId) {
+            null -> baseRecord
+            else -> baseRecord.copy(id = recordId)
         }
 
         viewModelScope.launch {
@@ -244,11 +244,12 @@ class AddEditRecordViewModel @Inject constructor(
 
     fun getPets() {
         viewModelScope.launch {
+            val pets = petPermissionRepository.getCurrentUserPets().mapNotNull { userPet ->
+                petRepository.getPetById(userPet.petId)
+            }
             _uiState.update { state ->
                 state.copy(
-                    pets = petPermissionRepository.getCurrentUserPets().map { userPet ->
-                        petRepository.getPetById(userPet.petId)!!
-                    }
+                    pets = pets
                 )
             }
         }

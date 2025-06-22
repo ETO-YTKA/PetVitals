@@ -118,7 +118,7 @@
     <string name="none">None</string>
     <string name="edit">Edit</string>
     <string name="edit_note_content">Note content</string>
-    <string name="empty_note_placeholder">This note is empty. Click edit to add content.</string>
+    <string name="empty_note_placeholder_for_editor">This note is empty. Click edit to add content.</string>
     <string name="health">Health</string>
     <string name="dosage">Dosage</string>
     <string name="frequency">Frequency</string>
@@ -190,4 +190,7 @@
     <string name="shared_with_user">Successfully shared!</string>
     <string name="something_went_wrong_error">Oops! Something went wrong. Please try again.</string>
     <string name="permission_level">Permission level</string>
+    <string name="empty_note_for_viewer">This note is empty.</string>
+    <string name="view_profile">View Profile</string>
+    <string name="no_pets_added_yet">No pets have been added yet.</string>
 </resources>

@@ -12,9 +12,8 @@ class FoodRepositoryImpl @Inject constructor(
 ): FoodRepository {
     override suspend fun getFood(petId: String): List<Food> {
 
-        val userId = accountService.currentUserId
+        accountService.currentUserId
         return firestore
-            .collection("users").document(userId)
             .collection("pets").document(petId)
             .collection("food")
             .get()
@@ -24,9 +23,8 @@ class FoodRepositoryImpl @Inject constructor(
 
     override suspend fun addFood(food: Food) {
 
-        val userId = accountService.currentUserId
+        accountService.currentUserId
         firestore
-            .collection("users").document(userId)
             .collection("pets").document(food.petId)
             .collection("food").document(food.id)
             .set(food)
@@ -35,9 +33,8 @@ class FoodRepositoryImpl @Inject constructor(
 
     override suspend fun updateFood(food: Food) {
 
-        val userId = accountService.currentUserId
+        accountService.currentUserId
         firestore
-            .collection("users").document(userId)
             .collection("pets").document(food.petId)
             .collection("food").document(food.id)
             .set(food)
@@ -46,9 +43,8 @@ class FoodRepositoryImpl @Inject constructor(
 
     override suspend fun deleteFood(food: Food) {
 
-        val userId = accountService.currentUserId
+        accountService.currentUserId
         firestore
-            .collection("users").document(userId)
             .collection("pets").document(food.petId)
             .collection("food").document(food.id)
             .delete()
