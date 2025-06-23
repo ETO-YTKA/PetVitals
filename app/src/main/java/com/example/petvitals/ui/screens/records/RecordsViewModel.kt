@@ -1,6 +1,5 @@
 package com.example.petvitals.ui.screens.records
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.data.repository.pet.Pet
@@ -9,6 +8,7 @@ import com.example.petvitals.data.repository.pet_permission.PermissionLevel
 import com.example.petvitals.data.repository.pet_permission.PetPermissionRepository
 import com.example.petvitals.data.repository.record.Record
 import com.example.petvitals.data.repository.record.RecordRepository
+import com.example.petvitals.data.repository.record.RecordType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,10 +18,17 @@ import javax.inject.Inject
 
 data class RecordsUiState(
     val recordsWithPets: List<RecordWithPets> = emptyList(),
-    val isRefreshing: Boolean = false,
+    val filteredRecordsWithPets: List<RecordWithPets>? = null,
+    val searchQuery: String = "",
     val selectedRecords: List<Record> = emptyList(),
+    val selectedPetFilters: Set<String> = emptySet(),
+    val selectedTypeFilters: Set<RecordType> = emptySet(),
+
+    val allPetsForFiltering: List<Pet> = emptyList(),
+    val allRecordTypesForFiltering: List<RecordType> = RecordType.entries,
+
+    val isRefreshing: Boolean = false,
     val selectionMode: Boolean = false,
-    val searchQuery: String = ""
 )
 
 data class RecordWithPets(
@@ -40,33 +47,34 @@ class RecordsViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     init {
+        getAllPetsForFiltering()
         getRecords()
     }
 
     fun onSearchQueryChange(query: String) {
         _uiState.update { state -> state.copy(searchQuery = query) }
-        getRecords()
+
+        search()
     }
 
     fun getRecords() {
-        if (uiState.value.searchQuery.isBlank()) {
-            _uiState.update { state -> state.copy(isRefreshing = true) }
-        }
+        _uiState.update { state -> state.copy(isRefreshing = true) }
 
         viewModelScope.launch {
-            val records = recordRepository.getCurrentUserRecords(uiState.value.searchQuery)
+            val records = recordRepository.getCurrentUserRecords()
+
             val recordWithPets = records.map { record ->
 
                 val pets: List<Pet> = record.petIds.mapNotNull { petId ->
                     val pet = petRepository.getPetById(petId)
-                    val currentUserPermission = petPermissionRepository.getCurrentUserPermissionLevel(petId) ?: return@mapNotNull null
+                    val currentUserPermission = petPermissionRepository.getCurrentUserPermissionLevel(petId)
+                        ?: return@mapNotNull null
+
                     pet?.copy(currentUserPermission = currentUserPermission)
                 }
-                val minPetPermission = pets.minByOrNull { pet -> pet.currentUserPermission }
-
+                val minPetPermission = pets.maxByOrNull { pet -> pet.currentUserPermission }
                 val recordWithPermission = record.copy(currentUserPermission = minPetPermission?.currentUserPermission ?: PermissionLevel.OWNER)
 
-                Log.d("RecordsViewModel", "record ${recordWithPermission.currentUserPermission}: ${minPetPermission?.currentUserPermission}")
                 RecordWithPets(recordWithPermission, pets)
             }
 
@@ -75,7 +83,8 @@ class RecordsViewModel @Inject constructor(
                     recordsWithPets = recordWithPets,
                     isRefreshing = false,
                     selectionMode = false,
-                    selectedRecords = emptyList()
+                    selectedRecords = emptyList(),
+                    filteredRecordsWithPets = null
                 )
             }
         }
@@ -121,5 +130,71 @@ class RecordsViewModel @Inject constructor(
                 selectionMode = newSelectionMode
             )
         }
+    }
+
+    fun getAllPetsForFiltering() {
+        viewModelScope.launch {
+            val pets = petPermissionRepository.getCurrentUserPets().mapNotNull { petPermission ->
+                petRepository.getPetById(petPermission.petId)
+            }
+            _uiState.update { state -> state.copy(allPetsForFiltering = pets) }
+        }
+    }
+
+    fun onPetFilterChipClick(petId: String) {
+        _uiState.update { state ->
+            val currentFilters = state.selectedPetFilters.toMutableSet()
+            if (currentFilters.contains(petId)) {
+                currentFilters.remove(petId)
+            } else {
+                currentFilters.add(petId)
+            }
+            state.copy(selectedPetFilters = currentFilters)
+        }
+
+        search()
+    }
+
+    fun onTypeFilterChipClicked(recordType: RecordType) {
+        _uiState.update { currentState ->
+            val currentFilters = currentState.selectedTypeFilters.toMutableSet()
+            if (currentFilters.contains(recordType)) {
+                currentFilters.remove(recordType)
+            } else {
+                currentFilters.add(recordType)
+            }
+            currentState.copy(selectedTypeFilters = currentFilters)
+        }
+
+        search()
+    }
+
+
+    fun search() {
+        val filteredRecords = uiState.value.recordsWithPets
+            .filter { recordWithPets ->
+                val query = uiState.value.searchQuery
+
+                recordWithPets.record.title.contains(query, ignoreCase = true)
+                    || recordWithPets.record.description.contains(query, ignoreCase = true)
+            }
+            .filter { recordWithPets ->
+                val petIds = recordWithPets.record.petIds
+                val petFilter = uiState.value.selectedPetFilters
+
+                if (petFilter.isEmpty()) return@filter true
+                petIds.any { petId ->
+                    petFilter.contains(petId)
+                }
+            }
+            .filter { recordWithPets ->
+                val recordType = recordWithPets.record.type
+                val typeFilter = uiState.value.selectedTypeFilters
+
+                if (typeFilter.isEmpty()) return@filter true
+                typeFilter.contains(recordType)
+            }
+
+        _uiState.update { state -> state.copy(filteredRecordsWithPets = filteredRecords) }
     }
 }

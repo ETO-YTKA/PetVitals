@@ -194,4 +194,7 @@
     <string name="view_profile">View Profile</string>
     <string name="no_pets_added_yet">No pets have been added yet.</string>
     <string name="clear_search">Clear search</string>
+    <string name="filter_by_pet">Filter by pet</string>
+    <string name="selected_option">Selected</string>
+    <string name="filter_by_type">Filter by type</string>
 </resources>

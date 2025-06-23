@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
+import com.example.petvitals.data.repository.pet_permission.PermissionLevel
 import com.example.petvitals.data.repository.pet_permission.PetPermissionRepository
 import com.example.petvitals.data.repository.record.Record
 import com.example.petvitals.data.repository.record.RecordRepository
@@ -244,8 +245,11 @@ class AddEditRecordViewModel @Inject constructor(
 
     fun getPets() {
         viewModelScope.launch {
-            val pets = petPermissionRepository.getCurrentUserPets().mapNotNull { userPet ->
-                petRepository.getPetById(userPet.petId)
+            val pets = petPermissionRepository.getCurrentUserPets().mapNotNull { petPermission ->
+                val pet = petRepository.getPetById(petPermission.petId)
+                if (petPermission.permissionLevel == PermissionLevel.VIEWER) {
+                    return@mapNotNull null
+                } else pet
             }
             _uiState.update { state ->
                 state.copy(

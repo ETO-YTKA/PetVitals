@@ -28,12 +28,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
@@ -46,6 +48,8 @@ import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -83,6 +87,7 @@ import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetSpecies
 import com.example.petvitals.data.repository.pet_permission.PermissionLevel
 import com.example.petvitals.data.repository.record.Record
+import com.example.petvitals.data.repository.record.RecordType
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.theme.Dimen
@@ -93,6 +98,7 @@ import com.example.petvitals.utils.formatDateToStringLocale
 @Composable
 fun RecordsScreen(
     onNavigateToAddEditRecord: (String?) -> Unit,
+    onNavigateToProfile: () -> Unit,
     viewModel: RecordsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -105,7 +111,8 @@ fun RecordsScreen(
                 onSearchTriggered = viewModel::getRecords,
                 isSelectionMode = uiState.selectionMode,
                 onDeleteClick = viewModel::deleteSelectedRecords,
-                onAddClick = { onNavigateToAddEditRecord(null) }
+                onAddClick = { onNavigateToAddEditRecord(null) },
+                onNavigateToProfile = onNavigateToProfile
             )
         }
     ) {
@@ -118,8 +125,21 @@ fun RecordsScreen(
                 contentPadding = PaddingValues(vertical = Dimen.spaceMedium),
                 verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
             ) {
+                item {
+                    FilterBar(
+                        allPets = uiState.allPetsForFiltering,
+                        allTypes = uiState.allRecordTypesForFiltering,
+                        selectedPetIds = uiState.selectedPetFilters,
+                        selectedTypes = uiState.selectedTypeFilters,
+                        onPetChipClicked = viewModel::onPetFilterChipClick,
+                        onTypeChipClicked = viewModel::onTypeFilterChipClicked
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(top = Dimen.spaceSmall))
+                }
+
                 items(
-                    items = uiState.recordsWithPets,
+                    items = uiState.filteredRecordsWithPets ?: uiState.recordsWithPets,
                     key = { it.record.id }
                 ) { recordWithPets ->
 
@@ -386,6 +406,7 @@ fun SearchAppBarField(
         value = query,
         onValueChange = onQueryChange,
         modifier = modifier.fillMaxWidth(),
+        textStyle = MaterialTheme.typography.titleMedium,
         placeholder = { Text(placeholderText) },
         leadingIcon = {
             Icon(
@@ -432,6 +453,7 @@ fun RecordsTopAppBar(
     isSelectionMode: Boolean,
     onDeleteClick: () -> Unit,
     onAddClick: () -> Unit,
+    onNavigateToProfile: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     TopBar(
@@ -441,12 +463,13 @@ fun RecordsTopAppBar(
                 query = searchQuery,
                 onQueryChange = onSearchQueryChange,
                 onSearch = onSearchTriggered,
-                placeholderText = stringResource(R.string.search)
+                placeholderText = stringResource(R.string.search),
+                modifier = Modifier.padding(vertical = Dimen.spaceSmall)
             )
         },
         navigationIcon = {
             IconButton(
-                onClick = {  }
+                onClick = onNavigateToProfile
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_person),
@@ -486,4 +509,88 @@ fun RecordsTopAppBar(
             }
         },
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FilterBar(
+    allPets: List<Pet>,
+    allTypes: List<RecordType>,
+    selectedPetIds: Set<String>,
+    selectedTypes: Set<RecordType>,
+    onPetChipClicked: (String) -> Unit,
+    onTypeChipClicked: (RecordType) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
+    ) {
+        // --- Pet Filters ---
+        if (allPets.isNotEmpty()) {
+            Text(
+                text = stringResource(R.string.filter_by_pet),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
+                contentPadding = PaddingValues(vertical = Dimen.spaceSmall)
+            ) {
+                items(allPets, key = { it.id }) { pet ->
+                    val isSelected = selectedPetIds.contains(pet.id)
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { onPetChipClicked(pet.id) },
+                        label = { Text(pet.name) },
+                        leadingIcon = {
+                            if (isSelected) {
+                                Icon(
+                                    imageVector = Icons.Default.Done,
+                                    contentDescription = stringResource(R.string.selected_option),
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                )
+                            }
+                        }
+                    )
+                }
+            }
+        }
+
+        // --- Record Type Filters ---
+        Text(
+            text = stringResource(R.string.filter_by_type),
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold
+        )
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
+            contentPadding = PaddingValues(vertical = Dimen.spaceSmall)
+        ) {
+            items(allTypes, key = { it.name }) { type ->
+                val isSelected = selectedTypes.contains(type)
+                FilterChip(
+                    selected = isSelected,
+                    onClick = { onTypeChipClicked(type) },
+                    label = { Text(stringResource(id = type.titleResId)) },
+                    leadingIcon = {
+                        if (isSelected) {
+                            Icon(
+                                imageVector = Icons.Default.Done,
+                                contentDescription = stringResource(R.string.selected_option),
+                                modifier = Modifier.size(FilterChipDefaults.IconSize)
+                            )
+                        } else {
+                            Icon(
+                                painter = painterResource(id = type.iconResId),
+                                contentDescription = null,
+                                modifier = Modifier.size(FilterChipDefaults.IconSize),
+                                tint = type.color
+                            )
+                        }
+                    }
+                )
+            }
+        }
+    }
 }

@@ -28,7 +28,7 @@ class RecordRepositoryImpl @Inject constructor(
             .toObject<Record>()
     }
 
-    override suspend fun getCurrentUserRecords(searchQuery: String): List<Record> {
+    override suspend fun getCurrentUserRecords(): List<Record> {
 
         val userId = accountService.currentUserId
 
@@ -60,10 +60,6 @@ class RecordRepositoryImpl @Inject constructor(
         val records = userRecords.minus(accessedRecords).plus(accessedRecords)
             .sortedByDescending {
                 it.date
-            }
-            .filter { record ->
-                record.title.lowercase().contains(searchQuery)
-                    || record.description.lowercase().contains(searchQuery)
             }
 
         return records

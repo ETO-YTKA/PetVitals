@@ -105,7 +105,8 @@ fun MainAppScreen(
 
             composable<Records> {
                 RecordsScreen(
-                    onNavigateToAddEditRecord = { recordId -> navController.navigate(route = AddEditRecord(recordId)) }
+                    onNavigateToAddEditRecord = { recordId -> navController.navigate(route = AddEditRecord(recordId)) },
+                    onNavigateToProfile = { navController.navigate(route = UserProfile) }
                 )
             }
 

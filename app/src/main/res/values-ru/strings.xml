@@ -198,4 +198,7 @@
     <string name="view_profile">Посмотреть профиль</string>
     <string name="no_pets_added_yet">У вас пока нет питомцев</string>
     <string name="clear_search">Очистить поиск</string>
+    <string name="filter_by_pet">Фильтр по питомцу</string>
+    <string name="selected_option">Выбрано</string>
+    <string name="filter_by_type">Фильтр по типу</string>
 </resources>
