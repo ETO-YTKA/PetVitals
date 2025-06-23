@@ -193,4 +193,5 @@
     <string name="empty_note_for_viewer">This note is empty.</string>
     <string name="view_profile">View Profile</string>
     <string name="no_pets_added_yet">No pets have been added yet.</string>
+    <string name="clear_search">Clear search</string>
 </resources>

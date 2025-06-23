@@ -21,7 +21,7 @@ data class RecordsUiState(
     val isRefreshing: Boolean = false,
     val selectedRecords: List<Record> = emptyList(),
     val selectionMode: Boolean = false,
-    val searchCond: String = ""
+    val searchQuery: String = ""
 )
 
 data class RecordWithPets(
@@ -43,16 +43,18 @@ class RecordsViewModel @Inject constructor(
         getRecords()
     }
 
-    fun onSearchCondChange(cond: String) {
-        _uiState.update { state -> state.copy(searchCond = cond) }
-        search()
+    fun onSearchQueryChange(query: String) {
+        _uiState.update { state -> state.copy(searchQuery = query) }
+        getRecords()
     }
 
     fun getRecords() {
-        _uiState.update { state -> state.copy(isRefreshing = true) }
+        if (uiState.value.searchQuery.isBlank()) {
+            _uiState.update { state -> state.copy(isRefreshing = true) }
+        }
 
         viewModelScope.launch {
-            val records = recordRepository.getCurrentUserRecords()
+            val records = recordRepository.getCurrentUserRecords(uiState.value.searchQuery)
             val recordWithPets = records.map { record ->
 
                 val pets: List<Pet> = record.petIds.mapNotNull { petId ->
@@ -119,19 +121,5 @@ class RecordsViewModel @Inject constructor(
                 selectionMode = newSelectionMode
             )
         }
-    }
-
-    fun search() {
-//        viewModelScope.launch {
-//            val records = recordRepository.getRecordsByCondition(uiState.value.searchCond)
-//            val recordWithPets = records.map { record ->
-//                val pets: List<Pet> = record.petIds.mapNotNull { petId ->
-//                    petRepository.getPetById(petId)
-//                }
-//                RecordWithPets(record, pets)
-//            }
-//
-//            _uiState.update { state -> state.copy(recordsWithPets = recordWithPets) }
-//        }
     }
 }

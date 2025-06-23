@@ -28,7 +28,7 @@ class RecordRepositoryImpl @Inject constructor(
             .toObject<Record>()
     }
 
-    override suspend fun getCurrentUserRecords(): List<Record> {
+    override suspend fun getCurrentUserRecords(searchQuery: String): List<Record> {
 
         val userId = accountService.currentUserId
 
@@ -61,29 +61,12 @@ class RecordRepositoryImpl @Inject constructor(
             .sortedByDescending {
                 it.date
             }
-
+            .filter { record ->
+                record.title.lowercase().contains(searchQuery)
+                    || record.description.lowercase().contains(searchQuery)
+            }
 
         return records
-    }
-
-    override suspend fun getRecordsByCondition(cond: String): List<Record> {
-
-        val userId = accountService.currentUserId
-        val records = firestore
-            .collection("records")
-            .whereEqualTo("userId", userId)
-            .get()
-            .await()
-            .sortedByDescending {
-                it.getTimestamp("date")?.toDate()
-            }
-            .map { it.toObject<Record>() }
-
-        val filteredRecords = records.filter { record ->
-            record.title.lowercase().contains(cond)
-                || record.description.lowercase().contains(cond)
-        }
-        return filteredRecords
     }
 
     override suspend fun deleteRecord(record: Record) {

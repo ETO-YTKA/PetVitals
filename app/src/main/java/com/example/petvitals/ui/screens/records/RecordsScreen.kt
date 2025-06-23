@@ -6,10 +6,14 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -29,6 +33,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
@@ -45,8 +51,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -62,6 +68,8 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -75,7 +83,6 @@ import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetSpecies
 import com.example.petvitals.data.repository.pet_permission.PermissionLevel
 import com.example.petvitals.data.repository.record.Record
-import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.theme.Dimen
@@ -92,46 +99,13 @@ fun RecordsScreen(
 
     ScreenLayout(
         topBar = {
-            TopBar(
-                title = {
-                    TextField(
-                        value = uiState.searchCond,
-                        onValueChange = viewModel::onSearchCondChange,
-                        placeholder = { Text(stringResource(R.string.search)) },
-                        singleLine = true,
-                        colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent
-                        ),
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_search),
-                                contentDescription = null
-                            )
-                        },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(onSearch = { viewModel.search() })
-                    )
-                },
-                actions = {
-                    AnimatedContent(targetState = uiState.selectionMode) { targetState ->
-                        if (targetState) {
-                            CustomIconButton(
-                                onClick = viewModel::deleteSelectedRecords,
-                                painter = painterResource(id = R.drawable.ic_delete_forever),
-                                contentDescription = stringResource(R.string.delete)
-                            )
-                        } else {
-                            CustomIconButton(
-                                onClick = { onNavigateToAddEditRecord(null) },
-                                painter = painterResource(id = R.drawable.ic_note_add),
-                                contentDescription = stringResource(R.string.create_record)
-                            )
-                        }
-                    }
-                }
+            RecordsTopAppBar(
+                searchQuery = uiState.searchQuery,
+                onSearchQueryChange = viewModel::onSearchQueryChange,
+                onSearchTriggered = viewModel::getRecords,
+                isSelectionMode = uiState.selectionMode,
+                onDeleteClick = viewModel::deleteSelectedRecords,
+                onAddClick = { onNavigateToAddEditRecord(null) }
             )
         }
     ) {
@@ -393,5 +367,123 @@ fun PetChip(
             enabled = true,
             borderColor = MaterialTheme.colorScheme.outline
         )
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchAppBarField(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    placeholderText: String,
+    modifier: Modifier = Modifier
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = modifier.fillMaxWidth(),
+        placeholder = { Text(placeholderText) },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = stringResource(R.string.search)
+            )
+        },
+        trailingIcon = {
+            AnimatedVisibility(visible = query.isNotEmpty()) {
+                IconButton(onClick = { onQueryChange("") }) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = stringResource(R.string.clear_search)
+                    )
+                }
+            }
+        },
+        singleLine = true,
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent
+        ),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(
+            onSearch = {
+                onSearch()
+                keyboardController?.hide()
+                focusManager.clearFocus()
+            }
+        )
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RecordsTopAppBar(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    onSearchTriggered: () -> Unit,
+    isSelectionMode: Boolean,
+    onDeleteClick: () -> Unit,
+    onAddClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    TopBar(
+        modifier = modifier,
+        title = {
+            SearchAppBarField(
+                query = searchQuery,
+                onQueryChange = onSearchQueryChange,
+                onSearch = onSearchTriggered,
+                placeholderText = stringResource(R.string.search)
+            )
+        },
+        navigationIcon = {
+            IconButton(
+                onClick = {  }
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_person),
+                    contentDescription = stringResource(R.string.profile)
+                )
+            }
+        },
+        actions = {
+            AnimatedContent(
+                targetState = isSelectionMode,
+                transitionSpec = {
+                    (fadeIn(animationSpec = tween(220, delayMillis = 90)) +
+                            slideInVertically(initialOffsetY = { it / 2 }))
+                        .togetherWith(
+                            fadeOut(animationSpec = tween(90)) +
+                                    slideOutVertically(targetOffsetY = { -it / 2 })
+                        )
+                },
+                label = "TopBarActions"
+            ) { inSelectionMode ->
+                if (inSelectionMode) {
+                    IconButton(onClick = onDeleteClick) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_delete_forever),
+                            contentDescription = stringResource(R.string.delete),
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                } else {
+                    IconButton(onClick = onAddClick) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_note_add),
+                            contentDescription = stringResource(R.string.create_record)
+                        )
+                    }
+                }
+            }
+        },
     )
 }

@@ -197,4 +197,5 @@
     <string name="empty_note_for_viewer">Заметка пуста.</string>
     <string name="view_profile">Посмотреть профиль</string>
     <string name="no_pets_added_yet">У вас пока нет питомцев</string>
+    <string name="clear_search">Очистить поиск</string>
 </resources>
