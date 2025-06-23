@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
-import com.example.petvitals.data.repository.pet_permissions.PetPermissionRepository
+import com.example.petvitals.data.repository.pet_permission.PetPermissionRepository
 import com.example.petvitals.data.repository.record.Record
 import com.example.petvitals.data.repository.record.RecordRepository
 import com.example.petvitals.data.repository.record.RecordType
@@ -132,7 +132,7 @@ class AddEditRecordViewModel @Inject constructor(
                         selectedType = record.type,
                         date = record.date,
                         description = record.description,
-                        selectedPets = record.petsId.mapNotNull { petId ->
+                        selectedPets = record.petIds.mapNotNull { petId ->
                             petRepository.getPetById(petId)
                         }
                     )
@@ -191,7 +191,7 @@ class AddEditRecordViewModel @Inject constructor(
             type = uiState.value.selectedType,
             date = uiState.value.date,
             description = uiState.value.description,
-            petsId = uiState.value.selectedPets.map { pet -> pet.id },
+            petIds = uiState.value.selectedPets.map { pet -> pet.id },
         )
 
         val record = when (recordId) {

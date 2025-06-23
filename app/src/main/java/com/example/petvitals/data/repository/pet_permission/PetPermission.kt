@@ -1,9 +1,9 @@
-package com.example.petvitals.data.repository.pet_permissions
+package com.example.petvitals.data.repository.pet_permission
 
 import com.example.petvitals.R
 import java.util.UUID
 
-data class PetPermissions(
+data class PetPermission(
     val id: String = UUID.randomUUID().toString(),
     val userId: String = "",
     val petId: String = "",

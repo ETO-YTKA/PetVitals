@@ -1,5 +1,6 @@
 package com.example.petvitals.data.repository.record
 
+import com.example.petvitals.data.repository.pet_permission.PetPermission
 import com.example.petvitals.data.service.account.AccountService
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
@@ -14,7 +15,6 @@ class RecordRepositoryImpl @Inject constructor(
     override suspend fun saveRecord(record: Record) {
 
         firestore
-            .collection("users").document(record.userId)
             .collection("records").document(record.id)
             .set(record)
     }
@@ -22,34 +22,56 @@ class RecordRepositoryImpl @Inject constructor(
     override suspend fun getRecordById(id: String): Record? {
 
         return firestore
-            .collection("users").document(accountService.currentUserId)
             .collection("records").document(id)
             .get()
             .await()
             .toObject<Record>()
     }
 
-    override suspend fun getAllRecord(): List<Record> {
+    override suspend fun getCurrentUserRecords(): List<Record> {
 
         val userId = accountService.currentUserId
-        val records = firestore
-            .collection("users").document(userId)
-            .collection("records")
+
+        val petsId = firestore
+            .collection("petPermissions")
+            .whereEqualTo("userId", userId)
             .get()
             .await()
+            .map { it.toObject<PetPermission>().petId }
+
+
+        var accessedRecords: List<Record> = emptyList()
+        if (petsId.isNotEmpty()) {
+            accessedRecords = firestore
+                .collection("records")
+                .whereArrayContainsAny("petIds", petsId)
+                .get()
+                .await()
+                .map { it.toObject<Record>() }
+        }
+
+        val userRecords = firestore
+            .collection("records")
+            .whereEqualTo("userId", userId)
+            .get()
+            .await()
+            .map { it.toObject<Record>() }
+
+        val records = userRecords.minus(accessedRecords).plus(accessedRecords)
             .sortedByDescending {
-                it.getTimestamp("date")?.toDate()
+                it.date
             }
 
-        return records.map { it.toObject<Record>() }
+
+        return records
     }
 
     override suspend fun getRecordsByCondition(cond: String): List<Record> {
 
         val userId = accountService.currentUserId
         val records = firestore
-            .collection("users").document(userId)
             .collection("records")
+            .whereEqualTo("userId", userId)
             .get()
             .await()
             .sortedByDescending {
@@ -67,7 +89,6 @@ class RecordRepositoryImpl @Inject constructor(
     override suspend fun deleteRecord(record: Record) {
 
         firestore
-            .collection("users").document(record.userId)
             .collection("records").document(record.id)
             .delete()
     }

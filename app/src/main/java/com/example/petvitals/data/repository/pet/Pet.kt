@@ -3,7 +3,7 @@ package com.example.petvitals.data.repository.pet
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.example.petvitals.R
-import com.example.petvitals.data.repository.pet_permissions.PermissionLevel
+import com.example.petvitals.data.repository.pet_permission.PermissionLevel
 import com.google.firebase.firestore.Exclude
 import java.util.Calendar
 import java.util.UUID

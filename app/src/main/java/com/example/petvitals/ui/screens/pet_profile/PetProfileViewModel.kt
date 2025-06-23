@@ -11,8 +11,8 @@ import com.example.petvitals.data.repository.medication.MedicationRepository
 import com.example.petvitals.data.repository.pet.DobPrecision
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
-import com.example.petvitals.data.repository.pet_permissions.PermissionLevel
-import com.example.petvitals.data.repository.pet_permissions.PetPermissionRepository
+import com.example.petvitals.data.repository.pet_permission.PermissionLevel
+import com.example.petvitals.data.repository.pet_permission.PetPermissionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -574,7 +574,7 @@ class PetProfileViewModel @Inject constructor(
                         updatedHealthNote = pet.healthNote ?: "",
                         medications = medicationRepository.getMedications(petId),
                         food = foodRepository.getFood(petId),
-                        permissionLevel = petPermissionRepository.getCurrentUserPermissionLevel(petId)
+                        permissionLevel = petPermissionRepository.getCurrentUserPermissionLevel(petId) ?: PermissionLevel.VIEWER
                     )
                 }
             }

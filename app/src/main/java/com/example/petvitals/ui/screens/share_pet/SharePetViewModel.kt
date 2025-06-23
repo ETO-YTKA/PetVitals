@@ -6,9 +6,9 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
-import com.example.petvitals.data.repository.pet_permissions.PermissionLevel
-import com.example.petvitals.data.repository.pet_permissions.PetPermissionRepository
-import com.example.petvitals.data.repository.pet_permissions.PetPermissions
+import com.example.petvitals.data.repository.pet_permission.PermissionLevel
+import com.example.petvitals.data.repository.pet_permission.PetPermission
+import com.example.petvitals.data.repository.pet_permission.PetPermissionRepository
 import com.example.petvitals.data.repository.user.User
 import com.example.petvitals.data.repository.user.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -132,7 +132,7 @@ class SharePetViewModel @Inject constructor(
                 }
                 //Share with user
                 else -> {
-                    val petPermission = PetPermissions(
+                    val petPermission = PetPermission(
                         userId = targetUser.id,
                         petId = petId,
                         permissionLevel = uiState.value.permissionLevel

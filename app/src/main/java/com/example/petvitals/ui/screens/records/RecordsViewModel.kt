@@ -1,9 +1,12 @@
 package com.example.petvitals.ui.screens.records
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
+import com.example.petvitals.data.repository.pet_permission.PermissionLevel
+import com.example.petvitals.data.repository.pet_permission.PetPermissionRepository
 import com.example.petvitals.data.repository.record.Record
 import com.example.petvitals.data.repository.record.RecordRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,13 +14,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 
 data class RecordsUiState(
-    val recordWithPets: List<RecordWithPets> = emptyList(),
+    val recordsWithPets: List<RecordWithPets> = emptyList(),
     val isRefreshing: Boolean = false,
     val selectedRecords: List<Record> = emptyList(),
     val selectionMode: Boolean = false,
@@ -32,7 +32,8 @@ data class RecordWithPets(
 @HiltViewModel
 class RecordsViewModel @Inject constructor(
     private val recordRepository: RecordRepository,
-    private val petRepository: PetRepository
+    private val petRepository: PetRepository,
+    private val petPermissionRepository: PetPermissionRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RecordsUiState())
@@ -51,17 +52,25 @@ class RecordsViewModel @Inject constructor(
         _uiState.update { state -> state.copy(isRefreshing = true) }
 
         viewModelScope.launch {
-            val records = recordRepository.getAllRecord()
+            val records = recordRepository.getCurrentUserRecords()
             val recordWithPets = records.map { record ->
-                val pets: List<Pet> = record.petsId.mapNotNull { petId ->
-                    petRepository.getPetById(petId)
+
+                val pets: List<Pet> = record.petIds.mapNotNull { petId ->
+                    val pet = petRepository.getPetById(petId)
+                    val currentUserPermission = petPermissionRepository.getCurrentUserPermissionLevel(petId) ?: return@mapNotNull null
+                    pet?.copy(currentUserPermission = currentUserPermission)
                 }
-                RecordWithPets(record, pets)
+                val minPetPermission = pets.minByOrNull { pet -> pet.currentUserPermission }
+
+                val recordWithPermission = record.copy(currentUserPermission = minPetPermission?.currentUserPermission ?: PermissionLevel.OWNER)
+
+                Log.d("RecordsViewModel", "record ${recordWithPermission.currentUserPermission}: ${minPetPermission?.currentUserPermission}")
+                RecordWithPets(recordWithPermission, pets)
             }
 
             _uiState.update { state ->
                 state.copy(
-                    recordWithPets = recordWithPets,
+                    recordsWithPets = recordWithPets,
                     isRefreshing = false,
                     selectionMode = false,
                     selectedRecords = emptyList()
@@ -112,21 +121,17 @@ class RecordsViewModel @Inject constructor(
         }
     }
 
-    fun formatDateForDisplay(date: Date): String {
-        return SimpleDateFormat("dd MMMM yyyy HH:mm", Locale.getDefault()).format(date)
-    }
-
     fun search() {
-        viewModelScope.launch {
-            val records = recordRepository.getRecordsByCondition(uiState.value.searchCond)
-            val recordWithPets = records.map { record ->
-                val pets: List<Pet> = record.petsId.mapNotNull { petId ->
-                    petRepository.getPetById(petId)
-                }
-                RecordWithPets(record, pets)
-            }
-
-            _uiState.update { state -> state.copy(recordWithPets = recordWithPets) }
-        }
+//        viewModelScope.launch {
+//            val records = recordRepository.getRecordsByCondition(uiState.value.searchCond)
+//            val recordWithPets = records.map { record ->
+//                val pets: List<Pet> = record.petIds.mapNotNull { petId ->
+//                    petRepository.getPetById(petId)
+//                }
+//                RecordWithPets(record, pets)
+//            }
+//
+//            _uiState.update { state -> state.copy(recordsWithPets = recordWithPets) }
+//        }
     }
 }

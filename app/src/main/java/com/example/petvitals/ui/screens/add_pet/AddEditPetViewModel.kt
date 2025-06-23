@@ -13,9 +13,9 @@ import com.example.petvitals.data.repository.pet.Gender
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
 import com.example.petvitals.data.repository.pet.PetSpecies
-import com.example.petvitals.data.repository.pet_permissions.PermissionLevel
-import com.example.petvitals.data.repository.pet_permissions.PetPermissionRepository
-import com.example.petvitals.data.repository.pet_permissions.PetPermissions
+import com.example.petvitals.data.repository.pet_permission.PermissionLevel
+import com.example.petvitals.data.repository.pet_permission.PetPermission
+import com.example.petvitals.data.repository.pet_permission.PetPermissionRepository
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.ui.components.DropDownOption
 import com.example.petvitals.utils.decodeBase64ToImage
@@ -383,14 +383,14 @@ class AddEditPetViewModel @Inject constructor(
                 petRepository.savePet(petToSave)
 
                 if (isNewPet) {
-                    val petPermissions = PetPermissions(
+                    val petPermission = PetPermission(
                         userId = userId,
                         petId = petToSave.id,
                         permissionLevel = PermissionLevel.OWNER
                     )
 
                     try {
-                        petPermissionRepository.savePetPermission(petPermissions)
+                        petPermissionRepository.savePetPermission(petPermission)
                     } catch (e: Exception) {
                         Log.e("AddEditPetViewModel", "Error saving UserPet for new pet: ${e.message}", e)
                         return@launch

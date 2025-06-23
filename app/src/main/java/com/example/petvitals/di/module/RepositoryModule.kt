@@ -6,8 +6,8 @@ import com.example.petvitals.data.repository.medication.MedicationRepository
 import com.example.petvitals.data.repository.medication.MedicationRepositoryImpl
 import com.example.petvitals.data.repository.pet.PetRepository
 import com.example.petvitals.data.repository.pet.PetRepositoryImpl
-import com.example.petvitals.data.repository.pet_permissions.PetPermissionRepository
-import com.example.petvitals.data.repository.pet_permissions.PetPermissionRepositoryImpl
+import com.example.petvitals.data.repository.pet_permission.PetPermissionRepository
+import com.example.petvitals.data.repository.pet_permission.PetPermissionRepositoryImpl
 import com.example.petvitals.data.repository.record.RecordRepository
 import com.example.petvitals.data.repository.record.RecordRepositoryImpl
 import com.example.petvitals.data.repository.user.UserRepository

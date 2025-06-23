@@ -1,4 +1,4 @@
-package com.example.petvitals.data.repository.pet_permissions
+package com.example.petvitals.data.repository.pet_permission
 
 import com.example.petvitals.data.service.account.AccountService
 import com.google.firebase.firestore.FirebaseFirestore
@@ -11,65 +11,65 @@ class PetPermissionRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val accountService: AccountService
 ): PetPermissionRepository {
-    override suspend fun getCurrentUserPets(): List<PetPermissions> {
+    override suspend fun getCurrentUserPets(): List<PetPermission> {
 
         val userId = accountService.currentUserId
         return firestore
-            .collection("petPermission")
+            .collection("petPermissions")
             .whereEqualTo("userId", userId)
             .get()
             .await()
-            .map { it.toObject<PetPermissions>() }
+            .map { it.toObject<PetPermission>() }
     }
 
-    override suspend fun getCurrentUserPetById(petId: String): PetPermissions? {
+    override suspend fun getCurrentUserPetById(petId: String): PetPermission? {
 
         val userId = accountService.currentUserId
         return firestore
-            .collection("petPermission")
+            .collection("petPermissions")
             .whereEqualTo("userId", userId)
             .whereEqualTo("petId", petId)
             .get()
             .await()
-            .toObjects<PetPermissions>()
+            .toObjects<PetPermission>()
             .firstOrNull()
     }
 
-    override suspend fun getUsersByPetId(petId: String): List<PetPermissions> {
+    override suspend fun getUsersByPetId(petId: String): List<PetPermission> {
 
         return firestore
-            .collection("petPermission")
+            .collection("petPermissions")
             .whereEqualTo("petId", petId)
             .get()
             .await()
-            .map { it.toObject<PetPermissions>() }
+            .map { it.toObject<PetPermission>() }
     }
 
-    override suspend fun getCurrentUserPermissionLevel(petId: String): PermissionLevel {
+    override suspend fun getCurrentUserPermissionLevel(petId: String): PermissionLevel? {
 
         val userId = accountService.currentUserId
         return firestore
-                .collection("petPermission")
+                .collection("petPermissions")
                 .whereEqualTo("petId", petId)
                 .whereEqualTo("userId", userId)
                 .get()
                 .await()
-                .toObjects<PetPermissions>()
-                .first().permissionLevel
+                .toObjects<PetPermission>()
+                .firstOrNull()?.permissionLevel
     }
 
-    override suspend fun savePetPermission(petPermissions: PetPermissions) {
+    override suspend fun savePetPermission(petPermission: PetPermission) {
 
         firestore
-            .collection("petPermission").document(petPermissions.id)
-            .set(petPermissions)
+            .collection("petPermissions").document(petPermission.id)
+            .set(petPermission)
             .await()
     }
 
     override suspend fun deletePetPermissionByUserPetIds(petId: String, userId: String) {
 
         firestore
-            .collection("petPermission")
+            .collection("petPermissions")
             .whereEqualTo("petId", petId)
             .whereEqualTo("userId", userId)
             .get()

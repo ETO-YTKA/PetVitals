@@ -77,7 +77,7 @@ import com.example.petvitals.data.repository.food.Food
 import com.example.petvitals.data.repository.medication.Medication
 import com.example.petvitals.data.repository.medication.MedicationStatus
 import com.example.petvitals.data.repository.pet.Gender
-import com.example.petvitals.data.repository.pet_permissions.PermissionLevel
+import com.example.petvitals.data.repository.pet_permission.PermissionLevel
 import com.example.petvitals.ui.components.ButtonWithIcon
 import com.example.petvitals.ui.components.ConfirmationDialog
 import com.example.petvitals.ui.components.CustomIconButton
