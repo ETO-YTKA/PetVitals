@@ -1,5 +1,6 @@
 package com.example.petvitals.ui.screens.user_profile
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.data.repository.pet.PetRepository
 import com.example.petvitals.data.repository.user.User
@@ -46,14 +47,18 @@ class UserProfileViewModel @Inject constructor(
     fun deleteAccount() {
         launchCatching {
             try {
-                accountService.signIn(uiState.value.email, uiState.value.password)
+                val password = uiState.value.password
+                val email = accountService.currentUserEmail ?: ""
+
+                accountService.signIn(email, password)
             } catch (e: Exception) {
+                Log.d("UserProfileViewModel", "deleteAccount: $e")
                 _uiState.update { state -> state.copy(isPasswordIncorrect = true) }
                 return@launchCatching
             }
 
             userRepository.deleteCurrentUser()
-            petRepository.deleteAllUserPetsPets()
+            //petRepository.deleteAllUserPetsPets()
 
             accountService.deleteAccount()
         }

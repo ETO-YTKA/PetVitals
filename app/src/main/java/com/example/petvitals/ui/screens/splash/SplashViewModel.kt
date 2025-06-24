@@ -11,7 +11,7 @@ class SplashViewModel @Inject constructor(
 ) : PetVitalsAppViewModel() {
 
     fun onAppStart(onNavigateToPets: () -> Unit, onNavigateToLogIn: () -> Unit) {
-        if (accountService.hasUser()) onNavigateToPets()
+        if (accountService.hasUser() && accountService.isEmailVerified) onNavigateToPets()
         else onNavigateToLogIn()
     }
 }

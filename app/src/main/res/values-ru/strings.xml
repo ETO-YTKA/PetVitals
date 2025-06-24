@@ -167,9 +167,9 @@
     <string name="breed_cannot_be_longer_than_error">Порода не может быть длиннее 100 символов</string>
     <string name="year_cannot_be_empty">Год не может быть пустым</string>
     <string name="date_of_birth_cannot_be_empty">Дата рождения не может быть пустой</string>
-    <string name="email_not_verified">Эл. почта не подтверждена</string>
+    <string name="profile_email_not_verified">Эл. почта не подтверждена</string>
     <string name="send_verification_email">Отправить письмо для подтверждения</string>
-    <string name="email_not_verified_message">Ваш email ещё не подтверждён. Пожалуйста, проверьте свой профиль.</string>
+    <string name="email_not_verified_message">Пожалуйста, подтвердите свою почту, чтобы продолжить.</string>
     <string name="delete_account_title">Удалить аккаунт?</string>
     <string name="delete_account_confirmation_message">Это действие необратимо. Для подтверждения введите ваш пароль.</string>
     <string name="incorrect_password_error">Неправильный пароль</string>
@@ -201,4 +201,7 @@
     <string name="filter_by_pet">Фильтр по питомцу</string>
     <string name="selected_option">Выбрано</string>
     <string name="filter_by_type">Фильтр по типу</string>
+    <string name="email_sent">Письмо для подтверждения отправлено на адрес %1$s. Пожалуйста, проверьте вашу почту.</string>
+    <string name="failed_to_send_email">Не удалось отправить письмо для подтверждения. Пожалуйста, попробуйте позже.</string>
+    <string name="failed_to_create_account">Не удалось создать аккаунт. Пожалуйста, проверьте данные и попробуйте снова.</string>
 </resources>

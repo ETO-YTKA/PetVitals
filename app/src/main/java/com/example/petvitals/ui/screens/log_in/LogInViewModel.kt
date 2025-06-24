@@ -20,8 +20,10 @@ import javax.inject.Inject
 data class LogInUiState(
     val email: String = "",
     val password: String = "",
+    val isLoginSuccessful: Boolean = false,
     val errorMessage: String? = null,
-    val isLoginSuccessful: Boolean = false
+    val showVerificationError: Boolean = false,
+    val isLoading: Boolean = false
 )
 
 @HiltViewModel
@@ -48,11 +50,21 @@ class LogInViewModel @Inject constructor(
     fun onLogInClick(onNavigateToSplash: () -> Unit) {
         viewModelScope.launch {
             try {
-                accountService.signIn(
+                val isVerified = accountService.signIn(
                     email = uiState.value.email,
                     password = uiState.value.password
                 )
-                onNavigateToSplash()
+
+                if (isVerified) {
+                    onNavigateToSplash()
+                } else {
+                    _uiState.update { state ->
+                        state.copy(
+                            errorMessage = context.getString(R.string.email_not_verified_error),
+                            showVerificationError = true
+                        )
+                    }
+                }
             } catch (e: Exception) {
                 Log.d("LogInViewModel", e.message.orEmpty())
                 when(e) {
@@ -78,5 +90,27 @@ class LogInViewModel @Inject constructor(
 
     fun onSignUpClick(onNavigateToSignUp: () -> Unit) {
         onNavigateToSignUp()
+    }
+
+    fun onResendVerificationEmailClick() {
+        viewModelScope.launch {
+            _uiState.update { state ->
+                state.copy(
+                    showVerificationError = false,
+                    isLoading = true
+                )
+            }
+
+            try {
+                accountService.sendVerificationEmail()
+            } catch (e: Exception) {
+                _uiState.update { state ->
+                    state.copy(
+                        isLoading = false,
+                        errorMessage = context.getString(R.string.login_failed_to_send_email)
+                    )
+                }
+            }
+        }
     }
 }

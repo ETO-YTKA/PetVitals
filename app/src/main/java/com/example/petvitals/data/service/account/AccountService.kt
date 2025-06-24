@@ -7,8 +7,9 @@ interface AccountService {
     val currentUser: Flow<User?>
     val currentUserId: String
     val isEmailVerified: Boolean
+    val currentUserEmail: String?
     fun hasUser(): Boolean
-    suspend fun signIn(email: String, password: String)
+    suspend fun signIn(email: String, password: String): Boolean
     suspend fun signUp(email: String, password: String): String
     suspend fun logout()
     suspend fun deleteAccount()

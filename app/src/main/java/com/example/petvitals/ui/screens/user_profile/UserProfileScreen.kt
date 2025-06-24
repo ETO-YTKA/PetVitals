@@ -108,7 +108,7 @@ fun UserProfileScreen(
 
         if(!uiState.isEmailVerified) {
             Text(
-                text = stringResource(R.string.email_not_verified),
+                text = stringResource(R.string.profile_email_not_verified),
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.alpha(0.7f)
             )

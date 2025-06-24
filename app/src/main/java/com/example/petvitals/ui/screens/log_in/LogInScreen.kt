@@ -3,16 +3,23 @@ package com.example.petvitals.ui.screens.log_in
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -35,11 +42,31 @@ fun SignInScreen(
     viewModel: LogInViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    LaunchedEffect(uiState.showVerificationError) {
+        if (uiState.showVerificationError) {
+            val result = snackbarHostState.showSnackbar(
+                message = context.getString(R.string.email_not_verified_message),
+                actionLabel = context.getString(R.string.resend), 
+                duration = SnackbarDuration.Indefinite 
+            )
+            when (result) {
+                SnackbarResult.ActionPerformed -> {
+                    viewModel.onResendVerificationEmailClick()
+                }
+                SnackbarResult.Dismissed -> {}
+            }
+        }
+    }
 
     ScreenLayout(
-        columnModifier = modifier.verticalScroll(rememberScrollState()),
-        topBar = { TopBar(title = { Text(stringResource(R.string.login)) }) }
+        columnModifier = modifier
+            .verticalScroll(rememberScrollState())
+            .padding(Dimen.spaceMedium),
+        topBar = { TopBar(title = { Text(stringResource(R.string.login)) }) },
+        snackbarHost = { SnackbarHost(snackbarHostState ) }
     ) {
         CustomOutlinedTextField(
             value = uiState.email,
@@ -66,10 +93,12 @@ fun SignInScreen(
         uiState.errorMessage?.let { ErrorMessage(it) }
 
         Spacer(modifier = Modifier.height(Dimen.spaceLarge))
+
         Button(
             onClick = {
                 viewModel.onLogInClick(onNavigateToSplash = onNavigateToSplash)
-            }
+            },
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = stringResource(R.string.log_in))
         }

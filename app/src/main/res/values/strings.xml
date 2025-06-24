@@ -163,9 +163,9 @@
     <string name="breed_cannot_be_longer_than_error">Breed cannot be longer than 100 characters</string>
     <string name="year_cannot_be_empty">Year cannot be empty</string>
     <string name="date_of_birth_cannot_be_empty">Date of birth cannot be empty</string>
-    <string name="email_not_verified">Email not verified</string>
+    <string name="profile_email_not_verified">Email not verified</string>
     <string name="send_verification_email">Send verification email</string>
-    <string name="email_not_verified_message">Your email is not verified yet. Please check your profile.</string>
+    <string name="email_not_verified_message">"Please verify your email to continue."</string>
     <string name="delete_account_title">Delete account?</string>
     <string name="delete_account_confirmation_message">This action is permanent. To confirm, please enter your password.</string>
     <string name="incorrect_password_error">Incorrect password</string>
@@ -197,4 +197,11 @@
     <string name="filter_by_pet">Filter by pet</string>
     <string name="selected_option">Selected</string>
     <string name="filter_by_type">Filter by type</string>
+    <string name="email_sent">A verification email has been sent to %1$s. Please check your inbox.</string>
+    <string name="failed_to_send_email">Couldn\'t send verification email. Please try again later.</string>
+    <string name="failed_to_create_account">Oops! We couldn\'t create your account. Please check your details and try again.</string>
+    <string name="email_not_verified_error">Email not verified</string>
+    <string name="login_failed_to_send_email">Failed to send email. Please try again.</string>
+    <string name="login_new_verification_email_sent">A new verification email has been sent.</string>
+    <string name="resend">Resend</string>
 </resources>

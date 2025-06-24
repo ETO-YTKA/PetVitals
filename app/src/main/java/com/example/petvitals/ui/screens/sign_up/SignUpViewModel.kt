@@ -169,6 +169,7 @@ class SignUpViewModel @Inject constructor(
                     email = uiState.value.email,
                     password = uiState.value.password
                 )
+
                 val user = User(
                     id = userId,
                     username = uiState.value.displayName,
