@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -61,7 +62,9 @@ fun UserProfileScreen(
     }
 
     ScreenLayout(
-        columnModifier = Modifier.verticalScroll(rememberScrollState()),
+        columnModifier = Modifier
+            .verticalScroll(rememberScrollState())
+            .padding(vertical = Dimen.spaceMedium),
         verticalArrangement = Arrangement.Top,
         topBar = {
             TopBar(
@@ -106,31 +109,7 @@ fun UserProfileScreen(
             modifier = Modifier.alpha(0.7f)
         )
 
-        if(!uiState.isEmailVerified) {
-            Text(
-                text = stringResource(R.string.profile_email_not_verified),
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.alpha(0.7f)
-            )
-        }
-
-
-        Spacer(modifier = Modifier.height(Dimen.spaceExtraHuge))
-        if(!uiState.isEmailVerified) {
-            ButtonWithIcon(
-                onClick = { viewModel.sendVerificationEmail() },
-                text = stringResource(R.string.send_verification_email),
-                icon = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_mark_email_read),
-                        contentDescription = null
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-
-        Spacer(modifier = Modifier.height(Dimen.spaceMedium))
+        Spacer(modifier = Modifier.height(Dimen.spaceLarge))
 
         ButtonWithIcon(
             onClick = { viewModel.sendPasswordResetEmail() },

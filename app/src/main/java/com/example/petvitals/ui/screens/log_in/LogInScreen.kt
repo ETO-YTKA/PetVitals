@@ -65,7 +65,7 @@ fun SignInScreen(
     ScreenLayout(
         columnModifier = modifier
             .verticalScroll(rememberScrollState())
-            .padding(Dimen.spaceMedium),
+            .padding(vertical = Dimen.spaceMedium),
         topBar = { TopBar(title = { Text(stringResource(R.string.login)) }) },
         snackbarHost = { SnackbarHost(snackbarHostState ) }
     ) {

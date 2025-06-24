@@ -291,18 +291,16 @@ private fun RecordCard(
                     }
 
                     //Expand icon
-                    if (pets.isNotEmpty() || record.description.isNotBlank()) {
-                        val rotationAngle by animateFloatAsState(
-                            targetValue = if (isExpanded) 180f else 0f,
-                            label = "ArrowRotation"
+                    val rotationAngle by animateFloatAsState(
+                        targetValue = if (isExpanded) 180f else 0f,
+                        label = "ArrowRotation"
+                    )
+                    IconButton(onClick = { isExpanded = !isExpanded }) {
+                        Icon(
+                            Icons.Rounded.KeyboardArrowUp,
+                            stringResource(R.string.expand),
+                            modifier = Modifier.rotate(rotationAngle)
                         )
-                        IconButton(onClick = { isExpanded = !isExpanded }) {
-                            Icon(
-                                Icons.Rounded.KeyboardArrowUp,
-                                stringResource(R.string.expand),
-                                modifier = Modifier.rotate(rotationAngle)
-                            )
-                        }
                     }
                 }
             }

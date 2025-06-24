@@ -17,10 +17,10 @@ import javax.inject.Inject
 data class UserProfileUiState(
     val username: String = "",
     val email: String = "",
-    val password: String = "",
-    val showDeleteAccountModal: Boolean = false,
 
-    val isEmailVerified: Boolean = true,
+    //Modal
+    val showDeleteAccountModal: Boolean = false,
+    val password: String = "",
     val isPasswordIncorrect: Boolean = false
 )
 
@@ -81,16 +81,9 @@ class UserProfileViewModel @Inject constructor(
             _uiState.update { state ->
                 state.copy(
                     username = user.username,
-                    email = user.email,
-                    isEmailVerified = accountService.isEmailVerified
+                    email = user.email
                 )
             }
-        }
-    }
-
-    fun sendVerificationEmail() {
-        launchCatching {
-            accountService.sendVerificationEmail()
         }
     }
 

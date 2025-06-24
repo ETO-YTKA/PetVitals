@@ -29,6 +29,8 @@ import java.util.Locale
 import javax.inject.Inject
 
 data class PetProfileUiState(
+    val isLoading: Boolean = false,
+
     //Main screen
     val pet: Pet = Pet(),
     val dob: String = "",
@@ -559,6 +561,10 @@ class PetProfileViewModel @Inject constructor(
     }
 
     fun getPetData(petId: String) {
+        _uiState.update { state ->
+            state.copy(isLoading = true)
+        }
+
         viewModelScope.launch {
             val pet = petRepository.getPetById(petId)
 
@@ -574,7 +580,8 @@ class PetProfileViewModel @Inject constructor(
                         updatedHealthNote = pet.healthNote ?: "",
                         medications = medicationRepository.getMedications(petId),
                         food = foodRepository.getFood(petId),
-                        permissionLevel = petPermissionRepository.getCurrentUserPermissionLevel(petId) ?: PermissionLevel.VIEWER
+                        permissionLevel = petPermissionRepository.getCurrentUserPermissionLevel(petId) ?: PermissionLevel.VIEWER,
+                        isLoading = false
                     )
                 }
             }

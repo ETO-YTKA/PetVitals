@@ -36,6 +36,8 @@ import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 data class AddEditPetUiState(
+    val isLoading: Boolean = false,
+
     val name: String = "",
     val selectedSpecies: PetSpecies = PetSpecies.CAT,
     val selectedGender: Gender = Gender.MALE,
@@ -289,6 +291,33 @@ class AddEditPetViewModel @Inject constructor(
                         dobYearErrorMessage = context.getString(R.string.year_cannot_be_empty)
                     )
                 }
+            } else {
+                val calendar = Calendar.getInstance()
+                val currentYear = calendar.get(Calendar.YEAR)
+                val minYear = 1980
+                val dobYearInt = uiState.value.dobYear.toInt()
+
+                if (dobYearInt > currentYear) {
+                    _uiState.update {
+                        it.copy(
+                            isDobYearError = true,
+                            dobYearErrorMessage = context.getString(R.string.year_cannot_be_in_the_future)
+                        )
+                    }
+                    isValid = false
+                }
+                else if (dobYearInt < minYear) {
+                    _uiState.update {
+                        it.copy(
+                            isDobYearError = true,
+                            dobYearErrorMessage = context.getString(
+                                R.string.year_cannot_be_before,
+                                minYear
+                            )
+                        )
+                    }
+                    isValid = false
+                }
             }
         } else {
             if (uiState.value.dobMillis == null) {
@@ -306,6 +335,10 @@ class AddEditPetViewModel @Inject constructor(
     }
 
     fun loadPetData(petId: String) {
+        _uiState.update { state ->
+            state.copy(isLoading = true)
+        }
+
         viewModelScope.launch {
             val pet = petRepository.getPetById(petId)
 
@@ -329,7 +362,8 @@ class AddEditPetViewModel @Inject constructor(
                         selectedDobMonth = month,
                         dobYear = calendar.get(Calendar.YEAR).toString(),
                         editMode = true,
-                        avatarByteArray = pet.avatar?.let { decodeBase64ToImage(it) }
+                        avatarByteArray = pet.avatar?.let { decodeBase64ToImage(it) },
+                        isLoading = false
                     )
                 }
             }

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -60,6 +61,7 @@ import com.example.petvitals.R
 import com.example.petvitals.ui.components.CheckboxWithLabel
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
+import com.example.petvitals.ui.components.Loading
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.components.ValueDropDown
@@ -89,7 +91,10 @@ fun AddEditPetScreen(
     }
 
     ScreenLayout(
-        columnModifier = Modifier.verticalScroll(rememberScrollState()),
+        columnModifier = Modifier
+            .padding(vertical = Dimen.spaceMedium)
+            .fillMaxSize()
+            .then(if (uiState.isLoading) Modifier else Modifier.verticalScroll(rememberScrollState())),
         horizontalAlignment = Alignment.CenterHorizontally,
         topBar = {
             val addEditPetTitle = stringResource(if (addEditPet.petId == null) R.string.add_pet else R.string.edit_pet)
@@ -108,107 +113,105 @@ fun AddEditPetScreen(
         val imagePickerLauncher = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
             uri?.let { viewModel.onImageUriChange(it) }
         }
-        Spacer(modifier = Modifier.size(Dimen.spaceSmall))
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            val model = uiState.avatarUri ?: uiState.avatarByteArray
-            AsyncImage(
-                model = model,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                fallback = painterResource(R.drawable.ic_add),
-                modifier = Modifier
-                    .size(Dimen.petIconSize)
-                    .clip(RoundedCornerShape(100))
-                    .background(MaterialTheme.colorScheme.tertiary)
-                    .clickable(
-                        onClick = {
-                            imagePickerLauncher.launch(
-                                PickVisualMediaRequest(PickVisualMedia.ImageOnly)
-                            )
-                        }
-                    )
-            )
-            Text(text = stringResource(R.string.tap_to_select_photo))
-        }
-
-
-        CustomOutlinedTextField(
-            value = uiState.name,
-            onValueChange = viewModel::onNameChange,
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(R.string.name)) },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            isError = uiState.isNameError,
-            supportingText = {
-                if (uiState.isNameError) {
-                    Text(text = uiState.nameErrorMessage ?: "")
-                }
+        if (uiState.isLoading) {
+            Loading()
+        } else {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                val model = uiState.avatarUri ?: uiState.avatarByteArray
+                AsyncImage(
+                    model = model,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    fallback = painterResource(R.drawable.ic_add),
+                    modifier = Modifier
+                        .size(Dimen.petIconSize)
+                        .clip(RoundedCornerShape(100))
+                        .background(MaterialTheme.colorScheme.tertiary)
+                        .clickable(
+                            onClick = {
+                                imagePickerLauncher.launch(
+                                    PickVisualMediaRequest(PickVisualMedia.ImageOnly)
+                                )
+                            }
+                        )
+                )
+                Text(text = stringResource(R.string.tap_to_select_photo))
             }
-        )
 
-        Spacer(modifier = Modifier.size(Dimen.spaceMedium))
 
-        Row {
-            ValueDropDown(
-                value = uiState.selectedSpecies,
-                onValueChange = viewModel::onSpeciesChange,
-                options = uiState.speciesOptions,
-                label = stringResource(R.string.species),
-                modifier = Modifier.weight(1f),
+            CustomOutlinedTextField(
+                value = uiState.name,
+                onValueChange = viewModel::onNameChange,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.name)) },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                isError = uiState.isNameError,
                 supportingText = {
                     if (uiState.isNameError) {
-                        Text("")
+                        uiState.nameErrorMessage?.let { Text(text = it) }
                     }
                 }
             )
 
             Spacer(modifier = Modifier.size(Dimen.spaceMedium))
 
-            ValueDropDown(
-                value = uiState.selectedGender,
-                onValueChange = viewModel::onGenderChange,
-                options = uiState.genderOptions,
-                label = stringResource(R.string.gender),
-                modifier = Modifier.weight(1f)
-            )
-        }
+            Row {
+                ValueDropDown(
+                    value = uiState.selectedSpecies,
+                    onValueChange = viewModel::onSpeciesChange,
+                    options = uiState.speciesOptions,
+                    label = stringResource(R.string.species),
+                    modifier = Modifier.weight(1f),
+                )
 
-        Spacer(modifier = Modifier.size(Dimen.spaceMedium))
+                Spacer(modifier = Modifier.size(Dimen.spaceMedium))
 
-        CustomOutlinedTextField(
-            value = uiState.breed,
-            onValueChange = viewModel::onBreedChange,
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(R.string.breed)) },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            isError = uiState.isBreedError,
-            supportingText = {
-                if (uiState.isBreedError) {
-                    Text(text = uiState.breedErrorMessage ?: "")
-                }
+                ValueDropDown(
+                    value = uiState.selectedGender,
+                    onValueChange = viewModel::onGenderChange,
+                    options = uiState.genderOptions,
+                    label = stringResource(R.string.gender),
+                    modifier = Modifier.weight(1f)
+                )
             }
-        )
 
-        Spacer(modifier = Modifier.size(Dimen.spaceMediumLarge))
+            Spacer(modifier = Modifier.size(Dimen.spaceLarge))
 
-        DobPicker(
-            onShowModalChange = viewModel::onShowModalChange,
-            onDobApproxChange = viewModel::onDobApproxChange,
-            onDobMonthChange = viewModel::onDobMonthChange,
-            onDobYearChange = viewModel::onDobYearChange,
-            uiState = uiState
-        )
+            CustomOutlinedTextField(
+                value = uiState.breed,
+                onValueChange = viewModel::onBreedChange,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.breed)) },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                isError = uiState.isBreedError,
+                supportingText = {
+                    if (uiState.isBreedError) {
+                        uiState.breedErrorMessage?.let { Text(text = it) }
+                    }
+                }
+            )
 
-        Spacer(modifier = Modifier.size(Dimen.spaceMedium))
+            Spacer(modifier = Modifier.size(Dimen.spaceMediumLarge))
 
-        Button(
-            onClick = { viewModel.savePet(addEditPet.petId, navigateToPets) },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(R.string.save))
+            DobPicker(
+                onShowModalChange = viewModel::onShowModalChange,
+                onDobApproxChange = viewModel::onDobApproxChange,
+                onDobMonthChange = viewModel::onDobMonthChange,
+                onDobYearChange = viewModel::onDobYearChange,
+                uiState = uiState
+            )
+
+            Spacer(modifier = Modifier.size(Dimen.spaceLarge))
+
+            Button(
+                onClick = { viewModel.savePet(addEditPet.petId, navigateToPets) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = stringResource(R.string.save))
+            }
         }
     }
 }
@@ -343,7 +346,7 @@ private fun DobPicker(
                                 isError = uiState.isDobYearError,
                                 supportingText = {
                                     if (uiState.isDobYearError) {
-                                        Text(text = uiState.dobYearErrorMessage ?: "")
+                                        uiState.dobYearErrorMessage?.let { Text(text = it) }
                                     }
                                 }
                             )
@@ -358,7 +361,7 @@ private fun DobPicker(
                             isError = uiState.isDobError,
                             supportingText = {
                                 if (uiState.isDobError) {
-                                    Text(text = uiState.dobErrorMessage ?: "")
+                                    uiState.dobErrorMessage?.let { Text(text = it) }
                                 }
                             }
                         )

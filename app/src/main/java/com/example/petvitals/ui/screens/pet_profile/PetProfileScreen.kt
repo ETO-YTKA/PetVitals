@@ -84,6 +84,7 @@ import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.DatePickerField
 import com.example.petvitals.ui.components.DatePickerModal
+import com.example.petvitals.ui.components.Loading
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.theme.Dimen
@@ -109,7 +110,10 @@ fun PetProfileScreen(
 
     ScreenLayout(
         horizontalAlignment = Alignment.Start,
-        columnModifier = Modifier.verticalScroll(rememberScrollState()),
+        columnModifier = Modifier
+            .padding(vertical = Dimen.spaceMedium)
+            .fillMaxSize()
+            .then(if (uiState.isLoading) Modifier else Modifier.verticalScroll(rememberScrollState())),
         verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium),
         topBar = {
             TopBar(
@@ -173,9 +177,10 @@ fun PetProfileScreen(
                                 leadingIcon = {
                                     Icon(
                                         imageVector = Icons.Outlined.Delete,
-                                        contentDescription = null
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.error
                                     )
-                                }
+                                },
                             )
                         }
                     }
@@ -183,65 +188,70 @@ fun PetProfileScreen(
             )
         }
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
-        ) {
-            ProfilePic(uiState)
-            GeneralInfo(uiState)
-        }
+        if (uiState.isLoading) {
+            Loading()
+        } else {
 
-        SectionCard(
-            title = stringResource(R.string.health),
-            icon = painterResource(R.drawable.ic_health_and_safety),
-        ) {
-            CardItem(
-                title = stringResource(R.string.date_of_birth),
-                information = uiState.dob,
-                infoIcon = painterResource(R.drawable.ic_cake)
-            )
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
+            ) {
+                ProfilePic(uiState)
+                GeneralInfo(uiState)
+            }
 
-            Note(
-                title = stringResource(R.string.note),
-                content = uiState.pet.healthNote,
-                updatedContent = uiState.updatedHealthNote,
-                onValueChange = viewModel::onHealthNoteChange,
-                onEditClick = viewModel::toggleHealthNoteEditMode,
-                onSaveClick = viewModel::onSaveHealthNoteClick,
-                inEditMode = uiState.isHealthNoteInEditMode,
-                permissionLevel = uiState.permissionLevel
-            )
+            SectionCard(
+                title = stringResource(R.string.health),
+                icon = painterResource(R.drawable.ic_health_and_safety),
+            ) {
+                CardItem(
+                    title = stringResource(R.string.date_of_birth),
+                    information = uiState.dob,
+                    infoIcon = painterResource(R.drawable.ic_cake)
+                )
 
-            MedicationList(
-                uiState = uiState,
-                onEditMedicationClick = viewModel::onEditMedicationClick,
-                onDeleteMedicationClick = viewModel::onDeleteMedicationClick,
-                toggleMedicationModal = viewModel::toggleMedicationModal
-            )
-        }
+                Note(
+                    title = stringResource(R.string.note),
+                    content = uiState.pet.healthNote,
+                    updatedContent = uiState.updatedHealthNote,
+                    onValueChange = viewModel::onHealthNoteChange,
+                    onEditClick = viewModel::toggleHealthNoteEditMode,
+                    onSaveClick = viewModel::onSaveHealthNoteClick,
+                    inEditMode = uiState.isHealthNoteInEditMode,
+                    permissionLevel = uiState.permissionLevel
+                )
 
-        SectionCard(
-            title = stringResource(R.string.nutrition),
-            icon = painterResource(R.drawable.ic_pet_supplies)
-        ) {
-            Note(
-                title = stringResource(R.string.note),
-                content = uiState.pet.foodNote,
-                updatedContent = uiState.updatedFoodNote,
-                onValueChange = viewModel::onUpdatedFoodNoteChange,
-                onEditClick = viewModel::toggleFoodNoteEditMode,
-                onSaveClick = viewModel::onSaveFoodNoteClick,
-                inEditMode = uiState.isFoodNoteInEditMode,
-                permissionLevel = uiState.permissionLevel
-            )
+                MedicationList(
+                    uiState = uiState,
+                    onEditMedicationClick = viewModel::onEditMedicationClick,
+                    onDeleteMedicationClick = viewModel::onDeleteMedicationClick,
+                    toggleMedicationModal = viewModel::toggleMedicationModal
+                )
+            }
 
-            FoodList(
-                uiState = uiState,
-                onEditFoodClick = viewModel::onEditFoodClick,
-                onDeleteFoodClick = viewModel::onDeleteFoodClick,
-                toggleFoodModal = viewModel::toggleFoodModal
-            )
+            SectionCard(
+                title = stringResource(R.string.nutrition),
+                icon = painterResource(R.drawable.ic_pet_supplies)
+            ) {
+                Note(
+                    title = stringResource(R.string.note),
+                    content = uiState.pet.foodNote,
+                    updatedContent = uiState.updatedFoodNote,
+                    onValueChange = viewModel::onUpdatedFoodNoteChange,
+                    onEditClick = viewModel::toggleFoodNoteEditMode,
+                    onSaveClick = viewModel::onSaveFoodNoteClick,
+                    inEditMode = uiState.isFoodNoteInEditMode,
+                    permissionLevel = uiState.permissionLevel
+                )
+
+                FoodList(
+                    uiState = uiState,
+                    onEditFoodClick = viewModel::onEditFoodClick,
+                    onDeleteFoodClick = viewModel::onDeleteFoodClick,
+                    toggleFoodModal = viewModel::toggleFoodModal
+                )
+            }
         }
     }
 

@@ -3,6 +3,7 @@ package com.example.petvitals.ui.screens.sign_up
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -43,7 +44,9 @@ fun SignUpScreen(
     }
 
     ScreenLayout(
-        columnModifier = modifier.verticalScroll(rememberScrollState()),
+        columnModifier = modifier
+            .verticalScroll(rememberScrollState())
+            .padding(vertical = Dimen.spaceMedium),
         topBar = {
             TopBar(
                 title = { Text(text = stringResource(R.string.signup)) },
