@@ -133,6 +133,20 @@ fun UserProfileScreen(
         Spacer(modifier = Modifier.height(Dimen.spaceMedium))
 
         ButtonWithIcon(
+            onClick = { viewModel.sendPasswordResetEmail() },
+            text = stringResource(R.string.reset_password),
+            icon = {
+                Icon(
+                    painter = painterResource(R.drawable.ic_lock_reset),
+                    contentDescription = null
+                )
+            },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Spacer(modifier = Modifier.height(Dimen.spaceMedium))
+
+        ButtonWithIcon(
             onClick = { viewModel.logout() },
             text = stringResource(R.string.logout),
             icon = {

@@ -14,4 +14,5 @@ interface AccountService {
     suspend fun logout()
     suspend fun deleteAccount()
     suspend fun sendVerificationEmail()
+    suspend fun sendPasswordResetEmail(email: String)
 }

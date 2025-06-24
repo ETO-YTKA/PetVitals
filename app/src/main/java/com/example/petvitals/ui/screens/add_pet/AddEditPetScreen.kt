@@ -157,7 +157,12 @@ fun AddEditPetScreen(
                 onValueChange = viewModel::onSpeciesChange,
                 options = uiState.speciesOptions,
                 label = stringResource(R.string.species),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                supportingText = {
+                    if (uiState.isNameError) {
+                        Text("")
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.size(Dimen.spaceMedium))
@@ -320,14 +325,14 @@ private fun DobPicker(
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(Dimen.spaceMedium),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.Top
                         ) {
                             ValueDropDown(
                                 value = uiState.selectedDobMonth,
                                 onValueChange = onDobMonthChange,
                                 options = uiState.monthOptions,
                                 label = stringResource(R.string.month),
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
                             )
                             CustomOutlinedTextField(
                                 value = uiState.dobYear,

@@ -204,4 +204,15 @@
     <string name="email_sent">Письмо для подтверждения отправлено на адрес %1$s. Пожалуйста, проверьте вашу почту.</string>
     <string name="failed_to_send_email">Не удалось отправить письмо для подтверждения. Пожалуйста, попробуйте позже.</string>
     <string name="failed_to_create_account">Не удалось создать аккаунт. Пожалуйста, проверьте данные и попробуйте снова.</string>
+    <string name="email_not_verified_error">Пожалуйста, подтвердите вашу почту, чтобы продолжить.</string>
+    <string name="login_failed_to_send_email">Не удалось отправить письмо. Пожалуйста, попробуйте снова.</string>
+    <string name="login_new_verification_email_sent">Новое письмо для подтверждения отправлено на вашу почту.</string>
+    <string name="resend">Отправить повторно</string>
+    <string name="forgot_password">Забыли пароль?</string>
+    <string name="password_reset">Сброс пароля</string>
+    <string name="send_password_reset_email">Отправить ссылку для сброса</string>
+    <string name="password_reset_email_sent">Ссылка для сброса пароля отправлена на вашу почту.</string>
+    <string name="failed_to_send_password_reset_email">Не удалось отправить ссылку. Проверьте адрес и попробуйте снова.</string>
+    <string name="reset_password">Сбросить пароль</string>
+    <string name="email_is_not_registered">Эта почта не зарегистрирована.</string>
 </resources>

@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.petvitals.ui.screens.log_in.SignInScreen
 import com.example.petvitals.ui.screens.main_screen.MainAppScreen
+import com.example.petvitals.ui.screens.password_reset.PasswordResetScreen
 import com.example.petvitals.ui.screens.sign_up.SignUpScreen
 import com.example.petvitals.ui.screens.splash.SplashScreen
 import com.example.petvitals.ui.theme.PetVitalsTheme
@@ -24,7 +25,8 @@ fun PetVitalsApp() {
             composable<LogIn> {
                 SignInScreen(
                     onNavigateToSignUp = { navController.navigate(route = SignUp) },
-                    onNavigateToSplash = { navController.navigate(route = Splash) }
+                    onNavigateToSplash = { navController.navigate(route = Splash) },
+                    onNavigateToPasswordReset = { navController.navigate(route = PasswordReset) }
                 )
             }
             composable<SignUp> {
@@ -41,6 +43,9 @@ fun PetVitalsApp() {
             }
             composable<MainApp> {
                 MainAppScreen(onNavigateToSplash = { navController.navigate(route = Splash) })
+            }
+            composable<PasswordReset> {
+                PasswordResetScreen(onPopBackStack = { navController.popBackStack() })
             }
         }
     }

@@ -34,3 +34,6 @@ object MainApp
 
 @Serializable
 data class SharePet(val petId: String)
+
+@Serializable
+object PasswordReset

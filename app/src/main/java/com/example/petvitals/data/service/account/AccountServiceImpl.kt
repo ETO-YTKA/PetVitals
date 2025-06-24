@@ -1,7 +1,6 @@
 package com.example.petvitals.data.service.account
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.user.User
@@ -91,8 +90,25 @@ class AccountServiceImpl @Inject constructor(
     }
 
     override suspend fun sendVerificationEmail() {
-        val user = auth.currentUser
-        val res = auth.currentUser?.sendEmailVerification()?.await()
-        Log.d("AccountServiceImpl", "res: $res\n user: $user")
+        auth.currentUser?.sendEmailVerification()?.await()
+    }
+
+    override suspend fun sendPasswordResetEmail(email: String) {
+
+        auth.sendPasswordResetEmail(email).addOnCompleteListener {
+            if (it.isSuccessful) {
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.password_reset_email_sent),
+                    Toast.LENGTH_LONG
+                ).show()
+            } else {
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.failed_to_send_password_reset_email),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }.await()
     }
 }

@@ -38,6 +38,7 @@ import com.example.petvitals.ui.theme.Dimen
 fun SignInScreen(
     onNavigateToSplash: () -> Unit,
     onNavigateToSignUp: () -> Unit,
+    onNavigateToPasswordReset: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LogInViewModel = hiltViewModel()
 ) {
@@ -101,6 +102,12 @@ fun SignInScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = stringResource(R.string.log_in))
+        }
+
+        TextButton(
+            onClick = { viewModel.onSignUpClick(onNavigateToSignUp = onNavigateToPasswordReset) }
+        ) {
+            Text(text = stringResource(R.string.forgot_password))
         }
 
         TextButton(

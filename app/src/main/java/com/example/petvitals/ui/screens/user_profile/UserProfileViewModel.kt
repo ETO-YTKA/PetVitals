@@ -93,4 +93,11 @@ class UserProfileViewModel @Inject constructor(
             accountService.sendVerificationEmail()
         }
     }
+
+    fun sendPasswordResetEmail() {
+        launchCatching {
+            val email = accountService.currentUserEmail ?: ""
+            accountService.sendPasswordResetEmail(email)
+        }
+    }
 }
