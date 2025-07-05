@@ -1,4 +1,4 @@
-package com.example.petvitals.ui.screens.create_record
+package com.example.petvitals.ui.screens.add_edit_record
 
 import android.icu.util.Calendar
 import androidx.compose.foundation.border

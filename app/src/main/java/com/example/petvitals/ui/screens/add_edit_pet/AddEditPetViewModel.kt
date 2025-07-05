@@ -1,4 +1,4 @@
-package com.example.petvitals.ui.screens.add_pet
+package com.example.petvitals.ui.screens.add_edit_pet
 
 import android.content.Context
 import android.net.Uri

@@ -24,7 +24,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.Period
 import java.time.ZoneId
-import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
@@ -41,16 +40,6 @@ data class PetProfileUiState(
     val updatedFoodNote: String = "",
     val permissionLevel: PermissionLevel = PermissionLevel.VIEWER,
 
-    //Medication
-    val medicationId: String? = null,
-    val medicationName: String = "",
-    val medicationDosage: String = "",
-    val medicationFrequency: String = "",
-    val isMedicationRegular: Boolean = false,
-    val medicationStartDate: Long? = null,
-    val medicationEndDate: Long? = null,
-    val medicationNote: String = "",
-
     //Food modal
     val foodId: String? = null,
     val foodName: String = "",
@@ -59,7 +48,6 @@ data class PetProfileUiState(
     val foodNote: String = "",
 
     //Modals state
-    val showAddMedicationModal: Boolean = false,
     val showAddFoodModal: Boolean = false,
     val showStartDatePicker: Boolean = false,
     val showEndDatePicker: Boolean = false,
@@ -70,27 +58,11 @@ data class PetProfileUiState(
     val isHealthNoteInEditMode: Boolean = false,
     val isFoodNoteInEditMode: Boolean = false,
 
-    //Medication error messages
-    val medicationNameErrorMessage: String? = null,
-    val medicationDosageErrorMessage: String? = null,
-    val medicationFrequencyErrorMessage: String? = null,
-    val medicationStartDateErrorMessage: String? = null,
-    val medicationEndDateErrorMessage: String? = null,
-    val medicationNoteErrorMessage: String? = null,
-
     //Food error messages
     val foodNameErrorMessage: String? = null,
     val foodPortionErrorMessage: String? = null,
     val foodFrequencyErrorMessage: String? = null,
     val foodNoteErrorMessage: String? = null,
-
-    //Medication error states
-    val isMedicationNameError: Boolean = false,
-    val isMedicationDosageError: Boolean = false,
-    val isMedicationFrequencyError: Boolean = false,
-    val isMedicationStartDateError: Boolean = false,
-    val isMedicationEndDateError: Boolean = false,
-    val isMedicationNoteError: Boolean = false,
 
     //Food error states
     val isFoodNameError: Boolean = false,
@@ -128,22 +100,6 @@ class PetProfileViewModel @Inject constructor(
         }
     }
 
-    fun toggleMedicationModal() {
-        _uiState.update { state ->
-            state.copy(
-                showAddMedicationModal = !state.showAddMedicationModal,
-                medicationId = null,
-                medicationName = "",
-                medicationDosage = "",
-                medicationFrequency = "",
-                isMedicationRegular = false,
-                medicationStartDate = null,
-                medicationEndDate = null,
-                medicationNote = ""
-            )
-        }
-    }
-
     fun toggleFoodModal() {
         _uiState.update { state ->
             state.copy(
@@ -154,52 +110,6 @@ class PetProfileViewModel @Inject constructor(
                 foodFrequency = "",
                 foodNote = ""
             )
-        }
-    }
-
-    fun toggleRegularMedication(isRegular: Boolean) {
-        _uiState.update { state ->
-            state.copy(isMedicationRegular = isRegular)
-        }
-    }
-
-    fun onMedicationNameChange(value: String) {
-        _uiState.update { state ->
-            state.copy(medicationName = value)
-        }
-    }
-
-    fun onMedicationDosageChange(value: String) {
-        _uiState.update { state ->
-            state.copy(medicationDosage = value)
-        }
-    }
-
-    fun onMedicationFrequencyChange(value: String) {
-        _uiState.update { state ->
-            state.copy(medicationFrequency = value)
-        }
-    }
-
-    fun onMedicationStartDateChange(value: Long?) {
-        _uiState.update { state ->
-            state.copy(
-                medicationStartDate = value
-            )
-        }
-    }
-
-    fun onMedicationEndDateChange(value: Long?) {
-        _uiState.update { state ->
-            state.copy(
-                medicationEndDate = value
-            )
-        }
-    }
-
-    fun onMedicationNoteChange(value: String) {
-        _uiState.update { state ->
-            state.copy(medicationNote = value)
         }
     }
 
@@ -227,18 +137,6 @@ class PetProfileViewModel @Inject constructor(
         }
     }
 
-    fun toggleStartDatePicker() {
-        _uiState.update { state ->
-            state.copy(showStartDatePicker = !state.showStartDatePicker)
-        }
-    }
-
-    fun toggleEndDatePicker() {
-        _uiState.update { state ->
-            state.copy(showEndDatePicker = !state.showEndDatePicker)
-        }
-    }
-
     fun onHealthNoteChange(value: String) {
         _uiState.update { state ->
             state.copy(updatedHealthNote = value)
@@ -260,173 +158,12 @@ class PetProfileViewModel @Inject constructor(
         }
     }
 
-    private fun validateMedicationForm(): Boolean {
-        val currentState = _uiState.value
-        var isValid = true
-
-        _uiState.update { it.copy(
-            isMedicationNameError = false,
-            isMedicationDosageError = false,
-            isMedicationFrequencyError = false,
-            isMedicationStartDateError = false,
-            isMedicationEndDateError = false,
-            isMedicationNoteError = false,
-            medicationNameErrorMessage = null,
-            medicationFrequencyErrorMessage = null,
-            medicationDosageErrorMessage = null,
-            medicationStartDateErrorMessage = null,
-            medicationEndDateErrorMessage = null,
-            medicationNoteErrorMessage = null
-        )}
-
-        if (currentState.medicationName.isBlank()) {
-            _uiState.update { it.copy(
-                isMedicationNameError = true,
-                medicationNameErrorMessage = context.getString(R.string.name_cannot_be_empty_error)
-            ) }
-            isValid = false
-        } else if (currentState.medicationName.length > 50) {
-            _uiState.update { it.copy(
-                isMedicationNameError = true,
-                medicationNameErrorMessage = context.getString(R.string.name_cannot_be_longer_than_error)
-            ) }
-            isValid = false
-        }
-
-        if (currentState.medicationDosage.isBlank()) {
-            _uiState.update { it.copy(
-                isMedicationDosageError = true,
-                medicationDosageErrorMessage = context.getString(R.string.dosage_cannot_be_empty_error)
-            ) }
-            isValid = false
-        } else if (currentState.medicationDosage.length > 50) {
-            _uiState.update { it.copy(
-                isMedicationDosageError = true,
-                medicationDosageErrorMessage = context.getString(R.string.dosage_cannot_be_longer_than_error)
-            ) }
-            isValid = false
-        }
-
-        if (currentState.medicationFrequency.isBlank()) {
-            _uiState.update { it.copy(
-                isMedicationFrequencyError = true,
-                medicationFrequencyErrorMessage = context.getString(R.string.frequency_cannot_be_empty_error)
-            ) }
-            isValid = false
-        } else if (currentState.medicationFrequency.length > 50) {
-            _uiState.update { it.copy(
-                isMedicationFrequencyError = true,
-                medicationFrequencyErrorMessage = context.getString(R.string.frequency_cannot_be_longer_than_error)
-            ) }
-            isValid = false
-        }
-
-        if (currentState.medicationNote.length > 500) {
-            _uiState.update { it.copy(
-                isMedicationNoteError = true,
-                medicationNoteErrorMessage = context.getString(R.string.note_cannot_be_longer_than_error)
-            ) }
-            isValid = false
-        }
-
-        if (!currentState.isMedicationRegular) {
-            val startDate = currentState.medicationStartDate
-            val endDate = currentState.medicationEndDate
-
-            if (startDate == null) {
-                _uiState.update { it.copy(
-                    isMedicationStartDateError = true,
-                    medicationStartDateErrorMessage = context.getString(
-                        R.string.start_date_must_be_selected_error)
-                ) }
-                isValid = false
-            }
-
-            if (startDate != null && endDate != null && endDate < startDate) {
-                _uiState.update { it.copy(
-                    isMedicationEndDateError = true,
-                    medicationEndDateErrorMessage = context.getString(
-                        R.string.end_date_must_be_after_start_date_error
-                    )
-                ) }
-                isValid = false
-            }
-        }
-
-        return isValid
-    }
-
-    fun onSaveMedicationClick() {
-        if (!validateMedicationForm()) return
-
-        viewModelScope.launch {
-            var medication: Medication
-            val petId = uiState.value.pet.id
-            val (startDate, endDate) = when (uiState.value.isMedicationRegular) {
-                true -> {
-                    val startDate = null
-                    val endDate = null
-                    startDate to endDate
-                }
-                false -> {
-                    val startDate = uiState.value.medicationStartDate?.let { Date(it) }
-                    val endDate = uiState.value.medicationEndDate?.let { Date(it) }
-                    startDate to endDate
-                }
-            }
-
-            if (uiState.value.medicationId == null) {
-                medication = Medication(
-                    petId = petId,
-                    name = uiState.value.medicationName,
-                    dosage = uiState.value.medicationDosage,
-                    frequency = uiState.value.medicationFrequency,
-                    startDate = startDate,
-                    endDate = endDate,
-                    note = uiState.value.medicationNote
-                )
-            } else {
-                medication = Medication(
-                    id = uiState.value.medicationId!!,
-                    petId = petId,
-                    name = uiState.value.medicationName,
-                    dosage = uiState.value.medicationDosage,
-                    frequency = uiState.value.medicationFrequency,
-                    startDate = startDate,
-                    endDate = endDate,
-                    note = uiState.value.medicationNote
-                )
-            }
-
-            medicationRepository.saveMedication(medication)
-
-            toggleMedicationModal()
-            getPetData(petId)
-        }
-    }
-
     fun onDeleteMedicationClick(medication: Medication) {
         viewModelScope.launch {
             medicationRepository.deleteMedication(medication)
 
             val petId = uiState.value.pet.id
             getPetData(petId)
-        }
-    }
-
-    fun onEditMedicationClick(medication: Medication) {
-        _uiState.update { state ->
-            state.copy(
-                medicationId = medication.id,
-                medicationName = medication.name,
-                medicationDosage = medication.dosage,
-                medicationFrequency = medication.frequency,
-                isMedicationRegular = medication.startDate == null && medication.endDate == null,
-                medicationStartDate = medication.startDate?.time,
-                medicationEndDate = medication.endDate?.time,
-                medicationNote = medication.note,
-                showAddMedicationModal = true,
-            )
         }
     }
 

@@ -1,4 +1,4 @@
-package com.example.petvitals.ui.screens.create_record
+package com.example.petvitals.ui.screens.add_edit_record
 
 import android.content.Context
 import androidx.lifecycle.ViewModel

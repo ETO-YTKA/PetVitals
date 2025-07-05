@@ -37,3 +37,9 @@ data class SharePet(val petId: String)
 
 @Serializable
 object PasswordReset
+
+@Serializable
+data class AddEditMedication(val petId: String, val medicationId: String? = null)
+
+@Serializable
+data class AddEditFood(val petId: String, val foodId: String? = null)

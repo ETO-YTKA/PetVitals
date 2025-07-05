@@ -1,4 +1,4 @@
-package com.example.petvitals.ui.screens.add_pet
+package com.example.petvitals.ui.screens.add_edit_pet
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -65,7 +65,7 @@ import com.example.petvitals.ui.components.Loading
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.components.ValueDropDown
-import com.example.petvitals.ui.screens.add_pet.AddEditPetViewModel.PastOrPresentSelectableDates
+import com.example.petvitals.ui.screens.add_edit_pet.AddEditPetViewModel.PastOrPresentSelectableDates
 import com.example.petvitals.ui.theme.Dimen
 
 @Composable

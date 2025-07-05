@@ -119,7 +119,6 @@
     <string name="male">Самец</string>
     <string name="female">Самка</string>
     <string name="add_medication">Добавить лекарство</string>
-    <string name="medicines">Лекарства</string>
     <string name="medication_name">Название</string>
     <string name="dosage">Дозировка</string>
     <string name="frequency">Частота приёма</string>
@@ -217,4 +216,16 @@
     <string name="email_is_not_registered">Эта почта не зарегистрирована.</string>
     <string name="year_cannot_be_in_the_future">Год не может быть в будущем.</string>
     <string name="year_cannot_be_before">Год должен быть %1$d или позже.</string>
+    <string name="medications">Лекарства</string>
+    <string name="medication_saved_successfully">Лекарство успешно сохранено</string>
+    <string name="medication_name_cannot_be_empty_error">Название не может быть пустым.</string>
+    <string name="medication_name_too_long_error">Название не может превышать 50 символов.</string>
+    <string name="medication_dosage_cannot_be_empty_error">Дозировка не может быть пустой.</string>
+    <string name="medication_dosage_too_long_error">Дозировка не может превышать 50 символов.</string>
+    <string name="medication_frequency_cannot_be_empty_error">Частота не может быть пустой.</string>
+    <string name="medication_frequency_too_long_error">Частота не может превышать 50 символов.</string>
+    <string name="medication_start_date_must_be_selected_error">Необходимо выбрать дату начала.</string>
+    <string name="medication_start_date_cannot_be_after_end_date_error">Дата окончания должна быть после даты начала.</string>
+    <string name="medication_note_too_long_error">Заметка не может превышать 500 символов.</string>
+    <string name="something_went_wrong_please_try_again_error">Ой! Что-то пошло не так. Пожалуйста, попробуйте снова.</string>
 </resources>

@@ -3,14 +3,8 @@ package com.example.petvitals.ui.screens.pet_profile
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,9 +40,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -71,6 +62,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import com.example.petvitals.AddEditMedication
 import com.example.petvitals.PetProfile
 import com.example.petvitals.R
 import com.example.petvitals.data.repository.food.Food
@@ -82,8 +74,6 @@ import com.example.petvitals.ui.components.ButtonWithIcon
 import com.example.petvitals.ui.components.ConfirmationDialog
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
-import com.example.petvitals.ui.components.DatePickerField
-import com.example.petvitals.ui.components.DatePickerModal
 import com.example.petvitals.ui.components.Loading
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
@@ -91,7 +81,6 @@ import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.utils.decodeBase64ToImage
 import com.example.petvitals.utils.formatDateToString
 import com.example.petvitals.utils.getMedicationStatus
-import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,6 +89,8 @@ fun PetProfileScreen(
     onNavigateToPets: () -> Unit,
     onNavigateToEditPet: (String) -> Unit,
     onNavigateToSharePet: (String) -> Unit,
+    onNavigateToAddEditMedication: (AddEditMedication) -> Unit,
+    onNavigateToAddEditFood: (String) -> Unit,
     viewModel: PetProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -222,11 +213,16 @@ fun PetProfileScreen(
                     permissionLevel = uiState.permissionLevel
                 )
 
-                MedicationList(
+                MedicationsList(
                     uiState = uiState,
-                    onEditMedicationClick = viewModel::onEditMedicationClick,
+                    onEditMedicationClick = { medication ->
+                        onNavigateToAddEditMedication(AddEditMedication(
+                            petId = uiState.pet.id,
+                            medicationId = medication.id
+                        )
+                    ) },
                     onDeleteMedicationClick = viewModel::onDeleteMedicationClick,
-                    toggleMedicationModal = viewModel::toggleMedicationModal
+                    navigateToAddMedication = { onNavigateToAddEditMedication(AddEditMedication(petId = uiState.pet.id)) }
                 )
             }
 
@@ -255,21 +251,6 @@ fun PetProfileScreen(
         }
     }
 
-    if (uiState.showAddMedicationModal) {
-        AddMedicationBottomSheet(
-            onDismiss = viewModel::toggleMedicationModal,
-            onNameChange = viewModel::onMedicationNameChange,
-            onDosageChange = viewModel::onMedicationDosageChange,
-            onFrequencyChange = viewModel::onMedicationFrequencyChange,
-            toggleRegularMedication = viewModel::toggleRegularMedication,
-            toggleStartDatePicker = viewModel::toggleStartDatePicker,
-            toggleEndDatePicker = viewModel::toggleEndDatePicker,
-            onNoteChange = viewModel::onMedicationNoteChange,
-            onSaveClick = viewModel::onSaveMedicationClick,
-            uiState = uiState
-        )
-    }
-
     if (uiState.showAddFoodModal) {
         AddFoodBottomSheet(
             onDismiss = viewModel::toggleFoodModal,
@@ -279,20 +260,6 @@ fun PetProfileScreen(
             onFoodNoteChange = viewModel::onFoodNoteChange,
             onSaveClick = viewModel::onSaveFoodClick,
             uiState = uiState
-        )
-    }
-
-    if (uiState.showStartDatePicker) {
-        DatePickerModal(
-            onDateSelected = viewModel::onMedicationStartDateChange,
-            onDismiss = { viewModel.toggleStartDatePicker() }
-        )
-    }
-
-    if (uiState.showEndDatePicker) {
-        DatePickerModal(
-            onDateSelected = viewModel::onMedicationEndDateChange,
-            onDismiss = { viewModel.toggleEndDatePicker() }
         )
     }
 
@@ -535,144 +502,6 @@ private fun GeneralInfo(uiState: PetProfileUiState) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddMedicationBottomSheet(
-    onDismiss: () -> Unit,
-    uiState: PetProfileUiState,
-    onNameChange: (String) -> Unit,
-    onDosageChange: (String) -> Unit,
-    onFrequencyChange: (String) -> Unit,
-    toggleRegularMedication: (Boolean) -> Unit,
-    toggleStartDatePicker: () -> Unit,
-    toggleEndDatePicker: () -> Unit,
-    onNoteChange: (String) -> Unit,
-    onSaveClick: () -> Unit
-) {
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState(
-            skipPartiallyExpanded = true
-        ),
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(Dimen.spaceMedium)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
-        ) {
-            val title = stringResource(
-                when (uiState.medicationId) {
-                    null -> R.string.add_medication
-                    else -> R.string.edit_medication
-                }
-            )
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-
-            CustomOutlinedTextField(
-                value = uiState.medicationName,
-                onValueChange = onNameChange,
-                label = { Text(stringResource(R.string.medication_name)) },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_medication),
-                        contentDescription = null
-                    )
-                },
-                isError = uiState.isMedicationNameError,
-                supportingText = {
-                    if (uiState.isMedicationNameError) {
-                        Text(uiState.medicationNameErrorMessage ?: "")
-                    }
-                }
-            )
-
-            CustomOutlinedTextField(
-                value = uiState.medicationDosage,
-                onValueChange = onDosageChange,
-                label = { Text(stringResource(R.string.dosage)) },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_pill),
-                        contentDescription = null
-                    )
-                },
-                isError = uiState.isMedicationDosageError,
-                supportingText = {
-                    if (uiState.isMedicationDosageError) {
-                        Text(uiState.medicationDosageErrorMessage ?: "")
-                    }
-                }
-            )
-
-            CustomOutlinedTextField(
-                value = uiState.medicationFrequency,
-                onValueChange = onFrequencyChange,
-                label = { Text(stringResource(R.string.frequency)) },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_event_repeat),
-                        contentDescription = null
-                    )
-                },
-                isError = uiState.isMedicationFrequencyError,
-                supportingText = {
-                    if (uiState.isMedicationFrequencyError) {
-                        Text(uiState.medicationFrequencyErrorMessage ?: "")
-                    }
-                }
-            )
-
-            MedicationScheduleCard(
-                uiState = uiState,
-                toggleStartDatePicker = toggleStartDatePicker,
-                toggleEndDatePicker = toggleEndDatePicker,
-                toggleRegularMedication = toggleRegularMedication
-            )
-
-            CustomOutlinedTextField(
-                value = uiState.medicationNote,
-                onValueChange = onNoteChange,
-                label = { Text(stringResource(R.string.note)) },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_sticky_note),
-                        contentDescription = null
-                    )
-                },
-                isError = uiState.isMedicationNoteError,
-                supportingText = {
-                    if (uiState.isMedicationNoteError) {
-                        Text(uiState.medicationNoteErrorMessage ?: "")
-                    }
-                }
-            )
-
-            Spacer(modifier = Modifier.height(Dimen.spaceMedium))
-            ButtonWithIcon(
-                text = stringResource(R.string.save),
-                onClick = onSaveClick,
-                icon = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_save),
-                        contentDescription = stringResource(R.string.save)
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
 fun AddFoodBottomSheet(
     uiState: PetProfileUiState,
     onDismiss: () -> Unit,
@@ -776,89 +605,6 @@ fun AddFoodBottomSheet(
     }
 }
 
-@Composable
-private fun MedicationScheduleCard(
-    uiState: PetProfileUiState,
-    toggleStartDatePicker: () -> Unit,
-    toggleEndDatePicker: () -> Unit,
-    toggleRegularMedication: (Boolean) -> Unit
-) {
-    OutlinedCard(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.padding(Dimen.spaceMedium),
-            verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
-        ) {
-            Text(
-                text = stringResource(R.string.medication_schedule),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                SegmentedButton(
-                    selected = uiState.isMedicationRegular,
-                    onClick = { toggleRegularMedication(true) },
-                    shape = SegmentedButtonDefaults.itemShape(0, 2),
-                    label = { Text(stringResource(R.string.regularly)) }
-                )
-                SegmentedButton(
-                    selected = !uiState.isMedicationRegular,
-                    onClick = { toggleRegularMedication(false) },
-                    shape = SegmentedButtonDefaults.itemShape(1, 2),
-                    label = { Text(stringResource(R.string.specific_dates)) }
-                )
-            }
-
-            AnimatedVisibility(
-                visible = !uiState.isMedicationRegular,
-                enter = fadeIn(animationSpec = tween(durationMillis = 200, delayMillis = 100)) +
-                        expandVertically(
-                            animationSpec = tween(durationMillis = 300),
-                            expandFrom = Alignment.Top
-                        ),
-                exit = shrinkVertically(
-                    animationSpec = tween(durationMillis = 300),
-                    shrinkTowards = Alignment.Top
-                ) + fadeOut(animationSpec = tween(durationMillis = 200))
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
-                ) {
-                    //StartDate
-                    DatePickerField(
-                        value = uiState.medicationStartDate?.let { formatDateToString(Date(it)) }
-                            ?: stringResource(R.string.tap_to_select_date),
-                        onClick = toggleStartDatePicker,
-                        label = stringResource(R.string.start_date),
-                        isError = uiState.isMedicationStartDateError,
-                        supportingText = {
-                            if (uiState.isMedicationStartDateError) {
-                                Text(uiState.medicationStartDateErrorMessage ?: "")
-                            }
-                        }
-                    )
-
-                    //EndDate
-                    DatePickerField(
-                        value = uiState.medicationEndDate?.let { formatDateToString(Date(it)) }
-                            ?: stringResource(R.string.tap_to_select_date),
-                        onClick = toggleEndDatePicker,
-                        label = stringResource(R.string.end_date),
-                        isError = uiState.isMedicationEndDateError,
-                        supportingText = {
-                            if (uiState.isMedicationEndDateError) {
-                                Text(uiState.medicationEndDateErrorMessage ?: "")
-                            }
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
 
 @Composable
 private fun MedicationCard(
@@ -912,7 +658,9 @@ private fun MedicationCard(
                     IconButton(onClick = { isExpanded = !isExpanded }) {
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowUp,
-                            contentDescription = if (isExpanded) stringResource(R.string.collapse) else stringResource(R.string.expand),
+                            contentDescription = if (isExpanded) stringResource(R.string.collapse) else stringResource(
+                                R.string.expand
+                            ),
                             modifier = Modifier.rotate(rotationAngle)
                         )
                     }
@@ -1053,7 +801,9 @@ fun FoodCard(
                     IconButton(onClick = { isExpanded = !isExpanded }) {
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowUp,
-                            contentDescription = if (isExpanded) stringResource(R.string.collapse) else stringResource(R.string.expand),
+                            contentDescription = if (isExpanded) stringResource(R.string.collapse) else stringResource(
+                                R.string.expand
+                            ),
                             modifier = Modifier.rotate(rotationAngle)
                         )
                     }
@@ -1159,11 +909,11 @@ private fun DateInfoRow(label: String, dateString: String) {
 }
 
 @Composable
-fun MedicationList(
+fun MedicationsList(
     uiState: PetProfileUiState,
     onEditMedicationClick: (Medication) -> Unit,
     onDeleteMedicationClick: (Medication) -> Unit,
-    toggleMedicationModal: () -> Unit
+    navigateToAddMedication: () -> Unit
 ) {
     OutlinedCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -1172,30 +922,12 @@ fun MedicationList(
             modifier = Modifier.padding(Dimen.spaceMedium)
         ) {
             var isExpanded by remember { mutableStateOf(false) }
-            Row {
-                Text(
-                    text = stringResource(R.string.medicines),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .padding(vertical = Dimen.spaceMedium)
-                        .weight(1f)
-                )
 
-                val rotationAngle by animateFloatAsState(
-                    targetValue = if (isExpanded) 180f else 0f,
-                    label = "CardArrowRotation"
-                )
-                IconButton(
-                    onClick = { isExpanded = !isExpanded }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowUp ,
-                        contentDescription = stringResource(if (isExpanded) R.string.collapse else R.string.expand),
-                        modifier = Modifier.rotate(rotationAngle)
-                    )
-                }
-            }
+            TitleWithExpandButton(
+                title = stringResource(R.string.medications),
+                isExpanded = isExpanded,
+                onClick = { isExpanded = !isExpanded }
+            )
 
             AnimatedContent(
                 targetState = isExpanded,
@@ -1221,7 +953,7 @@ fun MedicationList(
                             item {
                                 ButtonWithIcon(
                                     text = stringResource(R.string.add_medication),
-                                    onClick = toggleMedicationModal,
+                                    onClick = navigateToAddMedication,
                                     icon = {
                                         Icon(
                                             painter = painterResource(R.drawable.ic_add),
@@ -1254,30 +986,11 @@ fun FoodList(
         ) {
             var isExpanded by remember { mutableStateOf(false) }
 
-            Row {
-                Text(
-                    text = stringResource(R.string.food),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .padding(Dimen.spaceMedium)
-                        .weight(1f)
-                )
-
-                val rotationAngle by animateFloatAsState(
-                    targetValue = if (isExpanded) 180f else 0f,
-                    label = "CardArrowRotation"
-                )
-                IconButton(
-                    onClick = { isExpanded = !isExpanded }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowUp ,
-                        contentDescription = stringResource(if (isExpanded) R.string.collapse else R.string.expand),
-                        modifier = Modifier.rotate(rotationAngle)
-                    )
-                }
-            }
+            TitleWithExpandButton(
+                title = stringResource(R.string.food),
+                isExpanded = isExpanded,
+                onClick = { isExpanded = !isExpanded }
+            )
 
             AnimatedContent(
                 targetState = isExpanded
@@ -1317,6 +1030,38 @@ fun FoodList(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun TitleWithExpandButton(
+    title: String,
+    isExpanded: Boolean,
+    onClick: () -> Unit
+) {
+    Row {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .padding(vertical = Dimen.spaceMedium)
+                .weight(1f)
+        )
+
+        val rotationAngle by animateFloatAsState(
+            targetValue = if (isExpanded) 180f else 0f,
+            label = "CardArrowRotation"
+        )
+        IconButton(
+            onClick = onClick
+        ) {
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowUp,
+                contentDescription = stringResource(if (isExpanded) R.string.collapse else R.string.expand),
+                modifier = Modifier.rotate(rotationAngle)
+            )
         }
     }
 }

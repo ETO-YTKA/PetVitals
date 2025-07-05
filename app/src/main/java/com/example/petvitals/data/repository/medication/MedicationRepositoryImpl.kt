@@ -40,4 +40,17 @@ class MedicationRepositoryImpl @Inject constructor(
             .collection("medications").document(medication.id)
             .delete()
     }
+
+    override suspend fun getMedicationById(
+        medicationId: String,
+        petId: String
+    ): Medication? {
+
+        return firestore
+            .collection("pets").document(petId)
+            .collection("medications").document(medicationId)
+            .get()
+            .await()
+            .toObject<Medication>()
+    }
 }
