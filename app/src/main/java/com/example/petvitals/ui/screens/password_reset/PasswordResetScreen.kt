@@ -56,7 +56,7 @@ fun PasswordResetScreen(
             label = { Text(text = stringResource(R.string.email)) },
             modifier = Modifier.fillMaxWidth(),
             isError = uiState.errorMessage != null,
-            supportingText = { uiState.errorMessage?.let { Text(it) } }
+            supportingText = uiState.errorMessage
         )
 
         Button(

@@ -86,94 +86,87 @@ fun AddEditMedicationScreen(
             )
         }
     ) {
-        if (uiState.isLoading) { Loading() }
+        if (uiState.isLoading) { Loading() } else {
 
-        CustomOutlinedTextField(
-            value = uiState.medicationName,
-            onValueChange = viewModel::onNameChange,
-            label = { Text(stringResource(R.string.medication_name)) },
-            modifier = Modifier.fillMaxWidth(),
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(R.drawable.ic_medication),
-                    contentDescription = null
-                )
-            },
-            isError = uiState.medicationNameErrorMessage != null,
-            supportingText = if (uiState.medicationNameErrorMessage != null) {
-                { Text(uiState.medicationNameErrorMessage!!) }
-            } else null
-        )
+            CustomOutlinedTextField(
+                value = uiState.medicationName,
+                onValueChange = viewModel::onNameChange,
+                label = { Text(stringResource(R.string.medication_name)) },
+                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_medication),
+                        contentDescription = null
+                    )
+                },
+                isError = uiState.medicationNameErrorMessage != null,
+                supportingText = uiState.medicationNameErrorMessage
+            )
 
-        CustomOutlinedTextField(
-            value = uiState.medicationDosage,
-            onValueChange = viewModel::onDosageChange,
-            label = { Text(stringResource(R.string.dosage)) },
-            modifier = Modifier.fillMaxWidth(),
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(R.drawable.ic_pill),
-                    contentDescription = null
-                )
-            },
-            isError = uiState.medicationDosageErrorMessage != null,
-            supportingText = if (uiState.medicationDosageErrorMessage != null) {
-                { Text(uiState.medicationDosageErrorMessage!!) }
-            } else null
-        )
+            CustomOutlinedTextField(
+                value = uiState.medicationDosage,
+                onValueChange = viewModel::onDosageChange,
+                label = { Text(stringResource(R.string.dosage)) },
+                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_pill),
+                        contentDescription = null
+                    )
+                },
+                isError = uiState.medicationDosageErrorMessage != null,
+                supportingText = uiState.medicationDosageErrorMessage
+            )
 
-        CustomOutlinedTextField(
-            value = uiState.medicationFrequency,
-            onValueChange = viewModel::onFrequencyChange,
-            label = { Text(stringResource(R.string.frequency)) },
-            modifier = Modifier.fillMaxWidth(),
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(R.drawable.ic_event_repeat),
-                    contentDescription = null
-                )
-            },
-            isError = uiState.medicationFrequencyErrorMessage != null,
-            supportingText = if (uiState.medicationFrequencyErrorMessage != null) {
-                { Text(uiState.medicationFrequencyErrorMessage!!) }
-            } else null
-        )
+            CustomOutlinedTextField(
+                value = uiState.medicationFrequency,
+                onValueChange = viewModel::onFrequencyChange,
+                label = { Text(stringResource(R.string.frequency)) },
+                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_event_repeat),
+                        contentDescription = null
+                    )
+                },
+                isError = uiState.medicationFrequencyErrorMessage != null,
+                supportingText = uiState.medicationFrequencyErrorMessage
+            )
 
-        MedicationScheduleCard(
-            uiState = uiState,
-            toggleStartDatePicker = viewModel::toggleStartDatePicker,
-            toggleEndDatePicker = viewModel::toggleEndDatePicker,
-            toggleRegularMedication = viewModel::toggleRegularMedication
-        )
+            MedicationScheduleCard(
+                uiState = uiState,
+                toggleStartDatePicker = viewModel::toggleStartDatePicker,
+                toggleEndDatePicker = viewModel::toggleEndDatePicker,
+                toggleRegularMedication = viewModel::toggleRegularMedication
+            )
 
-        CustomOutlinedTextField(
-            value = uiState.medicationNote,
-            onValueChange = viewModel::onNoteChange,
-            label = { Text(stringResource(R.string.note)) },
-            modifier = Modifier.fillMaxWidth(),
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(R.drawable.ic_sticky_note),
-                    contentDescription = null
-                )
-            },
-            isError = uiState.medicationNoteErrorMessage != null,
-            supportingText = if (uiState.medicationNoteErrorMessage != null) {
-                { Text(uiState.medicationNoteErrorMessage!!) }
-            } else null
-        )
+            CustomOutlinedTextField(
+                value = uiState.medicationNote,
+                onValueChange = viewModel::onNoteChange,
+                label = { Text(stringResource(R.string.note)) },
+                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_sticky_note),
+                        contentDescription = null
+                    )
+                },
+                isError = uiState.medicationNoteErrorMessage != null,
+                supportingText = uiState.medicationNoteErrorMessage
+            )
 
-        ButtonWithIcon(
-            text = stringResource(R.string.save),
-            onClick = { viewModel.onSaveClick(onSuccess = onPopBackStack) },
-            icon = {
-                Icon(
-                    painter = painterResource(R.drawable.ic_save),
-                    contentDescription = stringResource(R.string.save)
-                )
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
+            ButtonWithIcon(
+                text = stringResource(R.string.save),
+                onClick = { viewModel.onSaveClick(onSuccess = onPopBackStack) },
+                icon = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_save),
+                        contentDescription = stringResource(R.string.save)
+                    )
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 
     if (uiState.showStartDatePicker) {
@@ -249,9 +242,7 @@ private fun MedicationScheduleCard(
                         onClick = toggleStartDatePicker,
                         label = stringResource(R.string.start_date),
                         isError = uiState.medicationStartDateErrorMessage != null,
-                        supportingText = if (uiState.medicationStartDateErrorMessage != null) {
-                            { Text(uiState.medicationStartDateErrorMessage) }
-                        } else null
+                        supportingText = uiState.medicationStartDateErrorMessage
                     )
 
                     //EndDate
@@ -261,9 +252,7 @@ private fun MedicationScheduleCard(
                         onClick = toggleEndDatePicker,
                         label = stringResource(R.string.end_date),
                         isError = uiState.medicationEndDateErrorMessage != null,
-                        supportingText = if (uiState.medicationEndDateErrorMessage != null) {
-                            { Text(uiState.medicationEndDateErrorMessage) }
-                        } else null
+                        supportingText = uiState.medicationEndDateErrorMessage
                     )
                 }
             }

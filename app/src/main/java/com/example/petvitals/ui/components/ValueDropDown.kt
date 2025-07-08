@@ -29,7 +29,7 @@ fun <T> ValueDropDown(
     label: String,
     modifier: Modifier = Modifier,
     isError: Boolean = false,
-    supportingText: @Composable (() -> Unit)? = null
+    supportingText: String? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
 

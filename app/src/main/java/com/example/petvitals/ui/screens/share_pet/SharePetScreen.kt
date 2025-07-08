@@ -125,12 +125,9 @@ fun SharePetScreen(
             item {
                 InviteUserForm(
                     uiState = uiState,
-                    email = uiState.email,
                     onEmailChange = viewModel::onEmailChange,
                     onPermissionLevelChange = viewModel::onPermissionLevelChange,
-                    onShareClick = { viewModel.onShareClick() },
-                    isLoading = uiState.isLoading,
-                    errorMessage = uiState.shareErrorMessage
+                    onShareClick = viewModel::onShareClick
                 )
             }
         }
@@ -202,13 +199,10 @@ private fun UserPermissionCard(
 @Composable
 private fun InviteUserForm(
     uiState: SharePetUiState,
-    email: String,
     onEmailChange: (String) -> Unit,
     onPermissionLevelChange: (PermissionLevel) -> Unit,
     onShareClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    isLoading: Boolean,
-    errorMessage: String?
+    modifier: Modifier = Modifier
 ) {
     OutlinedCard(modifier = modifier.fillMaxWidth()) {
         Column(
@@ -216,12 +210,12 @@ private fun InviteUserForm(
             verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
         ) {
             CustomOutlinedTextField(
-                value = email,
+                value = uiState.email,
                 onValueChange = onEmailChange,
                 label = { Text(stringResource(R.string.email)) },
                 modifier = Modifier.fillMaxWidth(),
-                isError = errorMessage != null,
-                supportingText = { errorMessage?.let { Text(it) } }
+                isError = uiState.shareErrorMessage != null,
+                supportingText = uiState.shareErrorMessage
             )
 
             ValueDropDown(
@@ -237,15 +231,14 @@ private fun InviteUserForm(
                         value = PermissionLevel.VIEWER
                     )
                 ),
-                label = stringResource(R.string.permission_level),
-                supportingText = { Text("") }
+                label = stringResource(R.string.permission_level)
             )
 
             ButtonWithIcon(
                 text = stringResource(R.string.pet_sharing_add),
                 onClick = onShareClick,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading,
+                enabled = !uiState.isLoading,
                 icon = {
                     Icon(
                         painter = painterResource(R.drawable.ic_person_add),

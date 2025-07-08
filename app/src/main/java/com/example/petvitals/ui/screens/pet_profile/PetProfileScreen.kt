@@ -542,11 +542,7 @@ fun AddFoodBottomSheet(
                 label = { Text(stringResource(R.string.food_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 isError = uiState.isFoodNameError,
-                supportingText = {
-                    if (uiState.isFoodNameError) {
-                        Text(uiState.foodNameErrorMessage ?: "")
-                    }
-                }
+                supportingText = uiState.foodNameErrorMessage
             )
 
             CustomOutlinedTextField(
@@ -555,11 +551,7 @@ fun AddFoodBottomSheet(
                 label = { Text(stringResource(R.string.portion)) },
                 modifier = Modifier.fillMaxWidth(),
                 isError = uiState.isFoodPortionError,
-                supportingText = {
-                    if (uiState.isFoodPortionError) {
-                        Text(uiState.foodPortionErrorMessage ?: "")
-                    }
-                }
+                supportingText = uiState.foodPortionErrorMessage
             )
 
             CustomOutlinedTextField(
@@ -568,11 +560,7 @@ fun AddFoodBottomSheet(
                 label = { Text(stringResource(R.string.frequency)) },
                 modifier = Modifier.fillMaxWidth(),
                 isError = uiState.isFoodFrequencyError,
-                supportingText = {
-                    if (uiState.isFoodFrequencyError) {
-                        Text(uiState.foodFrequencyErrorMessage ?: "")
-                    }
-                }
+                supportingText = uiState.foodFrequencyErrorMessage
             )
 
             CustomOutlinedTextField(
@@ -581,11 +569,7 @@ fun AddFoodBottomSheet(
                 label = { Text(stringResource(R.string.note)) },
                 modifier = Modifier.fillMaxWidth(),
                 isError = uiState.isFoodNoteError,
-                supportingText = {
-                    if (uiState.isFoodNoteError) {
-                        Text(uiState.foodNoteErrorMessage ?: "")
-                    }
-                }
+                supportingText = uiState.foodNoteErrorMessage
             )
 
             Spacer(modifier = Modifier.height(Dimen.spaceMedium))

@@ -53,11 +53,10 @@ fun UserProfileScreen(
 
     if (uiState.showDeleteAccountModal) {
         DeleteAccountModal(
-            password = uiState.password,
+            uiState = uiState,
             onPasswordChange = viewModel::onPasswordChange,
             onDismissRequest = { viewModel.showModal(false) },
             onConfirmDelete = viewModel::deleteAccount,
-            isPasswordIncorrect = uiState.isPasswordIncorrect
         )
     }
 
@@ -161,16 +160,13 @@ fun UserProfileScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeleteAccountModal(
-    password: String,
+    uiState: UserProfileUiState,
     onPasswordChange: (String) -> Unit,
-    onDismissRequest: () -> Unit, // Renamed for clarity, follows standard API naming
-    onConfirmDelete: () -> Unit,  // Renamed for clarity
-    isPasswordIncorrect: Boolean = false // Optional: to show an error state
+    onDismissRequest: () -> Unit,
+    onConfirmDelete: () -> Unit,
 ) {
-    // Use the standard Material 3 AlertDialog
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        // 1. Add a prominent warning icon
         icon = {
             Icon(
                 imageVector = Icons.Outlined.Warning,
@@ -179,15 +175,13 @@ fun DeleteAccountModal(
                 modifier = Modifier.size(48.dp)
             )
         },
-        // 2. Use the dedicated title slot
         title = {
             Text(
-                text = stringResource(R.string.delete_account_title), // e.g., "Delete Account?"
+                text = stringResource(R.string.delete_account_title),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
         },
-        // 3. Use the dedicated text slot for all content
         text = {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -195,27 +189,21 @@ fun DeleteAccountModal(
             ) {
                 Text(
                     text = stringResource(R.string.delete_account_confirmation_message),
-                    // e.g., "This action is permanent. To confirm, please enter your password."
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center
                 )
-                CustomOutlinedTextField( // Use standard OutlinedTextField
-                    value = password,
+                CustomOutlinedTextField(
+                    value = uiState.password,
                     onValueChange = onPasswordChange,
                     label = { Text(stringResource(R.string.password)) },
                     visualTransformation = PasswordVisualTransformation(),
                     singleLine = true,
-                    isError = isPasswordIncorrect, // Show error state if password was wrong
-                    supportingText = {
-                        if (isPasswordIncorrect) {
-                            Text(stringResource(R.string.incorrect_password_error))
-                        }
-                    },
+                    isError = uiState.passwordErrorMessage != null,
+                    supportingText = uiState.passwordErrorMessage,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
         },
-        // 4. Use dedicated button slots for proper placement and styling
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
                 Text(stringResource(R.string.cancel))
@@ -224,8 +212,7 @@ fun DeleteAccountModal(
         confirmButton = {
             Button(
                 onClick = onConfirmDelete,
-                // The confirm button is only enabled if the password field is not empty
-                enabled = password.isNotBlank(),
+                enabled = uiState.password.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.error
                 )

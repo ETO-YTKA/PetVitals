@@ -5,6 +5,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.VisualTransformation
@@ -19,7 +20,7 @@ fun CustomOutlinedTextField(
     label: @Composable (() -> Unit)? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
-    supportingText: @Composable (() -> Unit)? = null,
+    supportingText: String? = null,
     isError: Boolean = false,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
@@ -36,7 +37,7 @@ fun CustomOutlinedTextField(
         label = label,
         leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
-        supportingText = supportingText,
+        supportingText = supportingText?.let { { Text(text = it) } },
         isError = isError,
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,

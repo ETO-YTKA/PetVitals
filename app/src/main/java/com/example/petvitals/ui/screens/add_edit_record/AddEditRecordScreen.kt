@@ -17,8 +17,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -28,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerLayoutType
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,12 +53,14 @@ import com.example.petvitals.ui.components.ButtonWithIcon
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.DatePickerField
+import com.example.petvitals.ui.components.DatePickerModal
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.components.ValueDropDown
 import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.utils.decodeBase64ToImage
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditRecordScreen(
     addEditRecord: AddEditRecord,
@@ -99,21 +98,20 @@ fun AddEditRecordScreen(
     if (uiState.showBottomSheet) {
         BottomSheetModal(
             onDismissRequest = { viewModel.onShowBottomSheetChange(false) },
-            onPetClick = viewModel::onPetSelected,
+            onPetClick = viewModel::togglePetSelection,
             pets = uiState.pets,
             selectedPets = uiState.selectedPets
         )
     }
 
     ScreenLayout(
-        verticalArrangement = Arrangement.Top,
+        verticalArrangement = Arrangement.spacedBy(Dimen.spaceLarge),
         horizontalAlignment = Alignment.CenterHorizontally,
         topBar = {
-            val title = stringResource(
-            if (addEditRecord.recordId == null) R.string.create_record
-                    else R.string.edit_record
-            )
-
+            val title = when (addEditRecord.recordId) {
+                null -> stringResource(R.string.create_record)
+                else -> stringResource(R.string.edit_record)
+            }
             TopBar(
                 title = { Text(title) },
                 navigationIcon = {
@@ -125,9 +123,7 @@ fun AddEditRecordScreen(
                 }
             )
         },
-        columnModifier = Modifier
-            .verticalScroll(rememberScrollState())
-            .padding(vertical = Dimen.spaceMedium)
+        columnModifier = Modifier.verticalScroll(rememberScrollState())
     ) {
         //Title
         CustomOutlinedTextField(
@@ -136,11 +132,7 @@ fun AddEditRecordScreen(
             label = { Text(stringResource(R.string.title)) },
             modifier = Modifier.fillMaxWidth(),
             isError = uiState.isTitleError,
-            supportingText = {
-                if (uiState.isTitleError) {
-                    Text(uiState.titleErrorMessage ?: "")
-                }
-            }
+            supportingText = uiState.titleErrorMessage
         )
 
         //Type
@@ -148,8 +140,7 @@ fun AddEditRecordScreen(
             value = uiState.selectedType,
             onValueChange = viewModel::onTypeChange,
             options = uiState.typeOptions,
-            label = stringResource(R.string.type),
-            supportingText = {}
+            label = stringResource(R.string.type)
         )
 
         //Date
@@ -158,49 +149,14 @@ fun AddEditRecordScreen(
             onClick = { viewModel.onShowDatePickerChange(true) },
             label = stringResource(R.string.date),
             modifier = Modifier.fillMaxWidth(),
-            supportingText = {}
         )
 
-        Spacer(modifier = Modifier.height(Dimen.spaceSmall))
-
         //Attach pets
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.large)
-                .padding(Dimen.spaceMedium),
-        ) {
-            ButtonWithIcon(
-                onClick = { viewModel.onShowBottomSheetChange(true) },
-                text = stringResource(R.string.attach_pet),
-                icon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_add),
-                        contentDescription = null
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            if (uiState.selectedPets.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(Dimen.spaceMedium))
-            }
-
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
-                verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
-            ) {
-                uiState.selectedPets.forEach { pet ->
-                    PetCard(
-                        pet = pet,
-                        onClick = { viewModel.onPetSelected(pet) },
-                        isSelected = true,
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(Dimen.spaceMedium))
+        AttachedPetsSection(
+            uiState = uiState,
+            onPetClick = viewModel::togglePetSelection,
+            onShowBottomSheetChange = viewModel::onShowBottomSheetChange,
+        )
 
         //Description
         CustomOutlinedTextField(
@@ -209,14 +165,8 @@ fun AddEditRecordScreen(
             label = { Text(stringResource(R.string.description)) },
             modifier = Modifier.fillMaxWidth(),
             isError = uiState.isDescriptionError,
-            supportingText = {
-                if (uiState.isDescriptionError) {
-                    Text(uiState.descriptionErrorMessage ?: "")
-                }
-            }
+            supportingText = uiState.descriptionErrorMessage
         )
-
-        Spacer(modifier = Modifier.height(Dimen.spaceSmall))
 
         //Save button
         ButtonWithIcon(
@@ -238,36 +188,51 @@ fun AddEditRecordScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DatePickerModal(
-    onDateSelected: (Long?) -> Unit,
-    initialSelectedDateMillis: Long = Calendar.getInstance().timeInMillis,
-    onDismiss: () -> Unit
+fun AttachedPetsSection(
+    uiState: AddEditRecordUiState,
+    onPetClick: (Pet) -> Unit,
+    onShowBottomSheetChange: (Boolean) -> Unit
 ) {
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = initialSelectedDateMillis
-    )
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = Dimen.spaceMedium)
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.outline,
+                MaterialTheme.shapes.large
+            )
+            .padding(Dimen.spaceMedium),
+    ) {
+        ButtonWithIcon(
+            onClick = { onShowBottomSheetChange(true) },
+            text = stringResource(R.string.attach_pet),
+            icon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_add),
+                    contentDescription = null
+                )
+            },
+            modifier = Modifier.fillMaxWidth()
+        )
 
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = {
-                onDateSelected(datePickerState.selectedDateMillis)
-            }) {
-                Text(stringResource(R.string.ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
+        if (uiState.selectedPets.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(Dimen.spaceMedium))
+        }
+
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
+            verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
+        ) {
+            uiState.selectedPets.forEach { pet ->
+                PetCard(
+                    pet = pet,
+                    onClick = { onPetClick(pet) },
+                    isSelected = true,
+                )
             }
         }
-    ) {
-        DatePicker(
-            state = datePickerState,
-            showModeToggle = false
-        )
     }
 }
 

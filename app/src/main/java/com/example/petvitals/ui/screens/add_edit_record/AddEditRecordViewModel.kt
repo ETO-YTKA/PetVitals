@@ -24,7 +24,7 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
-data class CreateRecordUiState(
+data class AddEditRecordUiState(
     val title: String = "",
     val selectedType: RecordType = RecordType.NOTE,
     val date: Date = Date(),
@@ -54,7 +54,7 @@ class AddEditRecordViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(CreateRecordUiState())
+    private val _uiState = MutableStateFlow(AddEditRecordUiState())
     val uiState = _uiState.asStateFlow()
 
     init {
@@ -259,7 +259,7 @@ class AddEditRecordViewModel @Inject constructor(
         }
     }
 
-    fun onPetSelected(pet: Pet) {
+    fun togglePetSelection(pet: Pet) {
         _uiState.update { state ->
             state.copy(
                 selectedPets = if (state.selectedPets.contains(pet)) {

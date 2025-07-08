@@ -1,13 +1,17 @@
 package com.example.petvitals.ui.screens.user_profile
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.viewModelScope
-import com.example.petvitals.data.repository.pet.PetRepository
+import com.example.petvitals.R
 import com.example.petvitals.data.repository.user.User
 import com.example.petvitals.data.repository.user.UserRepository
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.ui.screens.PetVitalsAppViewModel
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -21,14 +25,14 @@ data class UserProfileUiState(
     //Modal
     val showDeleteAccountModal: Boolean = false,
     val password: String = "",
-    val isPasswordIncorrect: Boolean = false
+    val passwordErrorMessage: String? = null
 )
 
 @HiltViewModel
 class UserProfileViewModel @Inject constructor(
     private val accountService: AccountService,
     private val userRepository: UserRepository,
-    private val petRepository: PetRepository,
+    @ApplicationContext private val context: Context
 ): PetVitalsAppViewModel() {
 
     private val _uiState = MutableStateFlow(UserProfileUiState())
@@ -45,22 +49,25 @@ class UserProfileViewModel @Inject constructor(
     }
 
     fun deleteAccount() {
-        launchCatching {
+        viewModelScope.launch {
             try {
                 val password = uiState.value.password
                 val email = accountService.currentUserEmail ?: ""
 
                 accountService.signIn(email, password)
+
+                userRepository.deleteCurrentUser()
+                accountService.deleteAccount()
             } catch (e: Exception) {
                 Log.d("UserProfileViewModel", "deleteAccount: $e")
-                _uiState.update { state -> state.copy(isPasswordIncorrect = true) }
-                return@launchCatching
+
+                val errorMessage = when(e) {
+                    is FirebaseAuthInvalidCredentialsException -> context.getString(R.string.incorrect_password_error)
+                    is FirebaseNetworkException -> context.getString(R.string.network_error)
+                    else -> context.getString(R.string.unexpected_error)
+                }
+                _uiState.update { state -> state.copy(passwordErrorMessage = errorMessage) }
             }
-
-            userRepository.deleteCurrentUser()
-            //petRepository.deleteAllUserPetsPets()
-
-            accountService.deleteAccount()
         }
     }
 
