@@ -89,7 +89,7 @@ fun AddEditMedicationScreen(
         if (uiState.isLoading) { Loading() } else {
 
             CustomOutlinedTextField(
-                value = uiState.medicationName,
+                value = uiState.name,
                 onValueChange = viewModel::onNameChange,
                 label = { Text(stringResource(R.string.medication_name)) },
                 modifier = Modifier.fillMaxWidth(),
@@ -99,12 +99,12 @@ fun AddEditMedicationScreen(
                         contentDescription = null
                     )
                 },
-                isError = uiState.medicationNameErrorMessage != null,
-                supportingText = uiState.medicationNameErrorMessage
+                isError = uiState.nameErrorMessage != null,
+                supportingText = uiState.nameErrorMessage
             )
 
             CustomOutlinedTextField(
-                value = uiState.medicationDosage,
+                value = uiState.dosage,
                 onValueChange = viewModel::onDosageChange,
                 label = { Text(stringResource(R.string.dosage)) },
                 modifier = Modifier.fillMaxWidth(),
@@ -114,12 +114,12 @@ fun AddEditMedicationScreen(
                         contentDescription = null
                     )
                 },
-                isError = uiState.medicationDosageErrorMessage != null,
-                supportingText = uiState.medicationDosageErrorMessage
+                isError = uiState.dosageErrorMessage != null,
+                supportingText = uiState.dosageErrorMessage
             )
 
             CustomOutlinedTextField(
-                value = uiState.medicationFrequency,
+                value = uiState.frequency,
                 onValueChange = viewModel::onFrequencyChange,
                 label = { Text(stringResource(R.string.frequency)) },
                 modifier = Modifier.fillMaxWidth(),
@@ -129,8 +129,8 @@ fun AddEditMedicationScreen(
                         contentDescription = null
                     )
                 },
-                isError = uiState.medicationFrequencyErrorMessage != null,
-                supportingText = uiState.medicationFrequencyErrorMessage
+                isError = uiState.frequencyErrorMessage != null,
+                supportingText = uiState.frequencyErrorMessage
             )
 
             MedicationScheduleCard(
@@ -141,7 +141,7 @@ fun AddEditMedicationScreen(
             )
 
             CustomOutlinedTextField(
-                value = uiState.medicationNote,
+                value = uiState.note,
                 onValueChange = viewModel::onNoteChange,
                 label = { Text(stringResource(R.string.note)) },
                 modifier = Modifier.fillMaxWidth(),
@@ -151,8 +151,8 @@ fun AddEditMedicationScreen(
                         contentDescription = null
                     )
                 },
-                isError = uiState.medicationNoteErrorMessage != null,
-                supportingText = uiState.medicationNoteErrorMessage
+                isError = uiState.noteErrorMessage != null,
+                supportingText = uiState.noteErrorMessage
             )
 
             ButtonWithIcon(
@@ -207,13 +207,13 @@ private fun MedicationScheduleCard(
 
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 SegmentedButton(
-                    selected = uiState.isMedicationRegular,
+                    selected = uiState.isRegular,
                     onClick = { toggleRegularMedication(true) },
                     shape = SegmentedButtonDefaults.itemShape(0, 2),
                     label = { Text(stringResource(R.string.regularly)) }
                 )
                 SegmentedButton(
-                    selected = !uiState.isMedicationRegular,
+                    selected = !uiState.isRegular,
                     onClick = { toggleRegularMedication(false) },
                     shape = SegmentedButtonDefaults.itemShape(1, 2),
                     label = { Text(stringResource(R.string.specific_dates)) }
@@ -221,7 +221,7 @@ private fun MedicationScheduleCard(
             }
 
             AnimatedVisibility(
-                visible = !uiState.isMedicationRegular,
+                visible = !uiState.isRegular,
                 enter = fadeIn(animationSpec = tween(durationMillis = 200, delayMillis = 100)) +
                         expandVertically(
                             animationSpec = tween(durationMillis = 300),
@@ -237,22 +237,22 @@ private fun MedicationScheduleCard(
                 ) {
                     //StartDate
                     DatePickerField(
-                        value = uiState.medicationStartDate?.let { formatDateToString(Date(it)) }
+                        value = uiState.startDate?.let { formatDateToString(Date(it)) }
                             ?: stringResource(R.string.tap_to_select_date),
                         onClick = toggleStartDatePicker,
                         label = stringResource(R.string.start_date),
-                        isError = uiState.medicationStartDateErrorMessage != null,
-                        supportingText = uiState.medicationStartDateErrorMessage
+                        isError = uiState.startDateErrorMessage != null,
+                        supportingText = uiState.startDateErrorMessage
                     )
 
                     //EndDate
                     DatePickerField(
-                        value = uiState.medicationEndDate?.let { formatDateToString(Date(it)) }
+                        value = uiState.endDate?.let { formatDateToString(Date(it)) }
                             ?: stringResource(R.string.tap_to_select_date),
                         onClick = toggleEndDatePicker,
                         label = stringResource(R.string.end_date),
-                        isError = uiState.medicationEndDateErrorMessage != null,
-                        supportingText = uiState.medicationEndDateErrorMessage
+                        isError = uiState.endDateErrorMessage != null,
+                        supportingText = uiState.endDateErrorMessage
                     )
                 }
             }

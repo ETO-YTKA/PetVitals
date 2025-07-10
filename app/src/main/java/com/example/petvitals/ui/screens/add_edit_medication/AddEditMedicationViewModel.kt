@@ -23,24 +23,24 @@ data class AddEditMedicationUiState(
 
     val petId: String = "",
 
-    val medicationId: String? = null,
-    val medicationName: String = "",
-    val medicationDosage: String = "",
-    val medicationFrequency: String = "",
-    val isMedicationRegular: Boolean = false,
-    val medicationStartDate: Long? = null,
-    val medicationEndDate: Long? = null,
-    val medicationNote: String = "",
+    val id: String? = null,
+    val name: String = "",
+    val dosage: String = "",
+    val frequency: String = "",
+    val isRegular: Boolean = false,
+    val startDate: Long? = null,
+    val endDate: Long? = null,
+    val note: String = "",
 
     val showStartDatePicker: Boolean = false,
     val showEndDatePicker: Boolean = false,
 
-    val medicationNameErrorMessage: String? = null,
-    val medicationDosageErrorMessage: String? = null,
-    val medicationFrequencyErrorMessage: String? = null,
-    val medicationStartDateErrorMessage: String? = null,
-    val medicationEndDateErrorMessage: String? = null,
-    val medicationNoteErrorMessage: String? = null,
+    val nameErrorMessage: String? = null,
+    val dosageErrorMessage: String? = null,
+    val frequencyErrorMessage: String? = null,
+    val startDateErrorMessage: String? = null,
+    val endDateErrorMessage: String? = null,
+    val noteErrorMessage: String? = null,
 )
 
 @HiltViewModel
@@ -71,14 +71,14 @@ class AddEditMedicationViewModel @Inject constructor(
                 medication?.let {
                     _uiState.update { state ->
                         state.copy(
-                            medicationId = addEditMedication.medicationId,
-                            medicationName = medication.name,
-                            medicationDosage = medication.dosage,
-                            medicationFrequency = medication.frequency,
-                            isMedicationRegular = medication.startDate == null && medication.endDate == null,
-                            medicationStartDate = medication.startDate?.time,
-                            medicationEndDate = medication.endDate?.time,
-                            medicationNote = medication.note
+                            id = addEditMedication.medicationId,
+                            name = medication.name,
+                            dosage = medication.dosage,
+                            frequency = medication.frequency,
+                            isRegular = medication.startDate == null && medication.endDate == null,
+                            startDate = medication.startDate?.time,
+                            endDate = medication.endDate?.time,
+                            note = medication.note
                         )
                     }
                 }
@@ -92,7 +92,7 @@ class AddEditMedicationViewModel @Inject constructor(
 
     fun toggleRegularMedication(isRegular: Boolean) {
         _uiState.update { state ->
-            state.copy(isMedicationRegular = isRegular)
+            state.copy(isRegular = isRegular)
         }
     }
 
@@ -111,13 +111,13 @@ class AddEditMedicationViewModel @Inject constructor(
     fun onNameChange(value: String) {
         _uiState.update { state ->
             state.copy(
-                medicationName = value,
-                medicationNameErrorMessage = validateName(value)
+                name = value,
+                nameErrorMessage = validateName(value)
             )
         }
     }
 
-    private fun validateName(value: String = uiState.value.medicationName): String? {
+    private fun validateName(value: String = uiState.value.name): String? {
         return when {
             value.isBlank() -> context.getString(R.string.medication_name_cannot_be_empty_error)
             value.length > 50 -> context.getString(R.string.medication_name_too_long_error)
@@ -128,13 +128,13 @@ class AddEditMedicationViewModel @Inject constructor(
     fun onDosageChange(value: String) {
         _uiState.update { state ->
             state.copy(
-                medicationDosage = value,
-                medicationDosageErrorMessage = validateDosage(value)
+                dosage = value,
+                dosageErrorMessage = validateDosage(value)
             )
         }
     }
 
-    private fun validateDosage(value: String = uiState.value.medicationDosage): String? {
+    private fun validateDosage(value: String = uiState.value.dosage): String? {
         return when {
             value.isBlank() -> context.getString(R.string.medication_dosage_cannot_be_empty_error)
             value.length > 50 -> context.getString(R.string.medication_dosage_too_long_error)
@@ -145,13 +145,13 @@ class AddEditMedicationViewModel @Inject constructor(
     fun onFrequencyChange(value: String) {
         _uiState.update { state ->
             state.copy(
-                medicationFrequency = value,
-                medicationFrequencyErrorMessage = validateFrequency(value)
+                frequency = value,
+                frequencyErrorMessage = validateFrequency(value)
             )
         }
     }
 
-    private fun validateFrequency(value: String = uiState.value.medicationFrequency): String? {
+    private fun validateFrequency(value: String = uiState.value.frequency): String? {
         return when {
             value.isBlank() -> context.getString(R.string.medication_frequency_cannot_be_empty_error)
             value.length > 50 -> context.getString(R.string.medication_frequency_too_long_error)
@@ -162,8 +162,8 @@ class AddEditMedicationViewModel @Inject constructor(
     fun onStartDateChange(value: Long?) {
         _uiState.update { state ->
             state.copy(
-                medicationStartDate = value,
-                medicationStartDateErrorMessage = validateMedicationDates(startDate = value)
+                startDate = value,
+                startDateErrorMessage = validateMedicationDates(startDate = value)
             )
         }
     }
@@ -171,18 +171,18 @@ class AddEditMedicationViewModel @Inject constructor(
     fun onEndDateChange(value: Long?) {
         _uiState.update { state ->
             state.copy(
-                medicationEndDate = value,
-                medicationStartDateErrorMessage = validateMedicationDates(endDate = value)
+                endDate = value,
+                startDateErrorMessage = validateMedicationDates(endDate = value)
             )
         }
     }
 
     private fun validateMedicationDates(
-        startDate: Long? = uiState.value.medicationStartDate,
-        endDate: Long? = uiState.value.medicationEndDate
+        startDate: Long? = uiState.value.startDate,
+        endDate: Long? = uiState.value.endDate
     ): String? {
         return when {
-            uiState.value.isMedicationRegular -> null
+            uiState.value.isRegular -> null
             startDate != null && endDate != null && startDate > endDate -> context.getString(R.string.medication_start_date_cannot_be_after_end_date_error)
             startDate == null -> context.getString(R.string.medication_start_date_must_be_selected_error)
             else -> null
@@ -192,13 +192,13 @@ class AddEditMedicationViewModel @Inject constructor(
     fun onNoteChange(value: String) {
         _uiState.update { state ->
             state.copy(
-                medicationNote = value,
-                medicationNoteErrorMessage = validateNote(value)
+                note = value,
+                noteErrorMessage = validateNote(value)
             )
         }
     }
 
-    private fun validateNote(value: String = uiState.value.medicationNote): String? {
+    private fun validateNote(value: String = uiState.value.note): String? {
         return when {
             value.length > 500 -> context.getString(R.string.medication_note_too_long_error)
             else -> null
@@ -209,11 +209,11 @@ class AddEditMedicationViewModel @Inject constructor(
 
         _uiState.update {
             it.copy(
-                medicationNameErrorMessage = validateName(),
-                medicationDosageErrorMessage = validateDosage(),
-                medicationFrequencyErrorMessage = validateFrequency(),
-                medicationStartDateErrorMessage = validateMedicationDates(),
-                medicationNoteErrorMessage = validateNote()
+                nameErrorMessage = validateName(),
+                dosageErrorMessage = validateDosage(),
+                frequencyErrorMessage = validateFrequency(),
+                startDateErrorMessage = validateMedicationDates(),
+                noteErrorMessage = validateNote()
             )
         }
 
@@ -232,17 +232,17 @@ class AddEditMedicationViewModel @Inject constructor(
 
             val baseMed = Medication(
                 petId = uiState.value.petId,
-                name = uiState.value.medicationName,
-                dosage = uiState.value.medicationDosage,
-                frequency = uiState.value.medicationFrequency,
+                name = uiState.value.name,
+                dosage = uiState.value.dosage,
+                frequency = uiState.value.frequency,
                 startDate = startDate,
                 endDate = endDate,
-                note = uiState.value.medicationNote
+                note = uiState.value.note
             )
 
-            val medication = when (uiState.value.medicationId) {
+            val medication = when (uiState.value.id) {
                 null -> baseMed
-                else -> baseMed.copy(id = uiState.value.medicationId!!)
+                else -> baseMed.copy(id = uiState.value.id!!)
             }
 
             try {
@@ -264,15 +264,15 @@ class AddEditMedicationViewModel @Inject constructor(
         }
     }
     private fun getDates(): Pair<Date?, Date?> {
-            return when (uiState.value.isMedicationRegular) {
+            return when (uiState.value.isRegular) {
                 true -> {
                     val startDate = null
                     val endDate = null
                     startDate to endDate
                 }
                 false -> {
-                    val startDate = uiState.value.medicationStartDate?.let { Date(it) }
-                    val endDate = uiState.value.medicationEndDate?.let { Date(it) }
+                    val startDate = uiState.value.startDate?.let { Date(it) }
+                    val endDate = uiState.value.endDate?.let { Date(it) }
                     startDate to endDate
                 }
             }
