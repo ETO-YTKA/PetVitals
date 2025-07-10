@@ -20,6 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.petvitals.AddEditFood
 import com.example.petvitals.AddEditMedication
 import com.example.petvitals.AddEditPet
 import com.example.petvitals.AddEditRecord
@@ -29,6 +30,7 @@ import com.example.petvitals.R
 import com.example.petvitals.Records
 import com.example.petvitals.SharePet
 import com.example.petvitals.UserProfile
+import com.example.petvitals.ui.screens.add_edit_food.AddEditFoodScreen
 import com.example.petvitals.ui.screens.add_edit_medication.AddEditMedicationScreen
 import com.example.petvitals.ui.screens.add_edit_pet.AddEditPetScreen
 import com.example.petvitals.ui.screens.add_edit_record.AddEditRecordScreen
@@ -97,9 +99,14 @@ fun MainAppScreen(
                         navController.navigate(route = AddEditMedication(
                             addEditMedication.petId,
                             addEditMedication.medicationId
-                        )
-                    ) },
-                    onNavigateToAddEditFood = {},
+                        ))
+                    },
+                    onNavigateToAddEditFood = {  addEditFood ->
+                        navController.navigate(route = AddEditFood(
+                            addEditFood.petId,
+                            addEditFood.foodId
+                        ))
+                    },
                 )
             }
 
@@ -131,6 +138,13 @@ fun MainAppScreen(
                 val addEditMedication: AddEditMedication = backStackEntry.toRoute()
                 AddEditMedicationScreen(
                     addEditMedication = addEditMedication,
+                    onPopBackStack = { navController.popBackStack() }
+                )
+            }
+            composable<AddEditFood> { backStackEntry ->
+                val addEditFood: AddEditFood = backStackEntry.toRoute()
+                AddEditFoodScreen(
+                    addEditFood = addEditFood,
                     onPopBackStack = { navController.popBackStack() }
                 )
             }

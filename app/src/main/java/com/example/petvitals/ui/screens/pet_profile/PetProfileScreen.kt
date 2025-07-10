@@ -38,10 +38,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -62,6 +60,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import com.example.petvitals.AddEditFood
 import com.example.petvitals.AddEditMedication
 import com.example.petvitals.PetProfile
 import com.example.petvitals.R
@@ -90,7 +89,7 @@ fun PetProfileScreen(
     onNavigateToEditPet: (String) -> Unit,
     onNavigateToSharePet: (String) -> Unit,
     onNavigateToAddEditMedication: (AddEditMedication) -> Unit,
-    onNavigateToAddEditFood: (String) -> Unit,
+    onNavigateToAddEditFood: (AddEditFood) -> Unit,
     viewModel: PetProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -222,7 +221,7 @@ fun PetProfileScreen(
                         )
                     ) },
                     onDeleteMedicationClick = viewModel::onDeleteMedicationClick,
-                    navigateToAddMedication = { onNavigateToAddEditMedication(AddEditMedication(petId = uiState.pet.id)) }
+                    onAddMedicationClick = { onNavigateToAddEditMedication(AddEditMedication(petId = uiState.pet.id)) }
                 )
             }
 
@@ -243,24 +242,17 @@ fun PetProfileScreen(
 
                 FoodList(
                     uiState = uiState,
-                    onEditFoodClick = viewModel::onEditFoodClick,
+                    onEditFoodClick = { food -> onNavigateToAddEditFood(
+                        AddEditFood(
+                            petId = uiState.pet.id,
+                            foodId = food.id
+                        )
+                    ) },
                     onDeleteFoodClick = viewModel::onDeleteFoodClick,
-                    toggleFoodModal = viewModel::toggleFoodModal
+                    onAddFoodClick = { onNavigateToAddEditFood(AddEditFood(petId = uiState.pet.id)) }
                 )
             }
         }
-    }
-
-    if (uiState.showAddFoodModal) {
-        AddFoodBottomSheet(
-            onDismiss = viewModel::toggleFoodModal,
-            onFoodNameChange = viewModel::onFoodNameChange,
-            onFoodPortionChange = viewModel::onFoodPortionChange,
-            onFoodFrequencyChange = viewModel::onFoodFrequencyChange,
-            onFoodNoteChange = viewModel::onFoodNoteChange,
-            onSaveClick = viewModel::onSaveFoodClick,
-            uiState = uiState
-        )
     }
 
     if (uiState.showOnDeleteModal) {
@@ -499,96 +491,6 @@ private fun GeneralInfo(uiState: PetProfileUiState) {
         modifier = Modifier.alpha(0.7f)
     )
 }
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AddFoodBottomSheet(
-    uiState: PetProfileUiState,
-    onDismiss: () -> Unit,
-    onFoodNameChange: (String) -> Unit,
-    onFoodPortionChange: (String) -> Unit,
-    onFoodFrequencyChange: (String) -> Unit,
-    onFoodNoteChange: (String) -> Unit,
-    onSaveClick: () -> Unit
-) {
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState(
-            skipPartiallyExpanded = true
-        ),
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(Dimen.spaceMedium)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
-        ) {
-            val title = stringResource(
-                when (uiState.foodId) {
-                    null -> R.string.add_food
-                    else -> R.string.edit_food
-                }
-            )
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-
-            CustomOutlinedTextField(
-                value = uiState.foodName,
-                onValueChange = onFoodNameChange,
-                label = { Text(stringResource(R.string.food_name)) },
-                modifier = Modifier.fillMaxWidth(),
-                isError = uiState.isFoodNameError,
-                supportingText = uiState.foodNameErrorMessage
-            )
-
-            CustomOutlinedTextField(
-                value = uiState.foodPortion,
-                onValueChange = onFoodPortionChange,
-                label = { Text(stringResource(R.string.portion)) },
-                modifier = Modifier.fillMaxWidth(),
-                isError = uiState.isFoodPortionError,
-                supportingText = uiState.foodPortionErrorMessage
-            )
-
-            CustomOutlinedTextField(
-                value = uiState.foodFrequency,
-                onValueChange = onFoodFrequencyChange,
-                label = { Text(stringResource(R.string.frequency)) },
-                modifier = Modifier.fillMaxWidth(),
-                isError = uiState.isFoodFrequencyError,
-                supportingText = uiState.foodFrequencyErrorMessage
-            )
-
-            CustomOutlinedTextField(
-                value = uiState.foodNote,
-                onValueChange = onFoodNoteChange,
-                label = { Text(stringResource(R.string.note)) },
-                modifier = Modifier.fillMaxWidth(),
-                isError = uiState.isFoodNoteError,
-                supportingText = uiState.foodNoteErrorMessage
-            )
-
-            Spacer(modifier = Modifier.height(Dimen.spaceMedium))
-
-            ButtonWithIcon(
-                text = stringResource(R.string.save),
-                onClick = onSaveClick,
-                icon = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_save),
-                        contentDescription = stringResource(R.string.save)
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-    }
-}
-
 
 @Composable
 private fun MedicationCard(
@@ -897,7 +799,7 @@ fun MedicationsList(
     uiState: PetProfileUiState,
     onEditMedicationClick: (Medication) -> Unit,
     onDeleteMedicationClick: (Medication) -> Unit,
-    navigateToAddMedication: () -> Unit
+    onAddMedicationClick: () -> Unit
 ) {
     OutlinedCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -937,7 +839,7 @@ fun MedicationsList(
                             item {
                                 ButtonWithIcon(
                                     text = stringResource(R.string.add_medication),
-                                    onClick = navigateToAddMedication,
+                                    onClick = onAddMedicationClick,
                                     icon = {
                                         Icon(
                                             painter = painterResource(R.drawable.ic_add),
@@ -960,7 +862,7 @@ fun FoodList(
     uiState: PetProfileUiState,
     onEditFoodClick: (Food) -> Unit,
     onDeleteFoodClick: (Food) -> Unit,
-    toggleFoodModal: () -> Unit
+    onAddFoodClick: () -> Unit
 ) {
     OutlinedCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -1000,7 +902,7 @@ fun FoodList(
                             item {
                                 ButtonWithIcon(
                                     text = stringResource(R.string.add_food),
-                                    onClick = toggleFoodModal,
+                                    onClick = onAddFoodClick,
                                     icon = {
                                         Icon(
                                             painter = painterResource(R.drawable.ic_add),

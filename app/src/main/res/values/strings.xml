@@ -224,4 +224,12 @@
     <string name="medication_start_date_cannot_be_after_end_date_error">Start date must be before the end date.</string>
     <string name="medication_note_too_long_error">Note cannot exceed 500 characters.</string>
     <string name="something_went_wrong_please_try_again_error">Oops! Something went wrong. Please try again.</string>
+    <string name="food_name_cannot_be_empty_error">Food name cannot be empty.</string>
+    <string name="food_name_too_long_error">Name cannot exceed 50 characters.</string>
+    <string name="food_portion_cannot_be_empty_error">Portion cannot be empty.</string>
+    <string name="food_portion_too_long_error">Portion cannot exceed 50 characters.</string>
+    <string name="food_frequency_cannot_be_empty_error">Frequency cannot be empty.</string>
+    <string name="food_frequency_too_long_error">Frequency cannot exceed 50 characters.</string>
+    <string name="food_note_too_long_error">Note cannot exceed 500 characters.</string>
+    <string name="food_saved_successfully">Food saved successfully</string>
 </resources>

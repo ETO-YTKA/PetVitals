@@ -1,8 +1,8 @@
 package com.example.petvitals.data.repository.food
 
 interface FoodRepository {
-    suspend fun getFood(petId: String): List<Food>
-    suspend fun addFood(food: Food)
-    suspend fun updateFood(food: Food)
+    suspend fun getAllFood(petId: String): List<Food>
+    suspend fun getFoodById(petId: String, foodId: String): Food?
+    suspend fun saveFood(food: Food)
     suspend fun deleteFood(food: Food)
 }

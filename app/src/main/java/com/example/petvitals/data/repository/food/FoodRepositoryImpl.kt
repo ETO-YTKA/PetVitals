@@ -10,9 +10,8 @@ class FoodRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val accountService: AccountService
 ): FoodRepository {
-    override suspend fun getFood(petId: String): List<Food> {
+    override suspend fun getAllFood(petId: String): List<Food> {
 
-        accountService.currentUserId
         return firestore
             .collection("pets").document(petId)
             .collection("food")
@@ -21,19 +20,21 @@ class FoodRepositoryImpl @Inject constructor(
             .map { it.toObject<Food>() }
     }
 
-    override suspend fun addFood(food: Food) {
+    override suspend fun getFoodById(
+        petId: String,
+        foodId: String
+    ): Food? {
 
-        accountService.currentUserId
-        firestore
-            .collection("pets").document(food.petId)
-            .collection("food").document(food.id)
-            .set(food)
+        return firestore
+            .collection("pets").document(petId)
+            .collection("food").document(foodId)
+            .get()
             .await()
+            .toObject<Food>()
     }
 
-    override suspend fun updateFood(food: Food) {
+    override suspend fun saveFood(food: Food) {
 
-        accountService.currentUserId
         firestore
             .collection("pets").document(food.petId)
             .collection("food").document(food.id)
@@ -43,7 +44,6 @@ class FoodRepositoryImpl @Inject constructor(
 
     override suspend fun deleteFood(food: Food) {
 
-        accountService.currentUserId
         firestore
             .collection("pets").document(food.petId)
             .collection("food").document(food.id)

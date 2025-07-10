@@ -40,15 +40,7 @@ data class PetProfileUiState(
     val updatedFoodNote: String = "",
     val permissionLevel: PermissionLevel = PermissionLevel.VIEWER,
 
-    //Food modal
-    val foodId: String? = null,
-    val foodName: String = "",
-    val foodPortion: String = "",
-    val foodFrequency: String = "",
-    val foodNote: String = "",
-
     //Modals state
-    val showAddFoodModal: Boolean = false,
     val showStartDatePicker: Boolean = false,
     val showEndDatePicker: Boolean = false,
     val showOnDeleteModal: Boolean = false,
@@ -56,19 +48,7 @@ data class PetProfileUiState(
 
     //States
     val isHealthNoteInEditMode: Boolean = false,
-    val isFoodNoteInEditMode: Boolean = false,
-
-    //Food error messages
-    val foodNameErrorMessage: String? = null,
-    val foodPortionErrorMessage: String? = null,
-    val foodFrequencyErrorMessage: String? = null,
-    val foodNoteErrorMessage: String? = null,
-
-    //Food error states
-    val isFoodNameError: Boolean = false,
-    val isFoodPortionError: Boolean = false,
-    val isFoodFrequencyError: Boolean = false,
-    val isFoodNoteError: Boolean = false,
+    val isFoodNoteInEditMode: Boolean = false
 )
 
 @HiltViewModel
@@ -97,43 +77,6 @@ class PetProfileViewModel @Inject constructor(
     fun toggleFoodNoteEditMode() {
         _uiState.update { state ->
             state.copy(isFoodNoteInEditMode = !state.isFoodNoteInEditMode)
-        }
-    }
-
-    fun toggleFoodModal() {
-        _uiState.update { state ->
-            state.copy(
-                showAddFoodModal = !state.showAddFoodModal,
-                foodId = null,
-                foodName = "",
-                foodPortion = "",
-                foodFrequency = "",
-                foodNote = ""
-            )
-        }
-    }
-
-    fun onFoodNameChange(value: String) {
-        _uiState.update { state ->
-            state.copy(foodName = value)
-        }
-    }
-
-    fun onFoodPortionChange(value: String) {
-        _uiState.update { state ->
-            state.copy(foodPortion = value)
-        }
-    }
-
-    fun onFoodFrequencyChange(value: String) {
-        _uiState.update { state ->
-            state.copy(foodFrequency = value)
-        }
-    }
-
-    fun onFoodNoteChange(value: String) {
-        _uiState.update { state ->
-            state.copy(foodNote = value)
         }
     }
 
@@ -176,124 +119,10 @@ class PetProfileViewModel @Inject constructor(
         }
     }
 
-    private fun validateFoodForm(): Boolean {
-        val currentState = _uiState.value
-        var isValid = true
-
-        _uiState.update { it.copy(
-            isFoodNameError = false,
-            isFoodPortionError = false,
-            isFoodFrequencyError = false,
-            isFoodNoteError = false,
-            foodNameErrorMessage = null,
-            foodPortionErrorMessage = null,
-            foodFrequencyErrorMessage = null,
-            foodNoteErrorMessage = null
-        )}
-
-        if (currentState.foodName.isBlank()) {
-            _uiState.update { it.copy(
-                isFoodNameError = true,
-                foodNameErrorMessage = context.getString(R.string.name_cannot_be_empty_error)
-            ) }
-            isValid = false
-        } else if (currentState.foodName.length > 50) {
-            _uiState.update { it.copy(
-                isFoodNameError = true,
-                foodNameErrorMessage = context.getString(R.string.name_cannot_be_longer_than_error)
-            ) }
-            isValid = false
-        }
-
-        if (currentState.foodPortion.isBlank()) {
-            _uiState.update { it.copy(
-                isFoodPortionError = true,
-                foodPortionErrorMessage = context.getString(R.string.portion_cannot_be_empty_error)
-            ) }
-            isValid = false
-        } else if (currentState.foodPortion.length > 50) {
-            _uiState.update { it.copy(
-                isFoodPortionError = true,
-                foodPortionErrorMessage = context.getString(R.string.portion_cannot_be_longer_than_error)
-            ) }
-            isValid = false
-        }
-
-        if (currentState.foodFrequency.isBlank()) {
-            _uiState.update { it.copy(
-                isFoodFrequencyError = true,
-                foodFrequencyErrorMessage = context.getString(R.string.frequency_cannot_be_empty_error)
-            ) }
-            isValid = false
-        } else if (currentState.foodFrequency.length > 50) {
-            _uiState.update { it.copy(
-                isFoodFrequencyError = true,
-                foodFrequencyErrorMessage = context.getString(R.string.frequency_cannot_be_longer_than_error)
-            ) }
-            isValid = false
-        }
-
-        if (currentState.foodNote.length > 500) {
-            _uiState.update { it.copy(
-                isFoodNoteError = true,
-                foodNoteErrorMessage = context.getString(R.string.note_cannot_be_longer_than_error)
-            ) }
-            isValid = false
-        }
-
-        return isValid
-    }
-
-    fun onSaveFoodClick() {
-        if (validateFoodForm()) {
-            viewModelScope.launch {
-                val food: Food
-                val petId = uiState.value.pet.id
-
-                if (uiState.value.foodId == null) {
-                    food = Food(
-                        petId = petId,
-                        name = uiState.value.foodName,
-                        portion = uiState.value.foodPortion,
-                        frequency = uiState.value.foodFrequency,
-                        note = uiState.value.foodNote
-                    )
-                } else {
-                    food = Food(
-                        id = uiState.value.foodId!!,
-                        petId = petId,
-                        name = uiState.value.foodName,
-                        portion = uiState.value.foodPortion,
-                        frequency = uiState.value.foodFrequency,
-                        note = uiState.value.foodNote
-                    )
-                }
-
-                foodRepository.addFood(food)
-
-                toggleFoodModal()
-                getPetData(petId)
-            }
-        }
-    }
-
     fun onDeleteFoodClick(food: Food) {
         viewModelScope.launch {
             foodRepository.deleteFood(food)
             getPetData(food.petId)
-        }
-    }
-
-    fun onEditFoodClick(food: Food) {
-        _uiState.update {
-            it.copy(
-                foodId = food.id,
-                foodName = food.name,
-                foodPortion = food.portion,
-                foodFrequency = food.frequency,
-                foodNote = food.note,
-                showAddFoodModal = true
-            )
         }
     }
 
@@ -316,7 +145,7 @@ class PetProfileViewModel @Inject constructor(
                         age = age,
                         updatedHealthNote = pet.healthNote ?: "",
                         medications = medicationRepository.getMedications(petId),
-                        food = foodRepository.getFood(petId),
+                        food = foodRepository.getAllFood(petId),
                         permissionLevel = petPermissionRepository.getCurrentUserPermissionLevel(petId) ?: PermissionLevel.VIEWER,
                         isLoading = false
                     )
