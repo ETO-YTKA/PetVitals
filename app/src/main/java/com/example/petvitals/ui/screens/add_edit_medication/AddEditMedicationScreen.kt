@@ -125,7 +125,7 @@ fun AddEditMedicationScreen(
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = {
                     Icon(
-                        painter = painterResource(R.drawable.ic_event_repeat),
+                        painter = painterResource(R.drawable.ic_history),
                         contentDescription = null
                     )
                 },
