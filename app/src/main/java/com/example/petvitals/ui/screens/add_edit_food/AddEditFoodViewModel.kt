@@ -18,10 +18,9 @@ import kotlinx.coroutines.launch
 
 data class AddEditFoodUiState(
     val isLoading: Boolean = false,
-    val isSaving: Boolean = false,
 
     val petId: String = "",
-    val foodID: String? = null,
+    val foodId: String? = null,
     val name: String = "",
     val portion: String = "",
     val frequency: String = "",
@@ -41,6 +40,38 @@ class AddEditFoodViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AddEditFoodUiState())
     val uiState = _uiState.asStateFlow()
+
+    fun loadInitialData(petId: String, foodId: String?) {
+        _uiState.update { state ->
+            state.copy(
+                petId = petId,
+                foodId = foodId,
+                isLoading = true
+            )
+        }
+
+        viewModelScope.launch {
+            foodId?.let { foodId ->
+                val food = foodRepository.getFoodById(petId, foodId)
+                if (food != null) {
+                    _uiState.update { state ->
+                        state.copy(
+                            name = food.name,
+                            portion = food.portion,
+                            frequency = food.frequency,
+                            note = food.note,
+                            isLoading = false
+                        )
+                    }
+                }
+            }
+            _uiState.update { state ->
+                state.copy(
+                    isLoading = false
+                )
+            }
+        }
+    }
 
     fun onNameChange(value: String) {
         _uiState.update { state ->
@@ -124,7 +155,7 @@ class AddEditFoodViewModel @Inject constructor(
                 uiState.value.noteErrorMessage == null
     }
 
-    fun save() {
+    fun save(onSuccess: () -> Unit) {
         if (!isFormValid()) return
 
         viewModelScope.launch {
@@ -136,9 +167,9 @@ class AddEditFoodViewModel @Inject constructor(
                 note = uiState.value.note
             )
 
-            val food = when (uiState.value.foodID) {
+            val food = when (uiState.value.foodId) {
                 null -> baseFood
-                else -> baseFood.copy(id = uiState.value.foodID!!)
+                else -> baseFood.copy(id = uiState.value.foodId!!)
             }
 
             try {
@@ -148,6 +179,7 @@ class AddEditFoodViewModel @Inject constructor(
                     context.getString(R.string.food_saved_successfully),
                     Toast.LENGTH_SHORT
                 ).show()
+                onSuccess()
             } catch (e: Exception) {
                 Log.d("AddEditFoodViewModel", e.message.orEmpty())
                 Toast.makeText(
