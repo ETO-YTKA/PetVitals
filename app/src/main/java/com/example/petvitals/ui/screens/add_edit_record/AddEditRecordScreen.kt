@@ -123,7 +123,9 @@ fun AddEditRecordScreen(
                 }
             )
         },
-        columnModifier = Modifier.verticalScroll(rememberScrollState())
+        columnModifier = Modifier
+            .verticalScroll(rememberScrollState())
+            .padding( vertical = Dimen.spaceMedium)
     ) {
         //Title
         CustomOutlinedTextField(

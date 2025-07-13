@@ -44,7 +44,6 @@ import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -99,6 +98,7 @@ import com.example.petvitals.utils.formatDateToStringLocale
 fun RecordsScreen(
     onNavigateToAddEditRecord: (String?) -> Unit,
     onNavigateToProfile: () -> Unit,
+    onNavigateToPetProfile: (String) -> Unit,
     viewModel: RecordsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -148,6 +148,7 @@ fun RecordsScreen(
                         selected = uiState.selectedRecords.contains(recordWithPets.record),
                         onEditClick = { record -> onNavigateToAddEditRecord(record.id) },
                         onDeleteClick = viewModel::deleteRecord,
+                        onPetChipClick = { pet -> onNavigateToPetProfile(pet.id) },
                         modifier = Modifier
                             .pointerInput(recordWithPets) {
                                 this.detectTapGestures(
@@ -175,6 +176,7 @@ private fun RecordCard(
     recordWithPets: RecordWithPets,
     onEditClick: (Record) -> Unit,
     onDeleteClick: (Record) -> Unit,
+    onPetChipClick: (Pet) -> Unit,
     modifier: Modifier = Modifier,
     selected: Boolean = false
 ) {
@@ -189,167 +191,232 @@ private fun RecordCard(
                     stiffness = Spring.StiffnessMedium
                 )
             ),
-        border = BorderStroke(
-            width = if (selected) 2.dp else 1.dp,
-            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-        ),
+        border = when (selected) {
+            true -> BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+            else -> BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+        },
         colors = CardDefaults.outlinedCardColors(
             containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-            else MaterialTheme.colorScheme.surface
+                else MaterialTheme.colorScheme.surface
         )
     ) {
         Column {
             var isExpanded by remember { mutableStateOf(false) }
 
-            //Header
-            Row(
+            //Title, type, more options, expand
+            RecordCardMainContent(
+                record = record,
+                onEditClick = onEditClick,
+                onDeleteClick = onDeleteClick,
+                isExpanded = isExpanded,
+                onExpandClick = { isExpanded = !isExpanded },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = Dimen.spaceMedium,
-                        end = Dimen.spaceSmall,
-                        top = Dimen.spaceMedium,
-                        bottom = Dimen.spaceSmall
-                    ),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                //Indicator and Title/Info Column
-                Row(
-                    modifier = Modifier.weight(1f),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
-                ) {
-                    //Indicator Icon
+            )
+
+            //Date, pets, description
+            ExpandableContent(
+                pets = pets,
+                record = record,
+                isExpanded = isExpanded,
+                onPetChipClick = { pet -> onPetChipClick(pet) },
+                modifier = Modifier
+            )
+        }
+    }
+}
+
+@Composable
+private fun RecordCardMainContent(
+    record: Record,
+    onEditClick: (Record) -> Unit,
+    onDeleteClick: (Record) -> Unit,
+    isExpanded: Boolean,
+    onExpandClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(Dimen.spaceMedium),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RecordMainInfo(
+            record = record,
+            modifier = Modifier.weight(1f)
+        )
+
+        ActionButtons(
+            isExpanded = isExpanded,
+            onExpandClick = onExpandClick,
+            onEditClick = { onEditClick(record) },
+            onDeleteClick = { onDeleteClick(record) },
+            permissionLevel = record.currentUserPermission
+        )
+    }
+}
+
+@Composable
+private fun RecordMainInfo(
+    record: Record,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
+    ) {
+        //Indicator Icon
+        Icon(
+            painter = painterResource(id = record.type.iconResId),
+            contentDescription = stringResource(record.type.titleResId),
+            tint = record.type.color,
+            modifier = Modifier
+                .size(32.dp)
+                .background(record.type.color.copy(alpha = 0.15f), CircleShape)
+                .padding(Dimen.spaceSmall)
+        )
+
+        //Title, Type
+        Column {
+            Text(
+                text = record.title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = stringResource(record.type.titleResId),
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun ActionButtons(
+    permissionLevel: PermissionLevel,
+    isExpanded: Boolean,
+    onExpandClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+    ) {
+        //More option DropDown
+        Box {
+            if (permissionLevel != PermissionLevel.VIEWER) {
+
+                var showMenu by remember { mutableStateOf(false) }
+                //more options
+                IconButton(onClick = { showMenu = true }) {
                     Icon(
-                        painter = painterResource(id = record.type.iconResId),
-                        contentDescription = stringResource(record.type.titleResId),
-                        tint = record.type.color,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(record.type.color.copy(alpha = 0.15f), CircleShape)
-                            .padding(Dimen.spaceSmall)
+                        imageVector = Icons.Rounded.MoreVert,
+                        contentDescription = stringResource(R.string.more_options)
                     )
-
-                    //Title, Type, and Date
-                    Column {
-                        Text(
-                            text = record.title,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Text(
-                            text = stringResource(record.type.titleResId),
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
                 }
-
-                //Action Icons
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    //More options menu
-                    if (record.currentUserPermission != PermissionLevel.VIEWER) {
-                        var showMenu by remember { mutableStateOf(false) }
-                        Box {
-                            IconButton(onClick = { showMenu = true }) {
-                                Icon(Icons.Rounded.MoreVert, stringResource(R.string.more_options))
-                            }
-                            DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-                                //Dropdown items for Edit and Delete
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.edit)) },
-                                    onClick = {
-                                        showMenu = false
-                                        onEditClick(record)
-                                    },
-                                    leadingIcon = {
-                                        Icon(
-                                            Icons.Outlined.Edit,
-                                            contentDescription = null
-                                        )
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.delete)) },
-                                    onClick = {
-                                        showMenu = false
-                                        onDeleteClick(record)
-                                    },
-                                    leadingIcon = {
-                                        Icon(
-                                            Icons.Outlined.Delete,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.error
-                                        )
-                                    }
-                                )
-                            }
+                DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                    //Dropdown items for Edit and Delete
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.edit)) },
+                        onClick = {
+                            showMenu = false
+                            onEditClick()
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Outlined.Edit,
+                                contentDescription = null
+                            )
                         }
-                    }
-
-                    //Expand icon
-                    val rotationAngle by animateFloatAsState(
-                        targetValue = if (isExpanded) 180f else 0f,
-                        label = "ArrowRotation"
                     )
-                    IconButton(onClick = { isExpanded = !isExpanded }) {
-                        Icon(
-                            Icons.Rounded.KeyboardArrowUp,
-                            stringResource(R.string.expand),
-                            modifier = Modifier.rotate(rotationAngle)
-                        )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.delete)) },
+                        onClick = {
+                            showMenu = false
+                            onDeleteClick()
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Outlined.Delete,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    )
+                }
+            }
+        }
+        //expand
+        val rotationAngle by animateFloatAsState(
+            targetValue = if (isExpanded) 180f else 0f,
+            label = "ArrowRotation"
+        )
+        IconButton(onClick = onExpandClick) {
+            Icon(
+                Icons.Rounded.KeyboardArrowUp,
+                stringResource(R.string.expand),
+                modifier = Modifier.rotate(rotationAngle)
+            )
+        }
+    }
+}
+
+@Composable
+private fun ExpandableContent(
+    record: Record,
+    pets: List<Pet>,
+    isExpanded: Boolean,
+    onPetChipClick: (Pet) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AnimatedVisibility(
+        visible = isExpanded,
+        enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
+        exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top)
+    ) {
+        Column(
+            modifier = modifier
+                .padding(
+                    start = Dimen.spaceMedium,
+                    end = Dimen.spaceMedium,
+                    bottom = Dimen.spaceMedium
+                ),
+            verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
+        ) {
+            HorizontalDivider()
+
+            //Date
+            Text(
+                text = formatDateToStringLocale(record.date, "dd MMMM yyyy, HH:mm"),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium
+            )
+
+            //Attached pets
+            if (pets.isNotEmpty()) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
+                    verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
+                ) {
+                    pets.forEach { pet ->
+                        PetChip(pet = pet, onClick = { onPetChipClick(pet) })
                     }
                 }
             }
 
-            //Expandable content
-            AnimatedVisibility(
-                visible = isExpanded,
-                enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
-                exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(
-                            start = Dimen.spaceMedium,
-                            end = Dimen.spaceMedium,
-                            bottom = Dimen.spaceMedium
-                        ),
-                    verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
-                ) {
-                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-                    //Date
-                    Text(
-                        text = formatDateToStringLocale(record.date, "dd MMMM yyyy, HH:mm"),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium
-                    )
-
-                    //Attached pets
-                    if (pets.isNotEmpty()) {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
-                            verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
-                        ) {
-                            pets.forEach { pet ->
-                                PetChip(pet = pet)
-                            }
-                        }
-                    }
-
-                    //Description
-                    if (record.description.isNotBlank()) {
-                        Text(
-                            text = record.description,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
+            //Description
+            if (record.description.isNotBlank()) {
+                Text(
+                    text = record.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -358,6 +425,7 @@ private fun RecordCard(
 @Composable
 fun PetChip(
     pet: Pet,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val fallbackRes = when (pet.species) {
@@ -368,7 +436,7 @@ fun PetChip(
 
     AssistChip(
         modifier = modifier,
-        onClick = {},
+        onClick = onClick,
         label = { Text(pet.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         leadingIcon = {
             AsyncImage(
@@ -532,8 +600,7 @@ fun FilterBar(
                 fontWeight = FontWeight.Bold
             )
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
-                contentPadding = PaddingValues(vertical = Dimen.spaceSmall)
+                horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
             ) {
                 items(allPets, key = { it.id }) { pet ->
                     val isSelected = selectedPetIds.contains(pet.id)
@@ -562,8 +629,7 @@ fun FilterBar(
             fontWeight = FontWeight.Bold
         )
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
-            contentPadding = PaddingValues(vertical = Dimen.spaceSmall)
+            horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
         ) {
             items(allTypes, key = { it.name }) { type ->
                 val isSelected = selectedTypes.contains(type)
