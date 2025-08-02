@@ -228,4 +228,6 @@
     <string name="medication_start_date_cannot_be_after_end_date_error">Дата окончания должна быть после даты начала.</string>
     <string name="medication_note_too_long_error">Заметка не может превышать 500 символов.</string>
     <string name="something_went_wrong_please_try_again_error">Ой! Что-то пошло не так. Пожалуйста, попробуйте снова.</string>
+    <string name="today">Сегодня</string>
+    <string name="yesterday">Вчера</string>
 </resources>

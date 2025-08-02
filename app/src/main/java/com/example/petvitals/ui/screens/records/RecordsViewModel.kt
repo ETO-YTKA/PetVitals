@@ -1,7 +1,10 @@
 package com.example.petvitals.ui.screens.records
 
+import android.content.Context
+import android.icu.util.Calendar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.petvitals.R
 import com.example.petvitals.data.repository.pet.Pet
 import com.example.petvitals.data.repository.pet.PetRepository
 import com.example.petvitals.data.repository.pet_permission.PermissionLevel
@@ -9,20 +12,34 @@ import com.example.petvitals.data.repository.pet_permission.PetPermissionReposit
 import com.example.petvitals.data.repository.record.Record
 import com.example.petvitals.data.repository.record.RecordRepository
 import com.example.petvitals.data.repository.record.RecordType
+import com.example.petvitals.utils.formatDateToStringLocale
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+sealed class RecordsListEntry {
+    data class Header(val dateString: String) : RecordsListEntry()
+    data class RecordItem(val recordWithPets: RecordWithPets) : RecordsListEntry()
+}
+
+data class RecordWithPets(
+    val record: Record,
+    val pets: List<Pet>
+)
+
 data class RecordsUiState(
-    val recordsWithPets: List<RecordWithPets> = emptyList(),
-    val filteredRecordsWithPets: List<RecordWithPets>? = null,
+    val displayedRecords: List<RecordsListEntry> = emptyList(),
     val searchQuery: String = "",
     val selectedRecords: List<Record> = emptyList(),
     val selectedPetFilters: Set<String> = emptySet(),
     val selectedTypeFilters: Set<RecordType> = emptySet(),
+
+    val rawRecords: List<RecordWithPets> = emptyList(),
 
     val allPetsForFiltering: List<Pet> = emptyList(),
     val allRecordTypesForFiltering: List<RecordType> = RecordType.entries,
@@ -31,30 +48,38 @@ data class RecordsUiState(
     val selectionMode: Boolean = false,
 )
 
-data class RecordWithPets(
-    val record: Record,
-    val pets: List<Pet>
-)
-
 @HiltViewModel
 class RecordsViewModel @Inject constructor(
     private val recordRepository: RecordRepository,
     private val petRepository: PetRepository,
-    private val petPermissionRepository: PetPermissionRepository
+    private val petPermissionRepository: PetPermissionRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RecordsUiState())
     val uiState = _uiState.asStateFlow()
 
+    private val _searchQuery = MutableStateFlow("")
+    private val _selectedPetFilters = MutableStateFlow(emptySet<String>())
+    private val _selectedTypeFilters = MutableStateFlow(emptySet<RecordType>())
+    private val _allRecordsRaw = MutableStateFlow(emptyList<RecordWithPets>())
+
     init {
         getAllPetsForFiltering()
         getRecords()
-    }
 
-    fun onSearchQueryChange(query: String) {
-        _uiState.update { state -> state.copy(searchQuery = query) }
-
-        search()
+        viewModelScope.launch {
+            combine(
+                _allRecordsRaw,
+                _searchQuery,
+                _selectedPetFilters,
+                _selectedTypeFilters
+            ) { allRecords, query, petFilters, typeFilters ->
+                filterAndGroupRecords(allRecords, query, petFilters, typeFilters)
+            }.collect { groupedList ->
+                _uiState.update { it.copy(displayedRecords = groupedList) }
+            }
+        }
     }
 
     fun getRecords() {
@@ -63,7 +88,7 @@ class RecordsViewModel @Inject constructor(
         viewModelScope.launch {
             val records = recordRepository.getCurrentUserRecords()
 
-            val recordWithPets = records.map { record ->
+            val recordWithPetsList = records.map { record ->
 
                 val pets: List<Pet> = record.petIds.mapNotNull { petId ->
                     val pet = petRepository.getPetById(petId)
@@ -78,13 +103,13 @@ class RecordsViewModel @Inject constructor(
                 RecordWithPets(recordWithPermission, pets)
             }
 
+            _allRecordsRaw.value = recordWithPetsList
             _uiState.update { state ->
                 state.copy(
-                    recordsWithPets = recordWithPets,
+                    rawRecords = recordWithPetsList,
                     isRefreshing = false,
                     selectionMode = false,
-                    selectedRecords = emptyList(),
-                    filteredRecordsWithPets = null
+                    selectedRecords = emptyList()
                 )
             }
         }
@@ -141,60 +166,97 @@ class RecordsViewModel @Inject constructor(
         }
     }
 
-    fun onPetFilterChipClick(petId: String) {
-        _uiState.update { state ->
-            val currentFilters = state.selectedPetFilters.toMutableSet()
-            if (currentFilters.contains(petId)) {
-                currentFilters.remove(petId)
-            } else {
-                currentFilters.add(petId)
-            }
-            state.copy(selectedPetFilters = currentFilters)
-        }
+    private fun filterAndGroupRecords(
+        allRecords: List<RecordWithPets>,
+        query: String,
+        petFilters: Set<String>,
+        typeFilters: Set<RecordType>
+    ): List<RecordsListEntry> {
 
-        search()
-    }
-
-    fun onTypeFilterChipClicked(recordType: RecordType) {
-        _uiState.update { currentState ->
-            val currentFilters = currentState.selectedTypeFilters.toMutableSet()
-            if (currentFilters.contains(recordType)) {
-                currentFilters.remove(recordType)
-            } else {
-                currentFilters.add(recordType)
-            }
-            currentState.copy(selectedTypeFilters = currentFilters)
-        }
-
-        search()
-    }
-
-
-    fun search() {
-        val filteredRecords = uiState.value.recordsWithPets
+        val filteredList = allRecords
             .filter { recordWithPets ->
-                val query = uiState.value.searchQuery
-
                 recordWithPets.record.title.contains(query, ignoreCase = true)
-                    || recordWithPets.record.description.contains(query, ignoreCase = true)
+                        || recordWithPets.record.description.contains(query, ignoreCase = true)
             }
             .filter { recordWithPets ->
                 val petIds = recordWithPets.record.petIds
-                val petFilter = uiState.value.selectedPetFilters
-
-                if (petFilter.isEmpty()) return@filter true
-                petIds.any { petId ->
-                    petFilter.contains(petId)
-                }
+                if (petFilters.isEmpty()) true else petIds.any { petId -> petFilters.contains(petId) }
             }
             .filter { recordWithPets ->
                 val recordType = recordWithPets.record.type
-                val typeFilter = uiState.value.selectedTypeFilters
-
-                if (typeFilter.isEmpty()) return@filter true
-                typeFilter.contains(recordType)
+                if (typeFilters.isEmpty()) true else typeFilters.contains(recordType)
             }
 
-        _uiState.update { state -> state.copy(filteredRecordsWithPets = filteredRecords) }
+        return groupAndFlattenRecords(filteredList)
+    }
+
+    private fun groupAndFlattenRecords(records: List<RecordWithPets>): List<RecordsListEntry> {
+        if (records.isEmpty()) return emptyList()
+
+        val sortedRecords = records.sortedByDescending { it.record.date }
+
+        // Group records by their day (yyyy-MM-dd string)
+        val datePatternForKeys = "yyyy-MM-dd"
+        val groupedMap = sortedRecords
+            .groupBy { formatDateToStringLocale(it.record.date, datePatternForKeys) }
+
+        val flattenedList = mutableListOf<RecordsListEntry>()
+        val today = Calendar.getInstance()
+        val yesterday = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1) }
+
+        val todayKey = formatDateToStringLocale(today.time, datePatternForKeys)
+        val yesterdayKey = formatDateToStringLocale(yesterday.time, datePatternForKeys)
+
+        // Iterate through the grouped map to create headers and record items
+        groupedMap.forEach { (dateKey, recordsInDay) ->
+
+            val headerText = when (dateKey) {
+                todayKey -> context.getString(R.string.today)
+                yesterdayKey -> context.getString(R.string.yesterday)
+                else -> {
+                    val displayDate = recordsInDay.first().record.date
+                    val displayDateCalendar = Calendar.getInstance().apply { time = displayDate }
+                    when {
+                        today[Calendar.YEAR] == displayDateCalendar[Calendar.YEAR] -> formatDateToStringLocale(displayDate, "EEEE, MMMM d")
+                        else -> formatDateToStringLocale(displayDate, "EEEE, MMMM d, yyyy")
+                    }
+                }
+            }
+
+            flattenedList.add(RecordsListEntry.Header(headerText))
+
+            recordsInDay.forEach { record ->
+                flattenedList.add(RecordsListEntry.RecordItem(record))
+            }
+        }
+        return flattenedList
+    }
+
+    fun onSearchQueryChange(query: String) {
+        _searchQuery.value = query
+        _uiState.update { state -> state.copy(searchQuery = query) }
+    }
+
+    fun onPetFilterChipClick(petId: String) {
+        _selectedPetFilters.update { currentFilters ->
+            if (currentFilters.contains(petId)) {
+                currentFilters - petId
+            } else {
+                currentFilters + petId
+            }
+        }
+
+        _uiState.update { state -> state.copy(selectedPetFilters = _selectedPetFilters.value) }
+    }
+
+    fun onTypeFilterChipClicked(recordType: RecordType) {
+        _selectedTypeFilters.update { currentFilters ->
+            if (currentFilters.contains(recordType)) {
+                currentFilters - recordType
+            } else {
+                currentFilters + recordType
+            }
+        }
+        _uiState.update { it.copy(selectedTypeFilters = _selectedTypeFilters.value) }
     }
 }

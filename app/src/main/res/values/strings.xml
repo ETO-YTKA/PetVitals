@@ -232,4 +232,6 @@
     <string name="food_frequency_too_long_error">Frequency cannot exceed 50 characters.</string>
     <string name="food_note_too_long_error">Note cannot exceed 500 characters.</string>
     <string name="food_saved_successfully">Food saved successfully</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
 </resources>

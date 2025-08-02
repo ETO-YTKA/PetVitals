@@ -105,10 +105,16 @@ fun RecordsScreen(
 
     ScreenLayout(
         topBar = {
+            val keyboardController = LocalSoftwareKeyboardController.current
+            val focusManager = LocalFocusManager.current
+
             RecordsTopAppBar(
                 searchQuery = uiState.searchQuery,
                 onSearchQueryChange = viewModel::onSearchQueryChange,
-                onSearchTriggered = viewModel::getRecords,
+                onSearchTriggered = {
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
+                },
                 isSelectionMode = uiState.selectionMode,
                 onDeleteClick = viewModel::deleteSelectedRecords,
                 onAddClick = { onNavigateToAddEditRecord(null) },
@@ -139,32 +145,55 @@ fun RecordsScreen(
                 }
 
                 items(
-                    items = uiState.filteredRecordsWithPets ?: uiState.recordsWithPets,
-                    key = { it.record.id }
-                ) { recordWithPets ->
+                    items = uiState.displayedRecords,
+                    key = { entry ->
+                        when (entry) {
+                            is RecordsListEntry.Header -> "header-${entry.dateString}"
+                            is RecordsListEntry.RecordItem -> entry.recordWithPets.record.id
+                        }
+                    }
+                ) { entry ->
 
-                    RecordCard(
-                        recordWithPets = recordWithPets,
-                        selected = uiState.selectedRecords.contains(recordWithPets.record),
-                        onEditClick = { record -> onNavigateToAddEditRecord(record.id) },
-                        onDeleteClick = viewModel::deleteRecord,
-                        onPetChipClick = { pet -> onNavigateToPetProfile(pet.id) },
-                        modifier = Modifier
-                            .pointerInput(recordWithPets) {
-                                this.detectTapGestures(
-                                    onLongPress = {
-                                        if (!uiState.selectionMode) {
-                                            viewModel.selectRecord(recordWithPets.record)
-                                        }
-                                    },
-                                    onTap = {
-                                        if (uiState.selectionMode) {
-                                            viewModel.selectRecord(recordWithPets.record)
-                                        }
+                    when (entry) {
+                        is RecordsListEntry.Header -> {
+                            Text(
+                                text = entry.dateString,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(
+                                        horizontal = Dimen.spaceMedium,
+                                        vertical = Dimen.spaceSmall
+                                    )
+                            )
+                        }
+                        is RecordsListEntry.RecordItem -> {
+                            val recordWithPets = entry.recordWithPets
+                            RecordCard(
+                                recordWithPets = recordWithPets,
+                                selected = uiState.selectedRecords.contains(recordWithPets.record),
+                                onEditClick = { record -> onNavigateToAddEditRecord(record.id) },
+                                onDeleteClick = viewModel::deleteRecord,
+                                onPetChipClick = { pet -> onNavigateToPetProfile(pet.id) },
+                                modifier = Modifier
+                                    .pointerInput(recordWithPets) {
+                                        this.detectTapGestures(
+                                            onLongPress = {
+                                                if (!uiState.selectionMode) {
+                                                    viewModel.selectRecord(recordWithPets.record)
+                                                }
+                                            },
+                                            onTap = {
+                                                if (uiState.selectionMode) {
+                                                    viewModel.selectRecord(recordWithPets.record)
+                                                }
+                                            }
+                                        )
                                     }
-                                )
-                            }
-                    )
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -461,7 +490,7 @@ fun PetChip(
 fun SearchAppBarField(
     query: String,
     onQueryChange: (String) -> Unit,
-    onSearch: () -> Unit,
+    onSearchTriggered: () -> Unit,
     placeholderText: String,
     modifier: Modifier = Modifier
 ) {
@@ -502,7 +531,7 @@ fun SearchAppBarField(
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(
             onSearch = {
-                onSearch()
+                onSearchTriggered()
                 keyboardController?.hide()
                 focusManager.clearFocus()
             }
@@ -528,7 +557,7 @@ fun RecordsTopAppBar(
             SearchAppBarField(
                 query = searchQuery,
                 onQueryChange = onSearchQueryChange,
-                onSearch = onSearchTriggered,
+                onSearchTriggered = onSearchTriggered,
                 placeholderText = stringResource(R.string.search),
                 modifier = Modifier.padding(vertical = Dimen.spaceSmall)
             )
