@@ -12,7 +12,7 @@ class UserRepositoryImpl @Inject constructor(
     private val accountService: AccountService
 ) : UserRepository {
 
-    override suspend fun createUser(user: User) {
+    override suspend fun saveUser(user: User) {
 
         firestore
             .collection("users").document(user.id)

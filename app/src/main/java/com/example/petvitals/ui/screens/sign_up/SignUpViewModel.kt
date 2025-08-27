@@ -176,7 +176,7 @@ class SignUpViewModel @Inject constructor(
                     email = uiState.value.email
                 )
 
-                userRepository.createUser(user)
+                userRepository.saveUser(user)
                 onNavigateToLogIn()
             } catch (e: Exception) {
 
