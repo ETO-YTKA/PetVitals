@@ -10,12 +10,12 @@ plugins {
 
 android {
     namespace = "com.example.petvitals"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.petvitals"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -66,7 +66,6 @@ dependencies {
     implementation(libs.google.firebase.analytics)
     implementation(libs.google.firebase.auth)
     implementation(libs.google.firebase.firestore)
-    implementation(libs.google.firebase.messaging.ktx)
 
     implementation(libs.coil.compose)
 
