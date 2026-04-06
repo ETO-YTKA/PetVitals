@@ -3,7 +3,7 @@ package com.example.petvitals.data.service.account
 import android.content.Context
 import android.widget.Toast
 import com.example.petvitals.R
-import com.example.petvitals.data.repository.user.User
+import com.example.petvitals.domain.models.User
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose

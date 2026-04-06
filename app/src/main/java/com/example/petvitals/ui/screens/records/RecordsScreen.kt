@@ -82,16 +82,16 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.example.petvitals.R
-import com.example.petvitals.data.repository.pet.Pet
-import com.example.petvitals.data.repository.pet.PetSpecies
-import com.example.petvitals.data.repository.pet_permission.PermissionLevel
-import com.example.petvitals.data.repository.record.Record
-import com.example.petvitals.data.repository.record.RecordType
+import com.example.petvitals.domain.models.PermissionLevel
+import com.example.petvitals.domain.models.Pet
+import com.example.petvitals.domain.models.PetSpecies
+import com.example.petvitals.domain.models.Record
+import com.example.petvitals.domain.models.RecordType
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.theme.Dimen
-import com.example.petvitals.utils.decodeBase64ToImage
-import com.example.petvitals.utils.formatDateToStringLocale
+import com.example.petvitals.ui.utils.decodeBase64ToImage
+import com.example.petvitals.ui.utils.formatDateToStringLocale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

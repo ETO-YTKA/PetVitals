@@ -1,6 +1,6 @@
 package com.example.petvitals.data.service.account
 
-import com.example.petvitals.data.repository.user.User
+import com.example.petvitals.domain.models.User
 import kotlinx.coroutines.flow.Flow
 
 interface AccountService {

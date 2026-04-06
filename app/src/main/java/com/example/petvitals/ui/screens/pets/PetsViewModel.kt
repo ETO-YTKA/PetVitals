@@ -1,10 +1,10 @@
 package com.example.petvitals.ui.screens.pets
 
 import androidx.lifecycle.viewModelScope
-import com.example.petvitals.data.repository.pet.Pet
-import com.example.petvitals.data.repository.pet.PetRepository
-import com.example.petvitals.data.repository.pet_permission.PetPermissionRepository
 import com.example.petvitals.data.service.account.AccountService
+import com.example.petvitals.domain.models.Pet
+import com.example.petvitals.domain.repository.PetPermissionRepository
+import com.example.petvitals.domain.repository.PetRepository
 import com.example.petvitals.ui.screens.PetVitalsAppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
