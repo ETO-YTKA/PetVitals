@@ -11,12 +11,13 @@ composeBom = "2026.03.01"
 googleServices = "4.4.4"
 firebaseBom = "34.12.0"
 navigationCompose = "2.9.7"
-serialization = "1.10.0"
+serialization = "1.11.0"
 hilt = "2.59.2"
 ksp = "2.3.6"
 hiltNavigationCompose = "1.3.0"
 coil = "3.4.0"
 material3 = "1.5.0-alpha17"
+timber = "5.0.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -49,6 +50,8 @@ google-firebase-auth = { module = "com.google.firebase:firebase-auth" }
 google-firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+
+timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
