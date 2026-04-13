@@ -23,9 +23,9 @@ fun PetVitalsApp() {
         ) {
             composable<LogIn> {
                 LoginScreen(
-                    onNavigateToSignUp = { navController.navigate(route = SignUp) },
-                    onNavigateToSplash = { navController.navigate(route = Splash) },
-                    onNavigateToPasswordReset = { navController.navigate(route = PasswordReset) }
+                    navigateToSignUp = { navController.navigate(route = SignUp) },
+                    navigateToSplash = { navController.navigate(route = Splash) },
+                    navigateToPasswordReset = { navController.navigate(route = PasswordReset) }
                 )
             }
             composable<SignUp> {

@@ -39,11 +39,8 @@ class AccountServiceImpl @Inject constructor(
         return auth.currentUser != null
     }
 
-    override suspend fun signIn(email: String, password: String): Boolean {
-        val authRes = auth.signInWithEmailAndPassword(email, password).await()
-
-        val user = authRes.user
-        return user != null && user.isEmailVerified
+    override suspend fun signIn(email: String, password: String) {
+        auth.signInWithEmailAndPassword(email, password).await()
     }
 
     override suspend fun signUp(

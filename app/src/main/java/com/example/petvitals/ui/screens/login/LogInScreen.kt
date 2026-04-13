@@ -17,10 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,7 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,46 +39,37 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.CustomMediumButton
+import com.example.petvitals.ui.components.CustomSnackbarHost
 import com.example.petvitals.ui.components.CustomTextField
+import com.example.petvitals.ui.components.SnackbarType
+import com.example.petvitals.ui.components.showSnackbar
 import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.ui.theme.PetVitalsTheme
 
 @Composable
 fun LoginScreen(
-    onNavigateToSplash: () -> Unit,
-    onNavigateToSignUp: () -> Unit,
-    onNavigateToPasswordReset: () -> Unit,
+    navigateToSplash: () -> Unit,
+    navigateToSignUp: () -> Unit,
+    navigateToPasswordReset: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LogInViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val resources = LocalResources.current
 
-    LaunchedEffect(uiState.showVerificationError) {
-        if (uiState.showVerificationError) {
-            val result = snackbarHostState.showSnackbar(
-                message = resources.getString(R.string.email_not_verified_message),
-                actionLabel = resources.getString(R.string.resend),
-                duration = SnackbarDuration.Indefinite 
-            )
-            when (result) {
-                SnackbarResult.ActionPerformed -> {
-                    viewModel.resendVerificationEmail()
-                }
-                SnackbarResult.Dismissed -> {
-                }
-            }
+    LaunchedEffect(uiState.snackbarState) {
+        uiState.snackbarState?.let {
+            snackbarHostState.showSnackbar(it)
         }
     }
 
     LoginScreenContent(
         uiState = uiState,
-        onEmailChange = { viewModel.onEmailChange(it) },
-        onPasswordChange = { viewModel.onPasswordChange(it) },
-        onLogInClick = { viewModel.onLogInClick(onNavigateToSplash) },
-        onSignUpClick = onNavigateToSignUp,
-        onForgotPasswordClick = onNavigateToPasswordReset,
+        onEmailChange = { viewModel.updateEmail(it) },
+        onPasswordChange = { viewModel.updatePassword(it) },
+        onLogInClick = { viewModel.authenticate(onSuccess = navigateToSplash) },
+        onSignUpClick = navigateToSignUp,
+        onForgotPasswordClick = navigateToPasswordReset,
         snackbarHostState = snackbarHostState,
         modifier = modifier
     )
@@ -102,7 +89,10 @@ private fun LoginScreenContent(
 ) {
     Scaffold(
         topBar = { TopBar() },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { CustomSnackbarHost(
+            hostState = snackbarHostState,
+            snackbarType = uiState.snackbarState?.snackbarType ?: SnackbarType.INFO
+        ) },
         modifier = modifier
     ) { paddingValues ->
         Column(
