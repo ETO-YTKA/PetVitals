@@ -4,7 +4,7 @@
     <!-- Sign up Log in -->
     <string name="login">Login</string>
     <string name="log_in">Log In</string>
-    <string name="signup">Signup</string>
+    <string name="signup">Sign Up</string>
     <string name="sign_up">Sign up</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
@@ -105,7 +105,7 @@
     <string name="password_no_uppercase_error">Password must contain at least one uppercase letter</string>
     <string name="password_no_lowercase_error">Password must contain at least one lowercase letter</string>
     <string name="empty_field_error">Field cannot be empty</string>
-    <string name="display_name_too_long_error">The field must not exceed 30 characters</string>
+    <string name="display_name_too_long_error">The field must not exceed 50 characters</string>
     <string name="invalid_email_error">Invalid email</string>
     <string name="invalid_credentials_error">Invalid email or password</string>
     <string name="user_not_found_error">User not found. Please check the entered data.</string>

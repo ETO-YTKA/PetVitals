@@ -1,4 +1,4 @@
-package com.example.petvitals.domain
+package com.example.petvitals.domain.error
 
 enum class NetworkError: Error {
     NO_INTERNET,

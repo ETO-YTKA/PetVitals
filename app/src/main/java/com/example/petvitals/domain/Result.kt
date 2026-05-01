@@ -1,5 +1,7 @@
 package com.example.petvitals.domain
 
+import com.example.petvitals.domain.error.Error
+
 typealias RootError = Error
 
 sealed interface Result<out D, out E: RootError> {

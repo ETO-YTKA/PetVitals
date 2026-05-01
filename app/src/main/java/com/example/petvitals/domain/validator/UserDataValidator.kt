@@ -1,8 +1,12 @@
-package com.example.petvitals.domain
+package com.example.petvitals.domain.validator
 
+import com.example.petvitals.domain.Result
+import com.example.petvitals.domain.error.DisplayNameError
+import com.example.petvitals.domain.error.EmailErrors
+import com.example.petvitals.domain.error.PasswordError
 import javax.inject.Inject
 
-class SignUpDataValidator @Inject constructor() {
+class UserDataValidator @Inject constructor() {
 
     fun validateDisplayName(displayName: String): Result<Unit, DisplayNameError> {
         val displayName = displayName.trim()
@@ -11,22 +15,16 @@ class SignUpDataValidator @Inject constructor() {
             return Result.Error(DisplayNameError.EMPTY_FIELD)
         }
 
-        val regex = Regex("^[а-яА-Яa-zA-Z\\s]+$")
+        val regex = Regex("^[а-яА-Яa-zA-Z\\\\s'-]+\$")
         if (!regex.matches(displayName)) {
             return Result.Error(DisplayNameError.INVALID_CHARACTERS)
         }
 
-        if (displayName.length > 30) {
+        if (displayName.length > 50) {
             return Result.Error(DisplayNameError.TOO_LONG)
         }
 
         return Result.Success(Unit)
-    }
-
-    enum class DisplayNameError: Error {
-        EMPTY_FIELD,
-        TOO_LONG,
-        INVALID_CHARACTERS
     }
 
     fun validateEmail(email: String): Result<Unit, EmailErrors> {
@@ -44,14 +42,7 @@ class SignUpDataValidator @Inject constructor() {
         return Result.Success(Unit)
     }
 
-    enum class EmailErrors: Error {
-        EMPTY_FIELD,
-        INVALID_EMAIL
-    }
-
     fun validatePassword(password: String): Result<Unit, PasswordError> {
-
-        val password = password.trim()
 
         if (password.isEmpty()) {
             return Result.Error(PasswordError.EMPTY_FIELD)
@@ -81,14 +72,5 @@ class SignUpDataValidator @Inject constructor() {
         }
 
         return Result.Success(Unit)
-    }
-
-    enum class PasswordError: Error {
-        EMPTY_FIELD,
-        HAS_WHITESPACE,
-        TOO_SHORT,
-        NO_DIGIT,
-        NO_UPPERCASE,
-        NO_LOWERCASE
     }
 }

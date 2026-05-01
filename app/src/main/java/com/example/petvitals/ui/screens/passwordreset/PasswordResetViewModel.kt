@@ -6,7 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.domain.Result
-import com.example.petvitals.domain.SignUpDataValidator
+import com.example.petvitals.domain.error.EmailErrors
+import com.example.petvitals.domain.validator.UserDataValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
@@ -24,7 +25,7 @@ data class ResetPasswordUiState(
 class PasswordResetViewModel @Inject constructor(
     private val accountService: AccountService,
     @ApplicationContext private val context: Context,
-    val dataValidator: SignUpDataValidator
+    val dataValidator: UserDataValidator
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ResetPasswordUiState())
@@ -37,15 +38,14 @@ class PasswordResetViewModel @Inject constructor(
     fun onSendPasswordResetEmail() {
         viewModelScope.launch {
             val email = uiState.value.email
-            val result = dataValidator.validateEmail(email)
 
-            when (result) {
+            when (val result = dataValidator.validateEmail(email)) {
                 is Result.Error -> {
                     when(result.error) {
-                        SignUpDataValidator.EmailErrors.EMPTY_FIELD -> _uiState.update { state ->
+                        EmailErrors.EMPTY_FIELD -> _uiState.update { state ->
                             state.copy(errorMessage = context.getString(R.string.empty_field_error))
                         }
-                        SignUpDataValidator.EmailErrors.INVALID_EMAIL -> _uiState.update { state ->
+                        EmailErrors.INVALID_EMAIL -> _uiState.update { state ->
                             state.copy(errorMessage = context.getString(R.string.invalid_email_error))
                         }
                     }

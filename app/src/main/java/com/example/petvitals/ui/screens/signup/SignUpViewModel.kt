@@ -5,12 +5,18 @@ import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.domain.Result
-import com.example.petvitals.domain.SignUpDataValidator
+import com.example.petvitals.domain.error.DisplayNameError
+import com.example.petvitals.domain.error.EmailErrors
+import com.example.petvitals.domain.error.PasswordError
 import com.example.petvitals.domain.models.User
 import com.example.petvitals.domain.repository.UserRepository
+import com.example.petvitals.domain.validator.UserDataValidator
+import com.example.petvitals.ui.components.SnackbarState
+import com.example.petvitals.ui.components.SnackbarType
 import com.example.petvitals.ui.screens.PetVitalsAppViewModel
 import com.google.firebase.FirebaseNetworkException
-import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,146 +29,143 @@ data class SignUpUiState(
     val displayName: String = "",
     val email: String = "",
     val password: String = "",
-    val isDisplayNameInvalid: Boolean = false,
-    val isEmailInvalid: Boolean = false,
-    val isPasswordInvalid: Boolean = false,
     val isPasswordHidden: Boolean = true,
+    val snackbarState: SnackbarState? = null,
+
     val displayNameErrorMessage: String? = null,
     val emailErrorMessage: String? = null,
     val passwordErrorMessage: String? = null,
-    val signUpErrorMessage: String? = null,
-    val signUpButtonEnabled: Boolean = false
 )
 
 @HiltViewModel
 class SignUpViewModel @Inject constructor(
     val accountService: AccountService,
     val userRepository: UserRepository,
-    @ApplicationContext private val context: Context,
-    val dataValidator: SignUpDataValidator
+    val userDataValidator: UserDataValidator,
+    @ApplicationContext private val context: Context
 ) : PetVitalsAppViewModel() {
 
     private val _uiState = MutableStateFlow(SignUpUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun onDisplayNameChange(name: String) {
+    fun updateDisplayName(name: String) {
         _uiState.update { state ->
             state.copy(displayName = name)
         }
         validateDisplayName(name)
-        updateSignUpButtonState()
     }
 
     private fun validateDisplayName(displayName: String){
-        when(val result = dataValidator.validateDisplayName(displayName)) {
 
-            is Result.Error -> {
-                _uiState.update { state -> state.copy(isDisplayNameInvalid = true) }
-
-                when(result.error) {
-                    SignUpDataValidator.DisplayNameError.EMPTY_FIELD -> _uiState.update { state ->
-                        state.copy(displayNameErrorMessage = context.getString(R.string.empty_field_error))
-                    }
-                    SignUpDataValidator.DisplayNameError.TOO_LONG -> _uiState.update { state ->
-                        state.copy(displayNameErrorMessage = context.getString(R.string.display_name_too_long_error))
-                    }
-                    SignUpDataValidator.DisplayNameError.INVALID_CHARACTERS -> _uiState.update { state ->
-                        state.copy(displayNameErrorMessage = context.getString(R.string.invalid_characters_error))
-                    }
+        when(val result = userDataValidator.validateDisplayName(displayName)) {
+            is Result.Success -> {
+                _uiState.update { state ->
+                    state.copy(
+                        displayNameErrorMessage = null
+                    )
                 }
             }
-            is Result.Success -> _uiState.update { state ->
-                state.copy(
-                    isDisplayNameInvalid = false,
-                    displayNameErrorMessage = null
-                )
+            is Result.Error -> {
+                val message = when(result.error) {
+
+                    DisplayNameError.EMPTY_FIELD -> {
+                        context.getString(R.string.empty_field_error)
+                    }
+                    DisplayNameError.TOO_LONG -> {
+                        context.getString(R.string.display_name_too_long_error)
+                    }
+                    DisplayNameError.INVALID_CHARACTERS -> {
+                        context.getString(R.string.invalid_characters_error)
+                    }
+                }
+                _uiState.update { state -> state.copy(displayNameErrorMessage = message) }
             }
         }
     }
 
-    fun onPasswordChange(password: String) {
+    fun updatePassword(password: String) {
         _uiState.update { state ->
             state.copy(password = password)
         }
         validatePassword(password)
-        updateSignUpButtonState()
     }
 
     private fun validatePassword(password: String) {
-        when(val result = dataValidator.validatePassword(password)) {
 
-            is Result.Error -> {
-                _uiState.update { state -> state.copy(isPasswordInvalid = true) }
-
-                when(result.error) {
-                    SignUpDataValidator.PasswordError.EMPTY_FIELD -> _uiState.update { state ->
-                        state.copy(passwordErrorMessage = context.getString(R.string.empty_field_error))
-                    }
-                    SignUpDataValidator.PasswordError.HAS_WHITESPACE -> _uiState.update { state ->
-                        state.copy(passwordErrorMessage = context.getString(R.string.password_whitespace_error))
-                    }
-                    SignUpDataValidator.PasswordError.TOO_SHORT -> _uiState.update { state ->
-                        state.copy(passwordErrorMessage = context.getString(R.string.password_short_error))
-                    }
-                    SignUpDataValidator.PasswordError.NO_DIGIT -> _uiState.update { state ->
-                        state.copy(passwordErrorMessage = context.getString(R.string.password_no_digit_error))
-                    }
-                    SignUpDataValidator.PasswordError.NO_UPPERCASE -> _uiState.update { state ->
-                        state.copy(passwordErrorMessage = context.getString(R.string.password_no_uppercase_error))
-                    }
-                    SignUpDataValidator.PasswordError.NO_LOWERCASE -> _uiState.update { state ->
-                        state.copy(passwordErrorMessage = context.getString(R.string.password_no_lowercase_error))
-                    }
+        when(val result = userDataValidator.validatePassword(password)) {
+            is Result.Success -> {
+                _uiState.update { state ->
+                    state.copy(
+                        passwordErrorMessage = null
+                    )
                 }
             }
-            is Result.Success -> _uiState.update { state ->
-                state.copy(
-                    isPasswordInvalid = false,
-                    passwordErrorMessage = null
-                )
+            is Result.Error -> {
+                val message = when(result.error) {
+
+                    PasswordError.EMPTY_FIELD -> {
+                        context.getString(R.string.empty_field_error)
+                    }
+                    PasswordError.HAS_WHITESPACE -> {
+                        context.getString(R.string.password_whitespace_error)
+                    }
+                    PasswordError.TOO_SHORT -> {
+                        context.getString(R.string.password_short_error)
+                    }
+                    PasswordError.NO_DIGIT -> {
+                        context.getString(R.string.password_no_digit_error)
+                    }
+                    PasswordError.NO_UPPERCASE -> {
+                        context.getString(R.string.password_no_uppercase_error)
+                    }
+                    PasswordError.NO_LOWERCASE -> {
+                        context.getString(R.string.password_no_lowercase_error)
+                    }
+                }
+                _uiState.update { state -> state.copy(passwordErrorMessage = message) }
             }
         }
     }
 
-    fun onEmailChange(email: String) {
+    fun updateEmail(email: String) {
         _uiState.update { state ->
             state.copy(email = email)
         }
         validateEmail(email)
-        updateSignUpButtonState()
     }
 
     private fun validateEmail(email: String) {
-        when(val result = dataValidator.validateEmail(email)) {
 
-            is Result.Error -> {
-                _uiState.update { state -> state.copy(isEmailInvalid = true) }
-
-                when(result.error) {
-                    SignUpDataValidator.EmailErrors.EMPTY_FIELD -> _uiState.update { state ->
-                        state.copy(emailErrorMessage = context.getString(R.string.empty_field_error))
-                    }
-                    SignUpDataValidator.EmailErrors.INVALID_EMAIL -> _uiState.update { state ->
-                        state.copy(emailErrorMessage = context.getString(R.string.invalid_email_error))
-                    }
+        when(val result = userDataValidator.validateEmail(email)) {
+            is Result.Success -> {
+                _uiState.update { state ->
+                    state.copy(
+                        emailErrorMessage = null
+                    )
                 }
             }
-            is Result.Success -> _uiState.update { state ->
-                state.copy(
-                    isEmailInvalid = false,
-                    emailErrorMessage = null
-                )
+            is Result.Error -> {
+                val message = when(result.error) {
+
+                    EmailErrors.EMPTY_FIELD -> {
+                        context.getString(R.string.empty_field_error)
+                    }
+                    EmailErrors.INVALID_EMAIL -> {
+                        context.getString(R.string.invalid_email_error)
+                    }
+                }
+                _uiState.update { state -> state.copy(emailErrorMessage = message) }
             }
         }
     }
 
-    fun onChangeVisibilityClick() {
+    fun togglePasswordVisibility() {
         _uiState.update { state ->
             state.copy(isPasswordHidden = !state.isPasswordHidden)
         }
     }
 
-    fun onSignUpClick(onNavigateToLogIn: () -> Unit) {
+    fun signUp(onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {
                 val userId = accountService.signUp(
@@ -177,25 +180,36 @@ class SignUpViewModel @Inject constructor(
                 )
 
                 userRepository.saveUser(user)
-                onNavigateToLogIn()
+                onSuccess()
             } catch (e: Exception) {
 
                 val errorMessage = when(e) {
-                    is FirebaseNetworkException -> context.getString(R.string.network_error)
-                    is FirebaseAuthUserCollisionException -> context.getString(R.string.email_already_in_use_error)
-                    else -> context.getString(R.string.unexpected_error)
+                    is IllegalArgumentException -> {
+                        context.getString(R.string.empty_fields_error)
+                    }
+                    is FirebaseAuthInvalidCredentialsException -> {
+                        context.getString(R.string.invalid_credentials_error)
+                    }
+                    is FirebaseAuthInvalidUserException -> {
+                        context.getString(R.string.user_not_found_error)
+                    }
+                    is FirebaseNetworkException -> {
+                        context.getString(R.string.network_error)
+                    }
+                    else -> {
+                        context.getString(R.string.unexpected_error)
+                    }
                 }
 
                 _uiState.update { state ->
-                    state.copy(signUpErrorMessage = errorMessage)
+                    state.copy(
+                        snackbarState = SnackbarState(
+                            message = errorMessage,
+                            snackbarType = SnackbarType.ERROR,
+                        )
+                    )
                 }
             }
-        }
-    }
-
-    private fun updateSignUpButtonState() {
-        _uiState.update { state ->
-            state.copy(signUpButtonEnabled = !uiState.value.isEmailInvalid && !uiState.value.isPasswordInvalid && !uiState.value.isDisplayNameInvalid )
         }
     }
 }

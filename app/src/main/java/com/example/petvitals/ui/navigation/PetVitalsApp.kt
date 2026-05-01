@@ -30,8 +30,8 @@ fun PetVitalsApp() {
             }
             composable<SignUp> {
                 SignUpScreen(
-                    onNavigateToLogIn = { navController.navigate(route = LogIn) },
-                    onPopBackStack = { navController.popBackStack() }
+                    navigateToLogIn = { navController.navigate(route = LogIn) },
+                    popBackStack = { navController.popBackStack() }
                 )
             }
             composable<Splash> {
