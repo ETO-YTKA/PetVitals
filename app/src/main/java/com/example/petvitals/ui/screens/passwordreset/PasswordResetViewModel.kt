@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.service.account.AccountService
-import com.example.petvitals.domain.Result
+import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.error.EmailErrors
 import com.example.petvitals.domain.validator.UserDataValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,7 +40,7 @@ class PasswordResetViewModel @Inject constructor(
             val email = uiState.value.email
 
             when (val result = dataValidator.validateEmail(email)) {
-                is Result.Error -> {
+                is AppResult.Failure -> {
                     when(result.error) {
                         EmailErrors.EMPTY_FIELD -> _uiState.update { state ->
                             state.copy(errorMessage = context.getString(R.string.empty_field_error))
@@ -50,7 +50,7 @@ class PasswordResetViewModel @Inject constructor(
                         }
                     }
                 }
-                is Result.Success -> {
+                is AppResult.Success -> {
                     _uiState.update { state -> state.copy(errorMessage = null) }
 
                     accountService.sendPasswordResetEmail(email)

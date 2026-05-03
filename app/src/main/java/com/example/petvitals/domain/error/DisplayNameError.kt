@@ -1,6 +1,8 @@
 package com.example.petvitals.domain.error
 
-enum class DisplayNameError: Error {
+import com.example.petvitals.domain.AppError
+
+enum class DisplayNameError: AppError {
     EMPTY_FIELD,
     TOO_LONG,
     INVALID_CHARACTERS

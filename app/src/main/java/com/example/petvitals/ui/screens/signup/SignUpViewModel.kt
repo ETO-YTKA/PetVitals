@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.service.account.AccountService
-import com.example.petvitals.domain.Result
+import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.error.DisplayNameError
 import com.example.petvitals.domain.error.EmailErrors
 import com.example.petvitals.domain.error.PasswordError
@@ -58,14 +58,14 @@ class SignUpViewModel @Inject constructor(
     private fun validateDisplayName(displayName: String){
 
         when(val result = userDataValidator.validateDisplayName(displayName)) {
-            is Result.Success -> {
+            is AppResult.Success -> {
                 _uiState.update { state ->
                     state.copy(
                         displayNameErrorMessage = null
                     )
                 }
             }
-            is Result.Error -> {
+            is AppResult.Failure -> {
                 val message = when(result.error) {
 
                     DisplayNameError.EMPTY_FIELD -> {
@@ -93,14 +93,14 @@ class SignUpViewModel @Inject constructor(
     private fun validatePassword(password: String) {
 
         when(val result = userDataValidator.validatePassword(password)) {
-            is Result.Success -> {
+            is AppResult.Success -> {
                 _uiState.update { state ->
                     state.copy(
                         passwordErrorMessage = null
                     )
                 }
             }
-            is Result.Error -> {
+            is AppResult.Failure -> {
                 val message = when(result.error) {
 
                     PasswordError.EMPTY_FIELD -> {
@@ -137,14 +137,14 @@ class SignUpViewModel @Inject constructor(
     private fun validateEmail(email: String) {
 
         when(val result = userDataValidator.validateEmail(email)) {
-            is Result.Success -> {
+            is AppResult.Success -> {
                 _uiState.update { state ->
                     state.copy(
                         emailErrorMessage = null
                     )
                 }
             }
-            is Result.Error -> {
+            is AppResult.Failure -> {
                 val message = when(result.error) {
 
                     EmailErrors.EMPTY_FIELD -> {
