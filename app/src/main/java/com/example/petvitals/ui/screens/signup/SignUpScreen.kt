@@ -31,7 +31,6 @@ import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomMediumButton
 import com.example.petvitals.ui.components.CustomSnackbarHost
 import com.example.petvitals.ui.components.CustomTextField
-import com.example.petvitals.ui.components.SnackbarType
 import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.ui.theme.PetVitalsTheme
 
@@ -83,10 +82,9 @@ private fun SignUpContent(
                 onPopBackStack = popBackStack
             )
         },
-        snackbarHost = { CustomSnackbarHost(
-            hostState = snackbarHostState,
-            snackbarType = uiState.snackbarState?.snackbarType ?: SnackbarType.INFO
-        ) },
+        snackbarHost = {
+            CustomSnackbarHost(hostState = snackbarHostState)
+        },
         modifier = modifier
     ) { paddingValues ->
         Column(

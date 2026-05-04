@@ -24,9 +24,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -42,7 +40,6 @@ import com.example.petvitals.R
 import com.example.petvitals.ui.components.CustomMediumButton
 import com.example.petvitals.ui.components.CustomSnackbarHost
 import com.example.petvitals.ui.components.CustomTextField
-import com.example.petvitals.ui.components.SnackbarType
 import com.example.petvitals.ui.components.showSnackbar
 import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.ui.theme.PetVitalsTheme
@@ -58,14 +55,10 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    var snackbarType by remember { mutableStateOf(SnackbarType.INFO) }
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
-            is LoginEvent.OnError -> {
-                snackbarType = event.snackbarState.snackbarType
-                snackbarHostState.showSnackbar(event.snackbarState)
-            }
+            is LoginEvent.OnError -> snackbarHostState.showSnackbar(event.snackbarState)
         }
     }
 
@@ -75,7 +68,6 @@ fun LoginScreen(
         onSignUpClick = navigateToSignUp,
         onForgotPasswordClick = navigateToPasswordReset,
         snackbarHostState = snackbarHostState,
-        snackbarType = snackbarType,
         modifier = modifier
     )
 }
@@ -88,15 +80,13 @@ private fun LoginScreenContent(
     onSignUpClick: () -> Unit,
     onForgotPasswordClick: () -> Unit,
     snackbarHostState: SnackbarHostState,
-    snackbarType: SnackbarType,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         topBar = { TopBar() },
         snackbarHost = {
             CustomSnackbarHost(
-                hostState = snackbarHostState,
-                snackbarType = snackbarType
+                hostState = snackbarHostState
             )
         },
         modifier = modifier
@@ -274,7 +264,6 @@ private fun Preview() {
             onSignUpClick = {},
             onForgotPasswordClick = {},
             snackbarHostState = SnackbarHostState(),
-            snackbarType = SnackbarType.INFO,
             modifier = Modifier
         )
     }
