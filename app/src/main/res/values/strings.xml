@@ -235,5 +235,5 @@
     <string name="today">Today</string>
     <string name="yesterday">Yesterday</string>
     <string name="welcome_back">Welcome Back</string>
-    <string name="log_in_to_continue">" Log in to keep track of your companion's health and vitality. "</string>
+    <string name="log_in_to_continue">"Log in to keep track of your companion's health and vitality. "</string>
 </resources>

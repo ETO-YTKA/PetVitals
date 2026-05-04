@@ -1,4 +1,4 @@
-package com.example.petvitals.data.di
+package com.example.petvitals.di
 
 import com.example.petvitals.data.repository.FoodRepositoryImpl
 import com.example.petvitals.data.repository.MedicationRepositoryImpl

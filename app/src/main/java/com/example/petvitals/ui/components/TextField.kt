@@ -1,12 +1,14 @@
 package com.example.petvitals.ui.components
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -77,11 +79,20 @@ fun CustomTextField(
 private fun CustomTextFieldPreview() {
     PetVitalsTheme {
         Surface {
-            CustomTextField(
-                value = "Test",
-                onValueChange = {},
-                modifier = Modifier.padding(16.dp)
-            )
+            Column {
+                CustomTextField(
+                    value = "Test",
+                    onValueChange = {},
+                    modifier = Modifier.padding(16.dp)
+                )
+                CustomTextField(
+                    value = "Error",
+                    onValueChange = {},
+                    modifier = Modifier.padding(16.dp),
+                    isError = true,
+                    supportingText = { Text("This is an error message.") }
+                )
+            }
         }
     }
 }

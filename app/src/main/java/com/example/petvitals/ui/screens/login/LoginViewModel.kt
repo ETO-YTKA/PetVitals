@@ -2,54 +2,63 @@ package com.example.petvitals.ui.screens.login
 
 import android.content.Context
 import androidx.compose.material3.SnackbarDuration
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.ui.components.SnackbarState
 import com.example.petvitals.ui.components.SnackbarType
-import com.example.petvitals.ui.screens.PetVitalsAppViewModel
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
-data class LogInUiState(
-    val email: String = "",
-    val password: String = "",
-    val snackbarState: SnackbarState? = null,
-    val passwordErrorMessage: String? = null,
-    val emailErrorMessage: String? = null,
-)
-
 @HiltViewModel
-class LogInViewModel @Inject constructor(
+class LoginViewModel @Inject constructor(
     private val accountService: AccountService,
     @ApplicationContext private val context: Context
-) : PetVitalsAppViewModel() {
+) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(LogInUiState())
+    private val _uiState = MutableStateFlow(LoginUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun updatePassword(password: String) {
+    private val _eventChannel = Channel<LoginEvent>()
+    val events = _eventChannel.receiveAsFlow()
+
+    fun onAction(
+        action: LoginAction,
+        onSuccess: () -> Unit = {}
+    ) {
+        when (action) {
+            is LoginAction.OnEmailChanged -> onEmailChanged(action.email)
+            is LoginAction.OnPasswordChanged -> onPasswordChanged(action.password)
+            LoginAction.Authenticate -> authenticate(onSuccess)
+            LoginAction.SendVerificationEmail -> sendVerificationEmail()
+        }
+    }
+
+    private fun onPasswordChanged(password: String) {
         _uiState.update { state ->
             state.copy(password = password)
         }
     }
 
-    fun updateEmail(email: String) {
+    private fun onEmailChanged(email: String) {
         _uiState.update { state ->
             state.copy(email = email)
         }
     }
 
-    fun authenticate(onSuccess: () -> Unit) {
+    private fun authenticate(onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {
                 accountService.signIn(
@@ -60,17 +69,17 @@ class LogInViewModel @Inject constructor(
                 if (accountService.isEmailVerified) {
                     onSuccess()
                 } else {
-                    _uiState.update { state ->
-                        state.copy(
-                            snackbarState = SnackbarState(
+                    _eventChannel.send(
+                        LoginEvent.OnError(
+                            SnackbarState(
                                 message = context.getString(R.string.email_not_verified_error),
                                 actionLabel = context.getString(R.string.resend),
                                 snackbarType = SnackbarType.ERROR,
                                 duration = SnackbarDuration.Indefinite,
-                                onAction = ::resendVerificationEmail
+                                onAction = ::sendVerificationEmail
                             )
                         )
-                    }
+                    )
                 }
             } catch (e: Exception) {
                 Timber.d("$e: ${e.message.orEmpty()}")
@@ -93,19 +102,19 @@ class LogInViewModel @Inject constructor(
                     }
                 }
 
-                _uiState.update { state ->
-                    state.copy(
+                _eventChannel.send(
+                    LoginEvent.OnError(
                         snackbarState = SnackbarState(
                             message = errorMessage,
                             snackbarType = SnackbarType.ERROR,
                         )
                     )
-                }
+                )
             }
         }
     }
 
-    fun resendVerificationEmail() {
+    private fun sendVerificationEmail() {
         viewModelScope.launch {
             accountService.sendVerificationEmail()
         }
