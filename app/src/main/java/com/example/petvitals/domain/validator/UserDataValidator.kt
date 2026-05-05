@@ -1,27 +1,27 @@
 package com.example.petvitals.domain.validator
 
 import com.example.petvitals.domain.AppResult
-import com.example.petvitals.domain.error.DisplayNameError
 import com.example.petvitals.domain.error.EmailErrors
+import com.example.petvitals.domain.error.NameError
 import com.example.petvitals.domain.error.PasswordError
 import javax.inject.Inject
 
 class UserDataValidator @Inject constructor() {
 
-    fun validateDisplayName(displayName: String): AppResult<DisplayNameError, Unit> {
-        val displayName = displayName.trim()
+    fun validateName(name: String): AppResult<NameError, Unit> {
+        val name = name.trim()
 
-        if (displayName.isEmpty()) {
-            return AppResult.Failure(DisplayNameError.EMPTY_FIELD)
+        if (name.isEmpty()) {
+            return AppResult.Failure(NameError.EMPTY_FIELD)
         }
 
         val regex = Regex("^[а-яА-Яa-zA-Z\\\\s'-]+\$")
-        if (!regex.matches(displayName)) {
-            return AppResult.Failure(DisplayNameError.INVALID_CHARACTERS)
+        if (!regex.matches(name)) {
+            return AppResult.Failure(NameError.INVALID_CHARACTERS)
         }
 
-        if (displayName.length > 50) {
-            return AppResult.Failure(DisplayNameError.TOO_LONG)
+        if (name.length > 50) {
+            return AppResult.Failure(NameError.TOO_LONG)
         }
 
         return AppResult.Success(Unit)

@@ -8,6 +8,7 @@
     <string name="sign_up">Sign up</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
+    <string name="repeat_password">Repeat password</string>
     <string name="dont_have_account_sign_up">Don\'t have an account? Sign Up</string>
     <string name="name">Name</string>
     <string name="password_requirements">Use at least 8 characters for your password</string>
@@ -105,6 +106,7 @@
     <string name="password_no_digit_error">Password must contain at least one digit</string>
     <string name="password_no_uppercase_error">Password must contain at least one uppercase letter</string>
     <string name="password_no_lowercase_error">Password must contain at least one lowercase letter</string>
+    <string name="passwords_do_not_match_error">Passwords do not match</string>
     <string name="empty_field_error">Field cannot be empty</string>
     <string name="display_name_too_long_error">The field must not exceed 50 characters</string>
     <string name="invalid_email_error">Invalid email</string>
@@ -237,4 +239,6 @@
     <string name="yesterday">Yesterday</string>
     <string name="welcome_back">Welcome Back</string>
     <string name="log_in_to_continue">"Log in to keep track of your companion's health and vitality. "</string>
+    <string name="join_petvitals">Join PetVitals</string>
+    <string name="sign_up_hero">Create your care journal and keep every pet\'s health details close.</string>
 </resources>
