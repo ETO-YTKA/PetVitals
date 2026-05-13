@@ -2,6 +2,7 @@ package com.example.petvitals.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,7 +38,7 @@ fun CustomMediumButton(
             shape = CircleShape,
             pressedShape = RoundedCornerShape(12.dp)
         ),
-        modifier = modifier,
+        modifier = modifier.height(56.dp),
         enabled = enabled,
         colors = colors,
         elevation = elevation,

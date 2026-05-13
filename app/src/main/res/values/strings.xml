@@ -209,6 +209,10 @@
     <string name="forgot_password">Forgot password?</string>
     <string name="password_reset">Password Reset</string>
     <string name="send_password_reset_email">Send Reset Link</string>
+    <string name="password_reset_description">Enter the email for your PetVitals account. We\'ll send a link to help you get back in.</string>
+    <string name="check_your_inbox">Check your inbox</string>
+    <string name="password_reset_success_body">If this email matches a PetVitals account, we sent a reset link. Check your inbox to choose a new password.</string>
+    <string name="back_to_login">Back to log in</string>
     <string name="password_reset_email_sent">A password reset link has been sent to your email.</string>
     <string name="failed_to_send_password_reset_email">Couldn\'t send password reset link. Please check the email address and try again.</string>
     <string name="reset_password">Reset Password</string>

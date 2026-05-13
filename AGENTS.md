@@ -1,54 +1,49 @@
 # PetVitals Agent Guide
 
-Compact guidance for future OpenCode sessions. Keep this file limited to repo-specific facts an agent would likely guess wrong.
+## Snapshot
 
-## Project Shape
-
-- Single-module native Android app: root project `PetVitals`, only included module is `:app`.
-- Package/namespace/application id is `com.example.petvitals`; main entrypoint is `MainActivity`, which renders `ui.navigation.PetVitalsApp()`.
-- `PetVitalsHiltApp` is the `@HiltAndroidApp` application class and plants Timber only for debug builds.
-- The Firebase config file is `app/google-services.json`; it is ignored by `.gitignore`, so do not print, edit, or stage it unless explicitly requested.
-
-## Android/Kotlin Guidance
-
+- Single-module native Android app: root `PetVitals`, module `:app`.
+- Package/namespace/application id: `com.example.petvitals`.
+- Entry point: `MainActivity` renders `ui.navigation.PetVitalsApp()`.
+- Hilt app class: `PetVitalsHiltApp`; Timber is planted only for debug builds.
+- Firebase config: `app/google-services.json`; ignored by `.gitignore`. Do not read, print, edit, or stage it unless explicitly requested.
 - For Android/Kotlin architecture, implementation, debugging, refactoring, or review, use the `android-kotlin-development` skill when available.
-- Repo-specific facts in this file override generic Android guidance from the skill.
+- Repo-specific facts in this file override generic Android guidance from that skill.
 
 ## Commands
 
-- Prefer the checked-in Gradle wrapper. On Windows use `./gradlew.bat`; on Unix shells use `./gradlew`.
-- Build debug APK: `./gradlew.bat :app:assembleDebug`.
-- Run local unit tests: `./gradlew.bat :app:testDebugUnitTest` or all variants with `./gradlew.bat test`.
-- Run one local unit test class/method: `./gradlew.bat :app:testDebugUnitTest --tests "com.example.petvitals.ExampleUnitTest.addition_isCorrect"`.
-- Run Android lint: `./gradlew.bat :app:lintDebug`.
-- Run instrumented tests on a connected device/emulator: `./gradlew.bat :app:connectedDebugAndroidTest`.
-- No CI workflows, ktlint, detekt, formatter config, or pre-commit config were found; Gradle tasks are the executable source of truth.
+- Use the checked-in Gradle wrapper from repo root: `.\gradlew.bat`.
+- Build debug APK: `.\gradlew.bat :app:assembleDebug`.
+- Unit tests: `.\gradlew.bat :app:testDebugUnitTest` or `.\gradlew.bat test`.
+- One test: `.\gradlew.bat :app:testDebugUnitTest --tests "com.example.petvitals.ExampleUnitTest.addition_isCorrect"`.
+- Lint: `.\gradlew.bat :app:lintDebug`.
+- Device/emulator tests: `.\gradlew.bat :app:connectedDebugAndroidTest`.
+- No CI, ktlint, detekt, formatter, or pre-commit config was found; Gradle tasks are the source of truth.
 
 ## Architecture
 
-- Treat this as legacy code that should move toward Clean Architecture when touched. Do not expand old shortcuts just because they already exist.
-- `domain/` should stay Android/Firebase-free: put pure models, repository interfaces, validation, and non-trivial use cases there.
-- `data/` owns Firebase/Auth details, DTO mapping, and repository implementations. Bind repository interfaces to implementations in root-level `di/RepositoryModule.kt`.
-- `data/service/` contains Firebase/Auth services; interface-to-implementation service bindings are in root-level `di/ServiceModule.kt`.
-- Root-level `di/FirebaseModule.kt` provides singleton `FirebaseFirestore` and `FirebaseAuth` instances. Do not inject Firebase SDK types into UI or domain code.
-- UI is Jetpack Compose Material 3 under `ui/`; feature screens keep `Screen` and `ViewModel` files together in lowercase package directories such as `managefood`, `petprofile`, and `passwordreset`.
+- Treat existing code as legacy; improve toward Clean Architecture only where touched.
+- Keep `domain/` Android/Firebase-free: pure models, repository interfaces, validators, and use cases.
+- Keep Firebase/Auth details, DTO mapping, and repository implementations in `data/`.
+- Bind repository interfaces in `di/RepositoryModule.kt`; bind service interfaces in `di/ServiceModule.kt`.
+- Provide Firebase SDK types only from `di/FirebaseModule.kt`; do not inject them into UI or domain code.
+- UI uses Jetpack Compose Material 3 under `ui/`; feature packages are lowercase, e.g. `managefood`, `petprofile`, `passwordreset`.
 
 ## Navigation
 
-- Navigation uses kotlinx-serialization typed routes in `ui/navigation/AppRoutes.kt`.
-- Top-level auth/splash routing is in `PetVitalsApp.kt`; the logged-in nested graph and bottom bar are in `MainScreen.kt`.
-- When adding a destination, add the `@Serializable` route in `AppRoutes.kt` and wire the matching `composable<T>` in the correct graph.
+- Typed routes live in `ui/navigation/AppRoutes.kt` using kotlinx serialization.
+- Auth/splash routing is in `PetVitalsApp.kt`.
+- Logged-in graph and bottom bar are in `MainScreen.kt`.
+- New destinations need an `@Serializable` route plus a matching `composable<T>` in the correct graph.
 
-## Implementation Conventions
+## Implementation
 
-- Use Hilt constructor injection. Only add a Dagger module binding when mapping an interface to an implementation.
-- ViewModels use `@HiltViewModel`, `@Inject constructor`, `MutableStateFlow`/`asStateFlow`, and `viewModelScope` or the shared `PetVitalsAppViewModel.launchCatching` pattern.
-- Keep ViewModels thin: they coordinate UI state and call use cases/repositories, but should not contain Firebase queries, mapping logic, or business rules.
-- Add a use case in `domain/` when logic is shared, multi-step, permission-sensitive, or hard to test inside a ViewModel.
-- Expose immutable UI state from ViewModels; keep mutable state private and model one-off events explicitly instead of hiding them in nullable state when possible.
-- Reuse shared Compose components from `ui/components/` and spacing tokens from `ui/theme/Dimen.kt` before creating new UI primitives.
-- Split large Compose screens into private stateless composables in the same file first; only create new files when a component is reusable or the file becomes hard to scan.
-- Use `ui/utils/ImageProcessor.kt` for pet image Base64/WebP encode/decode; avatars are stored as strings in Firestore models.
-- Use `ui/utils/DateFormatter.kt` for screen-level date formatting instead of introducing ad hoc formatter calls.
-- Prefer focused unit tests for domain validators/use cases and repository mapping logic before UI-heavy tests.
-- Keep Kotlin package names lowercase with no underscores, matching existing feature directories.
+- Use Hilt constructor injection; add Dagger bindings only for interface-to-implementation mappings.
+- ViewModels use `@HiltViewModel`, `@Inject`, private `MutableStateFlow`, public `asStateFlow()`, and `viewModelScope`.
+- Keep ViewModels thin: no Firebase queries, DTO mapping, or business rules.
+- Add domain use cases for shared, multi-step, permission-sensitive, or hard-to-test logic.
+- Model UI state immutably and one-off events explicitly.
+- Reuse `ui/components/`, `ui/theme/Dimen.kt`, `ui/utils/ImageProcessor.kt`, and `ui/utils/DateFormatter.kt`.
+- Split large Compose screens into private stateless composables in the same file before creating new files.
+- Prefer focused unit tests for domain validators, use cases, and mapping logic.
+- Keep Kotlin package names lowercase with no underscores.
