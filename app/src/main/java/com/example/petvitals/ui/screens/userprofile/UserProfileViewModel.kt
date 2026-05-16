@@ -1,19 +1,22 @@
 package com.example.petvitals.ui.screens.userprofile
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.service.account.AccountService
+import com.example.petvitals.domain.AppResult
+import com.example.petvitals.domain.error.AccountError
 import com.example.petvitals.domain.models.User
 import com.example.petvitals.domain.repository.UserRepository
+import com.example.petvitals.ui.components.SnackbarState
+import com.example.petvitals.ui.components.SnackbarType
 import com.example.petvitals.ui.screens.PetVitalsAppViewModel
-import com.google.firebase.FirebaseNetworkException
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -38,6 +41,9 @@ class UserProfileViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(UserProfileUiState())
     val uiState = _uiState.asStateFlow()
 
+    private val _eventChannel = Channel<UserProfileEvent>()
+    val events = _eventChannel.receiveAsFlow()
+
     init {
         getUserData()
     }
@@ -54,19 +60,29 @@ class UserProfileViewModel @Inject constructor(
                 val password = uiState.value.password
                 val email = accountService.currentUserEmail ?: ""
 
-                accountService.signIn(email, password)
+                when (val signInResult = accountService.signIn(email, password)) {
+                    is AppResult.Success -> Unit
+                    is AppResult.Failure -> {
+                        _uiState.update { state ->
+                            state.copy(passwordErrorMessage = signInResult.error.toDeleteAccountErrorMessage())
+                        }
+                        return@launch
+                    }
+                }
 
                 userRepository.deleteCurrentUser()
-                accountService.deleteAccount()
-            } catch (e: Exception) {
-                Log.d("UserProfileViewModel", "deleteAccount: $e")
-
-                val errorMessage = when(e) {
-                    is FirebaseAuthInvalidCredentialsException -> context.getString(R.string.incorrect_password_error)
-                    is FirebaseNetworkException -> context.getString(R.string.network_error)
-                    else -> context.getString(R.string.unexpected_error)
+                when (val deleteResult = accountService.deleteAccount()) {
+                    is AppResult.Success -> Unit
+                    is AppResult.Failure -> {
+                        _uiState.update { state ->
+                            state.copy(passwordErrorMessage = deleteResult.error.toDeleteAccountErrorMessage())
+                        }
+                    }
                 }
-                _uiState.update { state -> state.copy(passwordErrorMessage = errorMessage) }
+            } catch (e: Exception) {
+                _uiState.update { state ->
+                    state.copy(passwordErrorMessage = context.getString(R.string.unexpected_error))
+                }
             }
         }
     }
@@ -95,9 +111,48 @@ class UserProfileViewModel @Inject constructor(
     }
 
     fun sendPasswordResetEmail() {
-        launchCatching {
+        viewModelScope.launch {
             val email = accountService.currentUserEmail ?: ""
-            accountService.sendPasswordResetEmail(email)
+            when (val result = accountService.sendPasswordResetEmail(email)) {
+                is AppResult.Success -> {
+                    showSnackbar(
+                        message = context.getString(R.string.password_reset_email_sent),
+                        snackbarType = SnackbarType.SUCCESS
+                    )
+                }
+                is AppResult.Failure -> {
+                    showSnackbar(
+                        message = result.error.toPasswordResetErrorMessage(),
+                        snackbarType = SnackbarType.ERROR
+                    )
+                }
+            }
         }
+    }
+
+    private suspend fun showSnackbar(
+        message: String,
+        snackbarType: SnackbarType
+    ) {
+        _eventChannel.send(
+            UserProfileEvent.OnShowSnackbar(
+                snackbarState = SnackbarState(
+                    message = message,
+                    snackbarType = snackbarType
+                )
+            )
+        )
+    }
+
+    private fun AccountError.toDeleteAccountErrorMessage(): String = when (this) {
+        AccountError.EmptyFields -> context.getString(R.string.empty_fields_error)
+        AccountError.InvalidCredentials -> context.getString(R.string.incorrect_password_error)
+        AccountError.Network -> context.getString(R.string.network_error)
+        else -> context.getString(R.string.unexpected_error)
+    }
+
+    private fun AccountError.toPasswordResetErrorMessage(): String = when (this) {
+        AccountError.Network -> context.getString(R.string.network_error)
+        else -> context.getString(R.string.failed_to_send_password_reset_email)
     }
 }

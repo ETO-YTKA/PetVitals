@@ -1,21 +1,21 @@
 package com.example.petvitals.data.service.account
 
-import android.content.Context
-import android.widget.Toast
-import com.example.petvitals.R
+import com.example.petvitals.domain.AppResult
+import com.example.petvitals.domain.error.AccountError
 import com.example.petvitals.domain.models.User
 import com.google.firebase.auth.FirebaseAuth
-import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import timber.log.Timber
 import javax.inject.Inject
 
 class AccountServiceImpl @Inject constructor(
-    private val auth: FirebaseAuth,
-    @ApplicationContext private val context: Context
+    private val auth: FirebaseAuth
 ) : AccountService {
+
     override val currentUser: Flow<User?>
         get() = callbackFlow {
             val listener = FirebaseAuth.AuthStateListener { auth ->
@@ -35,77 +35,62 @@ class AccountServiceImpl @Inject constructor(
     override val currentUserEmail: String?
         get() = auth.currentUser?.email
 
-    override fun hasUser(): Boolean {
-        return auth.currentUser != null
-    }
+    override fun hasUser(): Boolean = auth.currentUser != null
 
-    override suspend fun signIn(email: String, password: String) {
-        auth.signInWithEmailAndPassword(email, password).await()
+    override suspend fun signIn(email: String, password: String): AppResult<AccountError, Unit> {
+        return accountResult {
+            auth.signInWithEmailAndPassword(email, password).await()
+        }
     }
 
     override suspend fun signUp(
         email: String,
         password: String
-    ): String {
-        val result = auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    user?.sendEmailVerification()?.addOnCompleteListener { verificationTask ->
-                        if (verificationTask.isSuccessful) {
-                            Toast.makeText(
-                                context,
-                                context.getString(R.string.email_sent, user.email),
-                                Toast.LENGTH_LONG
-                            ).show()
-                        } else {
-                            Toast.makeText(
-                                context,
-                                context.getString(R.string.failed_to_send_email),
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    }
-                } else {
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.failed_to_create_account),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-        }.await()
+    ): AppResult<AccountError, String> {
+        return accountResult {
+            val result = auth.createUserWithEmailAndPassword(email, password).await()
+            val user = result.user ?: throw IllegalStateException("Created account has no Firebase user")
 
-        return result.user?.uid ?: throw Exception(context.getString(R.string.failed_to_create_account))
+            user.sendEmailVerification().await()
+
+            user.uid
+        }
     }
 
     override suspend fun logout() {
         auth.signOut()
     }
 
-    override suspend fun deleteAccount() {
-        auth.currentUser!!.delete().await()
+    override suspend fun deleteAccount(): AppResult<AccountError, Unit> {
+        val user = auth.currentUser ?: return AppResult.Failure(AccountError.NoAuthenticatedUser)
+
+        return accountResult {
+            user.delete().await()
+        }
     }
 
-    override suspend fun sendVerificationEmail() {
-        auth.currentUser?.sendEmailVerification()?.await()
+    override suspend fun sendVerificationEmail(): AppResult<AccountError, Unit> {
+        val user = auth.currentUser ?: return AppResult.Failure(AccountError.NoAuthenticatedUser)
+
+        return accountResult {
+            user.sendEmailVerification().await()
+        }
     }
 
-    override suspend fun sendPasswordResetEmail(email: String) {
+    override suspend fun sendPasswordResetEmail(email: String): AppResult<AccountError, Unit> {
+        return accountResult {
+            auth.sendPasswordResetEmail(email).await()
+        }
+    }
 
-        auth.sendPasswordResetEmail(email).addOnCompleteListener {
-            if (it.isSuccessful) {
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.password_reset_email_sent),
-                    Toast.LENGTH_LONG
-                ).show()
-            } else {
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.failed_to_send_password_reset_email),
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        }.await()
+    private suspend fun <D> accountResult(block: suspend () -> D): AppResult<AccountError, D> {
+        return try {
+            AppResult.Success(block())
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Timber.e("Account operation failed: $e")
+            AppResult.Failure(e.toAccountError())
+        }
     }
 }

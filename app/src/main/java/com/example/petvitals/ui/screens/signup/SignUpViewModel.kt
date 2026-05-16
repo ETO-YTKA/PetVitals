@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.domain.AppResult
+import com.example.petvitals.domain.error.AccountError
 import com.example.petvitals.domain.error.EmailErrors
 import com.example.petvitals.domain.error.NameError
 import com.example.petvitals.domain.error.PasswordError
@@ -15,9 +16,6 @@ import com.example.petvitals.domain.validator.UserDataValidator
 import com.example.petvitals.ui.components.SnackbarState
 import com.example.petvitals.ui.components.SnackbarType
 import com.example.petvitals.ui.utils.debounceValidation
-import com.google.firebase.FirebaseNetworkException
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
@@ -132,39 +130,48 @@ class SignUpViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                val currentState = uiState.value
-                val userId = accountService.signUp(
-                    email = currentState.email,
-                    password = currentState.password
+                val uiState = uiState.value
+                val result = accountService.signUp(
+                    email = uiState.email,
+                    password = uiState.password
                 )
 
-                val user = User(
-                    id = userId,
-                    username = currentState.name,
-                    email = currentState.email
-                )
-
-                userRepository.saveUser(user)
-                onSuccess()
-            } catch (e: Exception) {
-                val errorMessage = when (e) {
-                    is IllegalArgumentException -> context.getString(R.string.empty_fields_error)
-                    is FirebaseAuthInvalidCredentialsException -> context.getString(R.string.invalid_credentials_error)
-                    is FirebaseAuthInvalidUserException -> context.getString(R.string.user_not_found_error)
-                    is FirebaseNetworkException -> context.getString(R.string.network_error)
-                    else -> context.getString(R.string.unexpected_error)
-                }
-
-                _eventChannel.send(
-                    SignUpEvent.OnShowSnackbar(
-                        snackbarState = SnackbarState(
-                            message = errorMessage,
-                            snackbarType = SnackbarType.ERROR
+                when (result) {
+                    is AppResult.Success -> {
+                        val user = User(
+                            id = result.data,
+                            username = uiState.name,
+                            email = uiState.email
                         )
-                    )
-                )
+
+                        userRepository.saveUser(user)
+                        onSuccess()
+                    }
+                    is AppResult.Failure -> showSignUpError(result.error.toSignUpErrorMessage())
+                }
+            } catch (e: Exception) {
+                showSignUpError(context.getString(R.string.unexpected_error))
             }
         }
+    }
+
+    private suspend fun showSignUpError(message: String) {
+        _eventChannel.send(
+            SignUpEvent.OnShowSnackbar(
+                snackbarState = SnackbarState(
+                    message = message,
+                    snackbarType = SnackbarType.ERROR
+                )
+            )
+        )
+    }
+
+    private fun AccountError.toSignUpErrorMessage(): String = when (this) {
+        AccountError.EmptyFields -> context.getString(R.string.empty_fields_error)
+        AccountError.EmailAlreadyInUse -> context.getString(R.string.email_already_in_use_error)
+        AccountError.InvalidCredentials -> context.getString(R.string.invalid_credentials_error)
+        AccountError.Network -> context.getString(R.string.network_error)
+        else -> context.getString(R.string.unexpected_error)
     }
 
     private fun isFieldsValid(): Boolean {

@@ -6,11 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.service.account.AccountService
+import com.example.petvitals.domain.AppResult
+import com.example.petvitals.domain.error.AccountError
 import com.example.petvitals.ui.components.SnackbarState
 import com.example.petvitals.ui.components.SnackbarType
-import com.google.firebase.FirebaseNetworkException
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
@@ -19,7 +18,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -60,63 +58,66 @@ class LoginViewModel @Inject constructor(
 
     private fun authenticate(onSuccess: () -> Unit) {
         viewModelScope.launch {
-            try {
-                accountService.signIn(
+            when (
+                val result = accountService.signIn(
                     email = uiState.value.email,
                     password = uiState.value.password
                 )
-
-                if (accountService.isEmailVerified) {
-                    onSuccess()
-                } else {
+            ) {
+                is AppResult.Success -> {
+                    if (accountService.isEmailVerified) {
+                        onSuccess()
+                    } else {
+                        _eventChannel.send(
+                            LoginEvent.OnError(
+                                SnackbarState(
+                                    message = context.getString(R.string.email_not_verified_error),
+                                    actionLabel = context.getString(R.string.resend),
+                                    snackbarType = SnackbarType.ERROR,
+                                    duration = SnackbarDuration.Indefinite,
+                                    onAction = ::sendVerificationEmail
+                                )
+                            )
+                        )
+                    }
+                }
+                is AppResult.Failure -> {
                     _eventChannel.send(
                         LoginEvent.OnError(
-                            SnackbarState(
-                                message = context.getString(R.string.email_not_verified_error),
-                                actionLabel = context.getString(R.string.resend),
+                            snackbarState = SnackbarState(
+                                message = result.error.toLoginErrorMessage(),
                                 snackbarType = SnackbarType.ERROR,
-                                duration = SnackbarDuration.Indefinite,
-                                onAction = ::sendVerificationEmail
                             )
                         )
                     )
                 }
-            } catch (e: Exception) {
-                Timber.d("$e: ${e.message.orEmpty()}")
-
-                val errorMessage = when(e) {
-                    is IllegalArgumentException -> {
-                        context.getString(R.string.empty_fields_error)
-                    }
-                    is FirebaseAuthInvalidCredentialsException -> {
-                        context.getString(R.string.invalid_credentials_error)
-                    }
-                    is FirebaseAuthInvalidUserException -> {
-                        context.getString(R.string.user_not_found_error)
-                    }
-                    is FirebaseNetworkException -> {
-                        context.getString(R.string.network_error)
-                    }
-                    else -> {
-                        context.getString(R.string.unexpected_error)
-                    }
-                }
-
-                _eventChannel.send(
-                    LoginEvent.OnError(
-                        snackbarState = SnackbarState(
-                            message = errorMessage,
-                            snackbarType = SnackbarType.ERROR,
-                        )
-                    )
-                )
             }
         }
     }
 
     private fun sendVerificationEmail() {
         viewModelScope.launch {
-            accountService.sendVerificationEmail()
+            when (accountService.sendVerificationEmail()) {
+                is AppResult.Success -> Unit
+                is AppResult.Failure -> {
+                    _eventChannel.send(
+                        LoginEvent.OnError(
+                            snackbarState = SnackbarState(
+                                message = context.getString(R.string.login_failed_to_send_email),
+                                snackbarType = SnackbarType.ERROR,
+                            )
+                        )
+                    )
+                }
+            }
         }
+    }
+
+    private fun AccountError.toLoginErrorMessage(): String = when (this) {
+        AccountError.EmptyFields -> context.getString(R.string.empty_fields_error)
+        AccountError.InvalidCredentials -> context.getString(R.string.invalid_credentials_error)
+        AccountError.UserNotFound -> context.getString(R.string.user_not_found_error)
+        AccountError.Network -> context.getString(R.string.network_error)
+        else -> context.getString(R.string.unexpected_error)
     }
 }

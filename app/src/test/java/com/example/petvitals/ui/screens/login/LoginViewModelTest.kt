@@ -2,6 +2,8 @@ package com.example.petvitals.ui.screens.login
 
 import android.content.ContextWrapper
 import com.example.petvitals.data.service.account.AccountService
+import com.example.petvitals.domain.AppResult
+import com.example.petvitals.domain.error.AccountError
 import com.example.petvitals.domain.models.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -42,16 +44,19 @@ class LoginViewModelTest {
 
         override fun hasUser(): Boolean = false
 
-        override suspend fun signIn(email: String, password: String) = Unit
+        override suspend fun signIn(email: String, password: String): AppResult<AccountError, Unit> =
+            AppResult.Success(Unit)
 
-        override suspend fun signUp(email: String, password: String): String = ""
+        override suspend fun signUp(email: String, password: String): AppResult<AccountError, String> =
+            AppResult.Success("")
 
         override suspend fun logout() = Unit
 
-        override suspend fun deleteAccount() = Unit
+        override suspend fun deleteAccount(): AppResult<AccountError, Unit> = AppResult.Success(Unit)
 
-        override suspend fun sendVerificationEmail() = Unit
+        override suspend fun sendVerificationEmail(): AppResult<AccountError, Unit> = AppResult.Success(Unit)
 
-        override suspend fun sendPasswordResetEmail(email: String) = Unit
+        override suspend fun sendPasswordResetEmail(email: String): AppResult<AccountError, Unit> =
+            AppResult.Success(Unit)
     }
 }

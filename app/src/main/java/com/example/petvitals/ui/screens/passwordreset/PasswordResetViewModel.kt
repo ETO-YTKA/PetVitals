@@ -7,11 +7,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.domain.AppResult
+import com.example.petvitals.domain.error.AccountError
 import com.example.petvitals.domain.error.EmailErrors
 import com.example.petvitals.domain.validator.UserDataValidator
 import com.example.petvitals.ui.components.SnackbarState
 import com.example.petvitals.ui.components.SnackbarType
-import com.google.firebase.FirebaseNetworkException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
@@ -69,33 +69,35 @@ class PasswordResetViewModel @Inject constructor(
                 is AppResult.Success -> {
                     _uiState.update { state -> state.copy(errorMessage = null, isLoading = true) }
 
-                    try {
-                        accountService.sendPasswordResetEmail(email)
-                        _uiState.update { state ->
-                            state.copy(
-                                isLoading = false,
-                                isPasswordResetEmailSent = true
-                            )
+                    when (val resetResult = accountService.sendPasswordResetEmail(email)) {
+                        is AppResult.Success -> {
+                            _uiState.update { state ->
+                                state.copy(
+                                    isLoading = false,
+                                    isPasswordResetEmailSent = true
+                                )
+                            }
                         }
-                    } catch (e: Exception) {
-                        _uiState.update { state -> state.copy(isLoading = false) }
-                        _eventChannel.send(
-                            PasswordResetEvent.OnShowSnackbar(
-                                snackbarState = SnackbarState(
-                                    message = e.toResetPasswordErrorMessage(),
-                                    snackbarType = SnackbarType.ERROR,
-                                    duration = SnackbarDuration.Long
+                        is AppResult.Failure -> {
+                            _uiState.update { state -> state.copy(isLoading = false) }
+                            _eventChannel.send(
+                                PasswordResetEvent.OnShowSnackbar(
+                                    snackbarState = SnackbarState(
+                                        message = resetResult.error.toResetPasswordErrorMessage(),
+                                        snackbarType = SnackbarType.ERROR,
+                                        duration = SnackbarDuration.Long
+                                    )
                                 )
                             )
-                        )
+                        }
                     }
                 }
             }
         }
     }
 
-    private fun Exception.toResetPasswordErrorMessage(): String = when (this) {
-        is FirebaseNetworkException -> context.getString(R.string.network_error)
+    private fun AccountError.toResetPasswordErrorMessage(): String = when (this) {
+        AccountError.Network -> context.getString(R.string.network_error)
         else -> context.getString(R.string.failed_to_send_password_reset_email)
     }
 }
