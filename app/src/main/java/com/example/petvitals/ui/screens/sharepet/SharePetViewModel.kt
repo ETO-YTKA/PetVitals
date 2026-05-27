@@ -1,11 +1,12 @@
 package com.example.petvitals.ui.screens.sharepet
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
+import com.example.petvitals.data.service.account.AccountService
+import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.models.PermissionLevel
 import com.example.petvitals.domain.models.PetPermission
 import com.example.petvitals.domain.models.User
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 data class SharePetUiState(
     val isLoading: Boolean = false,
@@ -39,6 +41,7 @@ data class UserPermission(
 class SharePetViewModel @Inject constructor(
     private val petPermissionRepository: PetPermissionRepository,
     private val userRepository: UserRepository,
+    private val accountService: AccountService,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SharePetUiState())
@@ -51,18 +54,24 @@ class SharePetViewModel @Inject constructor(
 
         viewModelScope.launch {
             val petPermissions = petPermissionRepository.getUsersByPetId(petId)
-            val currentUser = userRepository.getCurrentUser()
+            val currentUserId = accountService.currentUserId ?: return@launch
 
             val userPermissions = petPermissions.mapNotNull { petPermission ->
-                val user = userRepository.getUserById(petPermission.userId)
 
-                if (user?.id == currentUser?.id) return@mapNotNull null
+                val result = userRepository.getUserById(petPermission.userId)
 
-                user?.let {
-                    UserPermission(
-                        user = user,
-                        permissionLevel = petPermission.permissionLevel
-                    )
+                when (result) {
+                    is AppResult.Success -> {
+                        if (result.data?.id == currentUserId) return@mapNotNull null
+
+                        UserPermission(
+                            user = result.data ?: return@mapNotNull null,
+                            permissionLevel = petPermission.permissionLevel
+                        )
+                    }
+                    is AppResult.Failure -> {
+                        null //TODO: Handle failure
+                    }
                 }
             }
 
@@ -100,10 +109,32 @@ class SharePetViewModel @Inject constructor(
         val petId = uiState.value.petId
 
         viewModelScope.launch {
-            val targetUser = userRepository.getUserByEmail(email)
-            val currentUser = userRepository.getCurrentUser()
+            val targetUser = when (val result = userRepository.getUserByEmail(email)) {
+                is AppResult.Success -> result.data
+                is AppResult.Failure -> {
+                    _uiState.update { state ->
+                        state.copy(
+                            shareErrorMessage = context.getString(R.string.something_went_wrong_error),
+                            isLoading = false
+                        )
+                    }
+                    return@launch
+                }
+            }
+
+            val currentUserId = accountService.currentUserId
+            if (currentUserId.isNullOrBlank()) {
+                _uiState.update { state ->
+                    state.copy(
+                        shareErrorMessage = context.getString(R.string.something_went_wrong_error),
+                        isLoading = false
+                    )
+                }
+                return@launch
+            }
 
             when {
+                //User does not exist
                 targetUser == null -> {
                     _uiState.update { state ->
                         state.copy(
@@ -113,7 +144,7 @@ class SharePetViewModel @Inject constructor(
                     }
                 }
                 //Share with yourself
-                currentUser?.email == email -> {
+                targetUser.id == currentUserId -> {
                     _uiState.update { state ->
                         state.copy(
                             shareErrorMessage = context.getString(R.string.cannot_share_with_yourself_error),
@@ -148,7 +179,7 @@ class SharePetViewModel @Inject constructor(
                             Toast.LENGTH_SHORT
                         ).show()
                     } catch (e: Exception) {
-                        Log.d("SharePetViewModel", "onShareClick: $e")
+                        Timber.d("onShareClick: $e")
                         _uiState.update { state ->
                             state.copy(shareErrorMessage = context.getString(R.string.something_went_wrong_error))
                         }

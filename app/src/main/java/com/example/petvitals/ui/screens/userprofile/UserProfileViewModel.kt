@@ -6,7 +6,6 @@ import com.example.petvitals.R
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.error.AccountError
-import com.example.petvitals.domain.models.User
 import com.example.petvitals.domain.repository.UserRepository
 import com.example.petvitals.ui.components.SnackbarState
 import com.example.petvitals.ui.components.SnackbarType
@@ -70,7 +69,9 @@ class UserProfileViewModel @Inject constructor(
                     }
                 }
 
-                userRepository.deleteCurrentUser()
+                val currentUserId = accountService.currentUserId ?: return@launch //TODO: Handle this
+
+                userRepository.deleteUser(currentUserId)
                 when (val deleteResult = accountService.deleteAccount()) {
                     is AppResult.Success -> Unit
                     is AppResult.Failure -> {
@@ -99,13 +100,21 @@ class UserProfileViewModel @Inject constructor(
 
     fun getUserData() {
         viewModelScope.launch {
-            val user = userRepository.getCurrentUser() ?: User()
+            val currentUserId = accountService.currentUserId ?: return@launch //TODO: Handle this
+            val user = when (val result = userRepository.getUserById(currentUserId)) {
+                is AppResult.Success -> result.data
+                is AppResult.Failure -> return@launch
+            }
 
-            _uiState.update { state ->
-                state.copy(
-                    username = user.username,
-                    email = user.email
-                )
+            if (user != null) {
+                _uiState.update { state ->
+                    state.copy(
+                        username = user.username,
+                        email = user.email
+                    )
+                }
+            } else {
+                //TODO: Handle this
             }
         }
     }

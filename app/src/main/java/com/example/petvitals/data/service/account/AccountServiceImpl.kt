@@ -4,6 +4,7 @@ import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.error.AccountError
 import com.example.petvitals.domain.models.User
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -26,8 +27,8 @@ class AccountServiceImpl @Inject constructor(
             awaitClose { auth.removeAuthStateListener(listener) }
         }
 
-    override val currentUserId: String
-        get() = auth.currentUser?.uid.orEmpty()
+    override val currentUserId: String?
+        get() = auth.currentUser?.uid
 
     override val isEmailVerified: Boolean
         get() = auth.currentUser?.isEmailVerified ?: false
@@ -49,7 +50,7 @@ class AccountServiceImpl @Inject constructor(
     ): AppResult<AccountError, String> {
         return accountResult {
             val result = auth.createUserWithEmailAndPassword(email, password).await()
-            val user = result.user ?: throw IllegalStateException("Created account has no Firebase user")
+            val user = result.user ?: throw FirebaseAuthInvalidUserException("", "")
 
             user.sendEmailVerification().await()
 

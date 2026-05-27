@@ -182,7 +182,7 @@ class AddEditRecordViewModel @Inject constructor(
     fun saveRecord(recordId: String? = null, onSuccess: () -> Unit) {
         if (!validateForm()) return
 
-        val userId = accountService.currentUserId
+        val userId = accountService.currentUserId ?: return
         val title = uiState.value.title.takeIf { it.isNotBlank() }
             ?: context.getString(uiState.value.selectedType.titleResId)
 

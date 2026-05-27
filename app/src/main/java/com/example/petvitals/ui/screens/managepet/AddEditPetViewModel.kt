@@ -2,7 +2,6 @@ package com.example.petvitals.ui.screens.managepet
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SelectableDates
 import androidx.lifecycle.ViewModel
@@ -26,6 +25,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.util.Calendar
@@ -378,7 +378,7 @@ class AddEditPetViewModel @Inject constructor(
         if (!isFormValid()) return
 
         val uiState = uiState.value
-        val userId = accountService.currentUserId
+        val userId = accountService.currentUserId ?: return
 
         val dobMillis = when {
             uiState.isDobApprox -> {
@@ -426,13 +426,13 @@ class AddEditPetViewModel @Inject constructor(
                     try {
                         petPermissionRepository.savePetPermission(petPermission)
                     } catch (e: Exception) {
-                        Log.e("AddEditPetViewModel", "Error saving UserPet for new pet: ${e.message}", e)
+                        Timber.e(e, "Error saving PetPermission: ${e.message}")
                         return@launch
                     }
                 }
                 onSuccess()
             } catch (e: Exception) {
-                Log.e("AddEditPetViewModel", "Error saving Pet: ${e.message}", e)
+                Timber.e(e, "Error saving Pet: ${e.message}")
             }
         }
     }
@@ -445,7 +445,7 @@ class AddEditPetViewModel @Inject constructor(
             month ?: 1,
             day
         )
-        Log.d("AddEditPetViewModel", "birthDateToMillis: ${Date(calendar.timeInMillis)}")
+        Timber.d("birthDateToMillis: ${Date(calendar.timeInMillis)}")
         return calendar.timeInMillis
     }
 

@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface AccountService {
     val currentUser: Flow<User?>
-    val currentUserId: String
+    val currentUserId: String?
     val isEmailVerified: Boolean
     val currentUserEmail: String?
     fun hasUser(): Boolean

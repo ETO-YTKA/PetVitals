@@ -4,14 +4,12 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
-import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.domain.AppResult
-import com.example.petvitals.domain.error.AccountError
 import com.example.petvitals.domain.error.EmailErrors
 import com.example.petvitals.domain.error.NameError
 import com.example.petvitals.domain.error.PasswordError
-import com.example.petvitals.domain.models.User
-import com.example.petvitals.domain.repository.UserRepository
+import com.example.petvitals.domain.error.SignUpError
+import com.example.petvitals.domain.usecase.SignUpUseCase
 import com.example.petvitals.domain.validator.UserDataValidator
 import com.example.petvitals.ui.components.SnackbarState
 import com.example.petvitals.ui.components.SnackbarType
@@ -29,9 +27,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SignUpViewModel @Inject constructor(
-    private val accountService: AccountService,
-    private val userRepository: UserRepository,
     private val userDataValidator: UserDataValidator,
+    private val signUpUseCase: SignUpUseCase,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -129,28 +126,15 @@ class SignUpViewModel @Inject constructor(
         if (!isFieldsValid()) return
 
         viewModelScope.launch {
-            try {
-                val uiState = uiState.value
-                val result = accountService.signUp(
-                    email = uiState.email,
-                    password = uiState.password
-                )
+            val result = signUpUseCase(
+                username = uiState.value.name,
+                email = uiState.value.email,
+                password = uiState.value.password
+            )
 
-                when (result) {
-                    is AppResult.Success -> {
-                        val user = User(
-                            id = result.data,
-                            username = uiState.name,
-                            email = uiState.email
-                        )
-
-                        userRepository.saveUser(user)
-                        onSuccess()
-                    }
-                    is AppResult.Failure -> showSignUpError(result.error.toSignUpErrorMessage())
-                }
-            } catch (e: Exception) {
-                showSignUpError(context.getString(R.string.unexpected_error))
+            when (result) {
+                is AppResult.Success -> onSuccess()
+                is AppResult.Failure -> showSignUpError(result.error.toSignUpErrorMessage())
             }
         }
     }
@@ -166,11 +150,11 @@ class SignUpViewModel @Inject constructor(
         )
     }
 
-    private fun AccountError.toSignUpErrorMessage(): String = when (this) {
-        AccountError.EmptyFields -> context.getString(R.string.empty_fields_error)
-        AccountError.EmailAlreadyInUse -> context.getString(R.string.email_already_in_use_error)
-        AccountError.InvalidCredentials -> context.getString(R.string.invalid_credentials_error)
-        AccountError.Network -> context.getString(R.string.network_error)
+    private fun SignUpError.toSignUpErrorMessage(): String = when (this) {
+        SignUpError.EmailAlreadyInUse -> context.getString(R.string.email_already_in_use_error)
+        SignUpError.InvalidCredentials -> context.getString(R.string.invalid_credentials_error)
+        SignUpError.Network -> context.getString(R.string.network_error)
+        SignUpError.Unauthenticated -> context.getString(R.string.session_expired_error)
         else -> context.getString(R.string.unexpected_error)
     }
 

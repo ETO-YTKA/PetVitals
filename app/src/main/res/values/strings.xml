@@ -245,4 +245,5 @@
     <string name="log_in_to_continue">"Log in to keep track of your companion's health and vitality. "</string>
     <string name="join_petvitals">Join PetVitals</string>
     <string name="sign_up_hero">Create your care journal and keep every pet\'s health details close.</string>
+    <string name="session_expired_error">Your session has expired. Please sign in again</string>
 </resources>
