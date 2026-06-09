@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
+import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.models.DobPrecision
 import com.example.petvitals.domain.models.Food
 import com.example.petvitals.domain.models.Medication
@@ -132,25 +133,33 @@ class PetProfileViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val pet = petRepository.getPetById(petId)
+            val response = petRepository.getPetById(petId)
 
-            pet?.let { pet ->
-                val dob = getPetDob(pet)
-                val age = getPetAge(pet, context)
+            when (response) {
+                is AppResult.Success -> {
+                    val pet = response.data
 
-                _uiState.update { state ->
-                    state.copy(
-                        pet = pet,
-                        dob = dob,
-                        age = age,
-                        updatedHealthNote = pet.healthNote ?: "",
-                        medications = medicationRepository.getMedications(petId),
-                        food = foodRepository.getAllFood(petId),
-                        permissionLevel = petPermissionRepository.getCurrentUserPermissionLevel(petId) ?: PermissionLevel.VIEWER,
-                        isLoading = false
-                    )
+                    pet?.let { pet ->
+                        val dob = getPetDob(pet)
+                        val age = getPetAge(pet, context)
+
+                        _uiState.update { state ->
+                            state.copy(
+                                pet = pet,
+                                dob = dob,
+                                age = age,
+                                updatedHealthNote = pet.healthNote ?: "",
+                                medications = medicationRepository.getMedications(petId),
+                                food = foodRepository.getAllFood(petId),
+                                permissionLevel = petPermissionRepository.getCurrentUserPermissionLevel(petId) ?: PermissionLevel.VIEWER,
+                                isLoading = false
+                            )
+                        }
+                    }
                 }
+                is AppResult.Failure -> return@launch //TODO
             }
+
         }
     }
 

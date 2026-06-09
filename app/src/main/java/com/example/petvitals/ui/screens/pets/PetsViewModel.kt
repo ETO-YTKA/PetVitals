@@ -1,11 +1,11 @@
 package com.example.petvitals.ui.screens.pets
 
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.data.service.account.AccountService
+import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.models.Pet
-import com.example.petvitals.domain.repository.PetPermissionRepository
 import com.example.petvitals.domain.repository.PetRepository
-import com.example.petvitals.ui.screens.PetVitalsAppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,9 +22,8 @@ data class PetsUiState(
 @HiltViewModel
 class PetsViewModel @Inject constructor(
     private val accountService: AccountService,
-    private val petRepository: PetRepository,
-    private val petPermissionRepository: PetPermissionRepository
-) : PetVitalsAppViewModel() {
+    private val petRepository: PetRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PetsUiState())
     val uiState = _uiState.asStateFlow()
@@ -34,7 +33,7 @@ class PetsViewModel @Inject constructor(
     }
 
     fun initialize(onNavigateToSplash: () -> Unit) {
-        launchCatching {
+        viewModelScope.launch {
             accountService.currentUser.collect { user ->
                 if (user == null) onNavigateToSplash()
             }
@@ -43,13 +42,20 @@ class PetsViewModel @Inject constructor(
 
     fun refreshPets() {
         _uiState.update { state -> state.copy(isRefreshing = true) }
-        viewModelScope.launch {
-            val pets = petPermissionRepository.getCurrentUserPets().mapNotNull { userPet ->
-                val pet = petRepository.getPetById(userPet.petId)
-                pet?.let { pet.copy(currentUserPermission = userPet.permissionLevel) }
-            }.sortedBy { it.currentUserPermission }
 
-            _uiState.update { state -> state.copy(pets = pets, isRefreshing = false) }
+        viewModelScope.launch {
+            val response = petRepository.getCurrentUserPets()
+
+            when (response) {
+                is AppResult.Success -> {
+                    val pets = response.data.sortedBy { it.currentUserPermission }
+
+                    _uiState.update { state -> state.copy(pets = pets, isRefreshing = false) }
+                }
+                is AppResult.Failure -> {
+                    _uiState.update { state -> state.copy(isRefreshing = false) }
+                } //TODO handle failure
+            }
         }
     }
 }

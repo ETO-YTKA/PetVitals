@@ -1,15 +1,13 @@
 package com.example.petvitals.data.repository
 
+import com.example.petvitals.data.utils.safeFirestoreCall
 import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.error.FirestoreError
 import com.example.petvitals.domain.models.User
 import com.example.petvitals.domain.repository.UserRepository
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.toObject
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
-import timber.log.Timber
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
@@ -61,39 +59,5 @@ class UserRepositoryImpl @Inject constructor(
                 .delete()
                 .await()
         }
-    }
-
-    private suspend inline fun <T> safeFirestoreCall(
-        block: suspend () -> T
-    ): AppResult<FirestoreError, T> {
-        return try {
-            val result = block()
-            AppResult.Success(result)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: FirebaseFirestoreException) {
-            Timber.e(e)
-            AppResult.Failure(e.toFirestoreError())
-        } catch (e: Exception) {
-            Timber.e(e)
-            AppResult.Failure(FirestoreError.Unknown)
-        }
-    }
-}
-
-private fun FirebaseFirestoreException.toFirestoreError(): FirestoreError {
-    return when (code) {
-        FirebaseFirestoreException.Code.PERMISSION_DENIED ->
-            FirestoreError.PermissionDenied
-
-        FirebaseFirestoreException.Code.UNAUTHENTICATED ->
-            FirestoreError.Unauthenticated
-
-        FirebaseFirestoreException.Code.UNAVAILABLE,
-        FirebaseFirestoreException.Code.DEADLINE_EXCEEDED ->
-            FirestoreError.Network
-
-        else ->
-            FirestoreError.Unknown
     }
 }

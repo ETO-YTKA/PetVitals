@@ -8,14 +8,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.service.account.AccountService
+import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.models.DobPrecision
 import com.example.petvitals.domain.models.Gender
-import com.example.petvitals.domain.models.PermissionLevel
 import com.example.petvitals.domain.models.Pet
-import com.example.petvitals.domain.models.PetPermission
 import com.example.petvitals.domain.models.PetSpecies
 import com.example.petvitals.domain.repository.PetPermissionRepository
 import com.example.petvitals.domain.repository.PetRepository
+import com.example.petvitals.domain.usecase.CreatePetUseCase
 import com.example.petvitals.ui.components.DropDownOption
 import com.example.petvitals.ui.utils.decodeBase64ToImage
 import com.example.petvitals.ui.utils.processImageUri
@@ -74,6 +74,7 @@ class AddEditPetViewModel @Inject constructor(
     private val petRepository: PetRepository,
     private val accountService: AccountService,
     private val petPermissionRepository: PetPermissionRepository,
+    private val createPetUseCase: CreatePetUseCase,
     @ApplicationContext private val context: Context
 ): ViewModel() {
     private val _uiState = MutableStateFlow(AddEditPetUiState())
@@ -239,6 +240,7 @@ class AddEditPetViewModel @Inject constructor(
         )
     }
 
+    //TODO i think i need to do something with this shit
     private fun isFormValid(): Boolean {
         var isValid = true
         _uiState.update {
@@ -340,32 +342,40 @@ class AddEditPetViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val pet = petRepository.getPetById(petId)
+            val response = petRepository.getPetById(petId)
 
-            pet?.let { pet ->
-                val calendar = Calendar.getInstance().apply { timeInMillis = pet.dobMillis }
+            when (response) {
+                is AppResult.Success -> {
+                    val pet = response.data
 
-                val month = when (pet.dobPrecision) {
-                    DobPrecision.YEAR -> null
-                    else -> calendar.get(Calendar.MONTH)
+                    pet?.let {
+                        val calendar = Calendar.getInstance().apply { timeInMillis = pet.dobMillis }
+                        val month = when (pet.dobPrecision) {
+                            DobPrecision.YEAR -> null
+                            else -> calendar.get(Calendar.MONTH)
+                        }
+
+                        _uiState.update { state ->
+                            state.copy(
+                                name = pet.name,
+                                selectedSpecies = pet.species,
+                                breed = pet.breed,
+                                selectedGender = pet.gender,
+                                isDobApprox = pet.dobPrecision.isApproximate,
+                                dobMillis = pet.dobMillis,
+                                dobString = millisToDobString(pet.dobMillis),
+                                selectedDobMonth = month,
+                                dobYear = calendar.get(Calendar.YEAR).toString(),
+                                editMode = true,
+                                avatarByteArray = pet.avatar?.let { decodeBase64ToImage(it) },
+                                isLoading = false
+                            )
+                        }
+
+                    }
+
                 }
-
-                _uiState.update { state ->
-                    state.copy(
-                        name = pet.name,
-                        selectedSpecies = pet.species,
-                        breed = pet.breed,
-                        selectedGender = pet.gender,
-                        isDobApprox = pet.dobPrecision.isApproximate,
-                        dobMillis = pet.dobMillis,
-                        dobString = millisToDobString(pet.dobMillis),
-                        selectedDobMonth = month,
-                        dobYear = calendar.get(Calendar.YEAR).toString(),
-                        editMode = true,
-                        avatarByteArray = pet.avatar?.let { decodeBase64ToImage(it) },
-                        isLoading = false
-                    )
-                }
+                is AppResult.Failure -> return@launch //TODO Handle failure
             }
         }
     }
@@ -378,7 +388,6 @@ class AddEditPetViewModel @Inject constructor(
         if (!isFormValid()) return
 
         val uiState = uiState.value
-        val userId = accountService.currentUserId ?: return
 
         val dobMillis = when {
             uiState.isDobApprox -> {
@@ -409,30 +418,9 @@ class AddEditPetViewModel @Inject constructor(
             avatar = avatar
         )
 
-        val isNewPet = petId == null
-        val petToSave = if (isNewPet) basePet else basePet.copy(id = petId)
-
-        viewModelScope.launch {
-            try {
-                petRepository.savePet(petToSave)
-
-                if (isNewPet) {
-                    val petPermission = PetPermission(
-                        userId = userId,
-                        petId = petToSave.id,
-                        permissionLevel = PermissionLevel.OWNER
-                    )
-
-                    try {
-                        petPermissionRepository.savePetPermission(petPermission)
-                    } catch (e: Exception) {
-                        Timber.e(e, "Error saving PetPermission: ${e.message}")
-                        return@launch
-                    }
-                }
-                onSuccess()
-            } catch (e: Exception) {
-                Timber.e(e, "Error saving Pet: ${e.message}")
+        if (petId == null) {
+            viewModelScope.launch {
+                createPetUseCase.invoke(pet = basePet)
             }
         }
     }

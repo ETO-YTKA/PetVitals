@@ -5,7 +5,6 @@ import android.icu.util.Calendar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
-import com.example.petvitals.domain.models.PermissionLevel
 import com.example.petvitals.domain.models.Pet
 import com.example.petvitals.domain.models.Record
 import com.example.petvitals.domain.models.RecordType
@@ -83,36 +82,7 @@ class RecordsViewModel @Inject constructor(
     }
 
     fun getRecords() {
-        _uiState.update { state -> state.copy(isRefreshing = true) }
-
-        viewModelScope.launch {
-            val records = recordRepository.getCurrentUserRecords()
-
-            val recordWithPetsList = records.map { record ->
-
-                val pets: List<Pet> = record.petIds.mapNotNull { petId ->
-                    val pet = petRepository.getPetById(petId)
-                    val currentUserPermission = petPermissionRepository.getCurrentUserPermissionLevel(petId)
-                        ?: return@mapNotNull null
-
-                    pet?.copy(currentUserPermission = currentUserPermission)
-                }
-                val minPetPermission = pets.maxByOrNull { pet -> pet.currentUserPermission }
-                val recordWithPermission = record.copy(currentUserPermission = minPetPermission?.currentUserPermission ?: PermissionLevel.OWNER)
-
-                RecordWithPets(recordWithPermission, pets)
-            }
-
-            _allRecordsRaw.value = recordWithPetsList
-            _uiState.update { state ->
-                state.copy(
-                    rawRecords = recordWithPetsList,
-                    isRefreshing = false,
-                    selectionMode = false,
-                    selectedRecords = emptyList()
-                )
-            }
-        }
+        //TODO
     }
 
     fun deleteSelectedRecords() {
@@ -158,12 +128,7 @@ class RecordsViewModel @Inject constructor(
     }
 
     fun getAllPetsForFiltering() {
-        viewModelScope.launch {
-            val pets = petPermissionRepository.getCurrentUserPets().mapNotNull { petPermission ->
-                petRepository.getPetById(petPermission.petId)
-            }
-            _uiState.update { state -> state.copy(allPetsForFiltering = pets) }
-        }
+        //TODO
     }
 
     private fun filterAndGroupRecords(

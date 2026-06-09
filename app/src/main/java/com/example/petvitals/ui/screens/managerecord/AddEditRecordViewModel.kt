@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.service.account.AccountService
-import com.example.petvitals.domain.models.PermissionLevel
 import com.example.petvitals.domain.models.Pet
 import com.example.petvitals.domain.models.Record
 import com.example.petvitals.domain.models.RecordType
@@ -124,22 +123,7 @@ class AddEditRecordViewModel @Inject constructor(
     }
 
     fun loadRecordData(recordId: String) {
-        viewModelScope.launch {
-            val record = recordRepository.getRecordById(recordId)
-            if (record != null) {
-                _uiState.update { state ->
-                    state.copy(
-                        title = record.title,
-                        selectedType = record.type,
-                        date = record.date,
-                        description = record.description,
-                        selectedPets = record.petIds.mapNotNull { petId ->
-                            petRepository.getPetById(petId)
-                        }
-                    )
-                }
-            }
-        }
+        //TODO
     }
 
     private fun validateForm(): Boolean {
@@ -244,19 +228,7 @@ class AddEditRecordViewModel @Inject constructor(
     }
 
     fun getPets() {
-        viewModelScope.launch {
-            val pets = petPermissionRepository.getCurrentUserPets().mapNotNull { petPermission ->
-                val pet = petRepository.getPetById(petPermission.petId)
-                if (petPermission.permissionLevel == PermissionLevel.VIEWER) {
-                    return@mapNotNull null
-                } else pet
-            }
-            _uiState.update { state ->
-                state.copy(
-                    pets = pets
-                )
-            }
-        }
+        //TODO
     }
 
     fun togglePetSelection(pet: Pet) {

@@ -1,6 +1,8 @@
 package com.example.petvitals.di
 
+import com.example.petvitals.data.usecase.CreatePetUseCaseImpl
 import com.example.petvitals.data.usecase.SignUpUseCaseImpl
+import com.example.petvitals.domain.usecase.CreatePetUseCase
 import com.example.petvitals.domain.usecase.SignUpUseCase
 import dagger.Binds
 import dagger.Module
@@ -13,4 +15,7 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindSignUpUseCase(signUpUseCase: SignUpUseCaseImpl): SignUpUseCase
+
+    @Binds
+    abstract fun bindCreatePetUseCase(createPetUseCase: CreatePetUseCaseImpl): CreatePetUseCase
 }
