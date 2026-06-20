@@ -3,10 +3,10 @@ package com.example.petvitals.ui.components
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -14,6 +14,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import com.example.petvitals.ui.theme.PetVitalsTheme
 
 data class DropDownOption<T>(
     val display: String,
@@ -34,7 +36,7 @@ fun <T> ValueDropDown(
     var expanded by remember { mutableStateOf(false) }
 
     val selectedOptionDisplay = remember(value, options) {
-        options.find { it.value == value }!!.display
+        options.find { it.value == value }?.display ?: ""
     }
 
     ExposedDropdownMenuBox(
@@ -42,17 +44,17 @@ fun <T> ValueDropDown(
         onExpandedChange = { expanded = !expanded },
         modifier = modifier
     ) {
-        CustomOutlinedTextField(
+        CustomTextField(
             value = selectedOptionDisplay,
             onValueChange = { },
             label = { Text(text = label) },
             readOnly = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
-                .menuAnchor(MenuAnchorType.PrimaryEditable)
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
                 .fillMaxWidth(),
             isError = isError,
-            supportingText = supportingText,
+            supportingText = supportingText?.let { { Text(text = it) } },
         )
 
         ExposedDropdownMenu(
@@ -71,5 +73,31 @@ fun <T> ValueDropDown(
                 )
             }
         }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun ValueDropDownNoSelectedPreview() {
+    PetVitalsTheme {
+        ValueDropDown(
+            value = "",
+            onValueChange = {},
+            options = emptyList(),
+            label = "Label"
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun ValueDropDownSelectedPreview() {
+    PetVitalsTheme {
+        ValueDropDown(
+            value = "Selected",
+            onValueChange = {},
+            options = listOf(DropDownOption("Selected", "Selected")),
+            label = "Label"
+        )
     }
 }

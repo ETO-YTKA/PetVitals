@@ -460,7 +460,7 @@ private fun GeneralInfo(uiState: PetProfileUiState) {
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
-        uiState.pet.gender.let { gender ->
+        uiState.pet.gender?.let { gender ->
             @DrawableRes val painterRes = when (gender) {
                 Gender.MALE -> R.drawable.ic_male
                 Gender.FEMALE -> R.drawable.ic_female

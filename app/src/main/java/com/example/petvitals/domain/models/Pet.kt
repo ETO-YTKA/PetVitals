@@ -12,7 +12,7 @@ data class Pet(
     val name: String = "",
     val species: PetSpecies = PetSpecies.CAT,
     val breed: String = "",
-    val gender: Gender = Gender.MALE,
+    val gender: Gender? = null,
     val dobMillis: Long = Calendar.getInstance().timeInMillis,
     val dobPrecision: DobPrecision = DobPrecision.EXACT,
     val avatar: String? = null,

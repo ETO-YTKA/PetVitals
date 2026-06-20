@@ -1,6 +1,5 @@
 package com.example.petvitals.ui.components
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,11 +32,8 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.petvitals.R
 import com.example.petvitals.ui.theme.Dimen
+import com.example.petvitals.ui.theme.LocalCustomColorsScheme
 import com.example.petvitals.ui.theme.PetVitalsTheme
-import com.example.petvitals.ui.theme.onSuccessContainerDark
-import com.example.petvitals.ui.theme.onSuccessContainerLight
-import com.example.petvitals.ui.theme.successContainerDark
-import com.example.petvitals.ui.theme.successContainerLight
 
 data class SnackbarState(
     val message: String,
@@ -77,14 +73,14 @@ fun CustomSnackbarHost(
 
         val containerColor = when (snackbarType) {
             SnackbarType.ERROR -> MaterialTheme.colorScheme.errorContainer
-            SnackbarType.SUCCESS -> if (isSystemInDarkTheme()) successContainerDark else successContainerLight
-            SnackbarType.INFO -> MaterialTheme.colorScheme.secondaryContainer
+            SnackbarType.SUCCESS -> LocalCustomColorsScheme.current.successContainer
+            SnackbarType.INFO -> LocalCustomColorsScheme.current.infoContainer
         }
 
         val contentColor = when (snackbarType) {
             SnackbarType.ERROR -> MaterialTheme.colorScheme.onErrorContainer
-            SnackbarType.SUCCESS -> if (isSystemInDarkTheme()) onSuccessContainerDark else onSuccessContainerLight
-            SnackbarType.INFO -> MaterialTheme.colorScheme.onSecondaryContainer
+            SnackbarType.SUCCESS -> LocalCustomColorsScheme.current.onSuccessContainer
+            SnackbarType.INFO -> LocalCustomColorsScheme.current.onInfoContainer
         }
 
         val iconRes = when (snackbarType) {

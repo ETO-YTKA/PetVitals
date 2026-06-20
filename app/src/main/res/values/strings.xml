@@ -164,6 +164,7 @@
     <string name="pet_name_cannot_be_longer_than_error">Name cannot be longer than 50 characters</string>
     <string name="breed_cannot_be_longer_than_error">Breed cannot be longer than 100 characters</string>
     <string name="year_cannot_be_empty">Year cannot be empty</string>
+    <string name="year_must_be_number">Year must be a number</string>
     <string name="date_of_birth_cannot_be_empty">Date of birth cannot be empty</string>
     <string name="profile_email_not_verified">Email not verified</string>
     <string name="send_verification_email">Send verification email</string>
@@ -246,4 +247,9 @@
     <string name="join_petvitals">Join PetVitals</string>
     <string name="sign_up_hero">Create your care journal and keep every pet\'s health details close.</string>
     <string name="session_expired_error">Your session has expired. Please sign in again</string>
+    <string name="something_went_wrong">Something went wrong</string>
+    <string name="pets_name">Pet\'s name</string>
+    <string name="manage_pet_intro_helper">Start with the basics. You can add care details later</string>
+    <string name="breed_optional">Breed (optional)</string>
+    <string name="species_cannot_be_empty">Species cannot be empty</string>
 </resources>

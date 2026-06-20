@@ -23,7 +23,7 @@ import androidx.navigation.toRoute
 import com.example.petvitals.R
 import com.example.petvitals.ui.screens.managefood.AddEditFoodScreen
 import com.example.petvitals.ui.screens.managemedication.AddEditMedicationScreen
-import com.example.petvitals.ui.screens.managepet.AddEditPetScreen
+import com.example.petvitals.ui.screens.managepet.ManagePetScreen
 import com.example.petvitals.ui.screens.managerecord.AddEditRecordScreen
 import com.example.petvitals.ui.screens.petprofile.PetProfileScreen
 import com.example.petvitals.ui.screens.pets.PetsScreen
@@ -72,9 +72,9 @@ fun MainAppScreen(
 
             composable<AddEditPet> { backStackEntry ->
                 val addEditPet: AddEditPet = backStackEntry.toRoute()
-                AddEditPetScreen(
+                ManagePetScreen(
                     addEditPet = addEditPet,
-                    navigateToPets = { navController.navigate(route = Pets) },
+                    onNavigateToPets = { navController.navigate(route = Pets) },
                     onPopBackStack = { navController.popBackStack() }
                 )
             }

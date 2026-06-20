@@ -2,12 +2,14 @@ package com.example.petvitals.ui.components
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -17,7 +19,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.example.petvitals.R
+import com.example.petvitals.ui.theme.PetVitalsTheme
 
 @Composable
 fun DatePickerField(
@@ -28,13 +32,13 @@ fun DatePickerField(
     isError: Boolean = false,
     supportingText: String? = null
 ) {
-    CustomOutlinedTextField(
+    CustomTextField(
         value = value,
         onValueChange = { },
         modifier = modifier.fillMaxWidth(),
         readOnly = true,
         label = { Text(label) },
-        leadingIcon = {
+        trailingIcon = {
             Icon(
                 painter = painterResource(R.drawable.ic_calendar_month),
                 contentDescription = null
@@ -51,7 +55,7 @@ fun DatePickerField(
                 }
             },
         isError = isError,
-        supportingText = supportingText
+        supportingText = supportingText?.let { { Text(it) } }
     )
 }
 
@@ -82,5 +86,23 @@ fun DatePickerModal(
             state = datePickerState,
             showModeToggle = false
         )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun DatePickerModalPreview() {
+    PetVitalsTheme {
+        Surface(modifier = Modifier.fillMaxSize()) {
+            DatePickerModal(onDateSelected = {}, onDismiss = {})
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun DatePickerFieldPreview() {
+    PetVitalsTheme {
+        DatePickerField(value = "", onClick = {}, label = "Tap to select")
     }
 }
