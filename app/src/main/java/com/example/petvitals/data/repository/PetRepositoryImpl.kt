@@ -76,4 +76,25 @@ class PetRepositoryImpl @Inject constructor(
                 .await()
         }
     }
+
+    override suspend fun createPetWithOwner(
+        pet: Pet,
+        member: Member
+    ): AppResult<FirestoreError, Unit> {
+
+        return safeFirestoreCall {
+            val petRef = firestore
+                .collection(FirestoreCollections.PETS)
+                .document(pet.id)
+
+            val memberRef = petRef
+                .collection(FirestoreCollections.PET_MEMBERS)
+                .document(member.userId)
+
+            firestore.runBatch { batch ->
+                batch.set(petRef, pet)
+                batch.set(memberRef, member)
+            }.await()
+        }
+    }
 }
