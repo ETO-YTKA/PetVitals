@@ -34,6 +34,7 @@
     <string name="tap_to_select_date">Нажмите, чтобы выбрать дату</string>
     <string name="ok">ОК</string>
     <string name="cancel">Отмена</string>
+    <string name="retry">Повторить</string>
     <string name="save">Сохранить</string>
     <string name="tap_to_select_photo">Нажмите, чтобы выбрать фото</string>
     <string name="edit_pet">Редактировать питомца</string>
@@ -85,6 +86,7 @@
     <string name="invalid_credentials_error">Неверный адрес электронной почты или пароль</string>
     <string name="user_not_found_error">Пользователь не найден. Пожалуйста, проверьте введённые данные</string>
     <string name="network_error">Произошла сетевая ошибка. Пожалуйста, проверьте ваше соединение</string>
+    <string name="manage_pet_network_error_title">Ошибка сети</string>
     <string name="unexpected_error">Произошла непредвиденная ошибка</string>
     <string name="empty_fields_error">Поля не могут быть пустыми</string>
     <string name="email_already_in_use_error">Этот адрес электронной почты уже используется</string>

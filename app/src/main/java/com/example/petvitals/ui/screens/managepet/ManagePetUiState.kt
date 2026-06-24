@@ -4,6 +4,7 @@ import android.net.Uri
 import com.example.petvitals.domain.models.Gender
 import com.example.petvitals.domain.models.PetSpecies
 import com.example.petvitals.ui.components.DropDownOption
+import com.example.petvitals.ui.components.PopUpState
 
 data class ManagePetUiState(
     val isLoading: Boolean = false,
@@ -34,4 +35,6 @@ data class ManagePetUiState(
     val dobErrorMessage: String? = null,
     val dobYearErrorMessage: String? = null,
     val speciesErrorMessage: String? = null,
+
+    val popUpState: PopUpState<ManagePetAction>? = null,
 )

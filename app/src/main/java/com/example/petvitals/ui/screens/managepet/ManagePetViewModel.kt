@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.domain.AppResult
+import com.example.petvitals.domain.error.FirestoreError
 import com.example.petvitals.domain.error.PetDataError
 import com.example.petvitals.domain.models.DobPrecision
 import com.example.petvitals.domain.models.Gender
@@ -15,6 +16,9 @@ import com.example.petvitals.domain.repository.PetRepository
 import com.example.petvitals.domain.usecase.CreatePetUseCase
 import com.example.petvitals.domain.validator.PetDataValidator
 import com.example.petvitals.ui.components.DropDownOption
+import com.example.petvitals.ui.components.PopUpButton
+import com.example.petvitals.ui.components.PopUpState
+import com.example.petvitals.ui.components.PopUpType
 import com.example.petvitals.ui.utils.debounceValidation
 import com.example.petvitals.ui.utils.decodeBase64ToImage
 import com.example.petvitals.ui.utils.processImageUri
@@ -49,6 +53,7 @@ class ManagePetViewModel @Inject constructor(
     private var dobValidationJob: Job? = null
     private var dobYearValidationJob: Job? = null
     private var speciesValidationJob: Job? = null
+    private var pendingSaveOnSuccess: (() -> Unit)? = null
 
     init {
         _uiState.update { state ->
@@ -74,6 +79,8 @@ class ManagePetViewModel @Inject constructor(
             is ManagePetAction.OnShowDatePickerChange -> onShowDatePickerChange(action.show)
             is ManagePetAction.OnSpeciesChange -> onSpeciesChange(action.species)
             is ManagePetAction.SavePet -> savePet(action.petId, action.onSuccess)
+            ManagePetAction.RetrySavePet -> retrySavePet()
+            ManagePetAction.DismissPopUp -> dismissPopUp(clearPendingSave = true)
         }
     }
 
@@ -318,6 +325,7 @@ class ManagePetViewModel @Inject constructor(
     ) {
         if (isFormValid()) {
             val uiState = uiState.value
+            pendingSaveOnSuccess = onSuccess
 
             val dobMillis = when {
                 uiState.isDobApprox -> {
@@ -350,18 +358,70 @@ class ManagePetViewModel @Inject constructor(
 
             if (petId == null) {
                 viewModelScope.launch {
-                    when (createPetUseCase.invoke(pet = basePet)) {
+                    when (val result = createPetUseCase.invoke(pet = basePet)) {
                         is AppResult.Success -> {
+                            pendingSaveOnSuccess = null
+                            dismissPopUp()
                             onSuccess()
                         }
                         is AppResult.Failure -> {
-                            //TODO Handle failure
+                            showSaveFailurePopUp(result.error)
                         }
                     }
                 }
             } else {
                 //TODO Update pet
             }
+        }
+    }
+
+    private fun retrySavePet() {
+        val onSuccess = pendingSaveOnSuccess ?: return
+        dismissPopUp()
+        savePet(uiState.value.petId, onSuccess)
+    }
+
+    private fun dismissPopUp(clearPendingSave: Boolean = false) {
+        if (clearPendingSave) {
+            pendingSaveOnSuccess = null
+        }
+
+        _uiState.update { state ->
+            state.copy(popUpState = null)
+        }
+    }
+
+    private fun showSaveFailurePopUp(error: FirestoreError) {
+        val popUpState: PopUpState<ManagePetAction> = when (error) {
+            FirestoreError.Network -> PopUpState(
+                type = PopUpType.WARNING,
+                title = context.getString(R.string.manage_pet_network_error_title),
+                message = context.getString(R.string.network_error),
+                primaryButton = PopUpButton(
+                    text = context.getString(R.string.retry),
+                    action = ManagePetAction.RetrySavePet,
+                    dismissAfterClick = false
+                ),
+                secondaryButton = PopUpButton(
+                    text = context.getString(R.string.cancel),
+                    action = ManagePetAction.DismissPopUp
+                )
+            )
+            FirestoreError.PermissionDenied,
+            FirestoreError.Unauthenticated,
+            FirestoreError.Unknown -> PopUpState(
+                type = PopUpType.ALERT,
+                title = context.getString(R.string.unexpected_error),
+                message = context.getString(R.string.unexpected_error),
+                primaryButton = PopUpButton(
+                    text = context.getString(R.string.ok),
+                    action = ManagePetAction.DismissPopUp
+                )
+            )
+        }
+
+        _uiState.update { state ->
+            state.copy(popUpState = popUpState)
         }
     }
 

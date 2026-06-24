@@ -16,4 +16,6 @@ sealed interface ManagePetAction {
     data class OnDobYearChange(val year: String) : ManagePetAction
     data class OnImageUriChange(val uri: Uri?) : ManagePetAction
     data class SavePet(val petId: String?, val onSuccess: () -> Unit) : ManagePetAction
+    data object RetrySavePet : ManagePetAction
+    data object DismissPopUp : ManagePetAction
 }

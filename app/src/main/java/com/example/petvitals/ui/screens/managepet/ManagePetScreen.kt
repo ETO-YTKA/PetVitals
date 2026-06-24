@@ -51,6 +51,7 @@ import com.example.petvitals.ui.components.CustomTextField
 import com.example.petvitals.ui.components.DatePickerField
 import com.example.petvitals.ui.components.DatePickerModal
 import com.example.petvitals.ui.components.Loading
+import com.example.petvitals.ui.components.PopUpHost
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.components.ValueDropDown
 import com.example.petvitals.ui.navigation.AddEditPet
@@ -103,6 +104,12 @@ private fun ManagePetScreenContent(
             datePickerState = rememberDatePickerState(selectableDates = PastOrPresentSelectableDates)
         )
     }
+
+    PopUpHost(
+        popUpState = uiState.popUpState,
+        onAction = action,
+        onDismiss = { action(ManagePetAction.DismissPopUp) }
+    )
 
     Scaffold(
         topBar = {

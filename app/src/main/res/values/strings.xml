@@ -37,6 +37,7 @@
     <string name="tap_to_select_date">Tap to select date</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
+    <string name="retry">Retry</string>
     <string name="dismiss">Dismiss</string>
     <string name="save">Save</string>
     <string name="tap_to_select_photo">Tap to select photo</string>
@@ -113,6 +114,7 @@
     <string name="invalid_credentials_error">Invalid email or password</string>
     <string name="user_not_found_error">User not found. Please check the entered data.</string>
     <string name="network_error">A network error occurred. Please check your connection</string>
+    <string name="manage_pet_network_error_title">Network error</string>
     <string name="unexpected_error">An unexpected error occurred</string>
     <string name="empty_fields_error">Fields cannot be empty</string>
     <string name="email_already_in_use_error">This email is already in use</string>
