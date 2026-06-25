@@ -35,6 +35,9 @@
     <string name="ok">ОК</string>
     <string name="cancel">Отмена</string>
     <string name="retry">Повторить</string>
+    <string name="got_it">Понятно</string>
+    <string name="keep_editing">Продолжить редактирование</string>
+    <string name="try_again">Попробовать снова</string>
     <string name="save">Сохранить</string>
     <string name="tap_to_select_photo">Нажмите, чтобы выбрать фото</string>
     <string name="edit_pet">Редактировать питомца</string>
@@ -87,6 +90,10 @@
     <string name="user_not_found_error">Пользователь не найден. Пожалуйста, проверьте введённые данные</string>
     <string name="network_error">Произошла сетевая ошибка. Пожалуйста, проверьте ваше соединение</string>
     <string name="manage_pet_network_error_title">Ошибка сети</string>
+    <string name="manage_pet_save_network_error_title">Не удалось сохранить питомца</string>
+    <string name="manage_pet_save_network_error_message">Проверьте подключение и попробуйте сохранить снова. Ваши изменения останутся на экране.</string>
+    <string name="manage_pet_save_error_title">Питомец не сохранён</string>
+    <string name="manage_pet_save_error_message">Не удалось сохранить изменения. Пожалуйста, попробуйте снова.</string>
     <string name="unexpected_error">Произошла непредвиденная ошибка</string>
     <string name="empty_fields_error">Поля не могут быть пустыми</string>
     <string name="email_already_in_use_error">Этот адрес электронной почты уже используется</string>

@@ -395,15 +395,15 @@ class ManagePetViewModel @Inject constructor(
         val popUpState: PopUpState<ManagePetAction> = when (error) {
             FirestoreError.Network -> PopUpState(
                 type = PopUpType.WARNING,
-                title = context.getString(R.string.manage_pet_network_error_title),
-                message = context.getString(R.string.network_error),
+                title = context.getString(R.string.manage_pet_save_network_error_title),
+                message = context.getString(R.string.manage_pet_save_network_error_message),
                 primaryButton = PopUpButton(
-                    text = context.getString(R.string.retry),
+                    text = context.getString(R.string.try_again),
                     action = ManagePetAction.RetrySavePet,
                     dismissAfterClick = false
                 ),
                 secondaryButton = PopUpButton(
-                    text = context.getString(R.string.cancel),
+                    text = context.getString(R.string.keep_editing),
                     action = ManagePetAction.DismissPopUp
                 )
             )
@@ -411,10 +411,10 @@ class ManagePetViewModel @Inject constructor(
             FirestoreError.Unauthenticated,
             FirestoreError.Unknown -> PopUpState(
                 type = PopUpType.ALERT,
-                title = context.getString(R.string.unexpected_error),
-                message = context.getString(R.string.unexpected_error),
+                title = context.getString(R.string.manage_pet_save_error_title),
+                message = context.getString(R.string.manage_pet_save_error_message),
                 primaryButton = PopUpButton(
-                    text = context.getString(R.string.ok),
+                    text = context.getString(R.string.got_it),
                     action = ManagePetAction.DismissPopUp
                 )
             )

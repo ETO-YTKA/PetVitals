@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-24T18:43:00Z",
+  "title": "Design System: PetVitals",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Care Teal",
+        "canonical": "#075E63",
+        "tonalRamp": ["#062B2D", "#064246", "#075E63", "#278088", "#67AEB3", "#A7D8D7", "#D9F0ED", "#F0FAF8"]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Journal Canvas",
+        "canonical": "#F6FAF8",
+        "tonalRamp": ["#17201F", "#52625F", "#6E7D7A", "#A9BBB6", "#D5E1DD", "#E6EFEC", "#EEF6F3", "#F6FAF8"]
+      },
+      "error": {
+        "role": "error",
+        "displayName": "Record Error Red",
+        "canonical": "#A33A32",
+        "tonalRamp": ["#4A1714", "#74231E", "#A33A32", "#C7645D", "#E39791", "#F2C2BE", "#F9DEDA", "#FFF5F3"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Rare screen-level moments such as onboarding, empty states, and major pet profile headings."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Main screen titles and primary section headers."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Readable care notes, form copy, descriptions, and everyday product text."
+      }
+    },
+    "shadows": [
+      {
+        "name": "action-lift",
+        "value": "0 2dp 6dp rgba(23, 32, 31, 0.14)",
+        "purpose": "Floating action buttons and raised primary actions only."
+      },
+      {
+        "name": "sheet-lift",
+        "value": "0 -4dp 16dp rgba(23, 32, 31, 0.12)",
+        "purpose": "Modal bottom sheets and elevated panels that slide over content."
+      },
+      {
+        "name": "dialog-lift",
+        "value": "0 8dp 24dp rgba(23, 32, 31, 0.18)",
+        "purpose": "Confirmation dialogs and permission-critical decisions."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-standard",
+        "value": "180ms cubic-bezier(0.2, 0, 0, 1)",
+        "purpose": "Buttons, chips, field focus, selected states, and small UI feedback."
+      },
+      {
+        "name": "sheet-standard",
+        "value": "240ms cubic-bezier(0.2, 0, 0, 1)",
+        "purpose": "Sheets, dialogs, and transient layered surfaces."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact",
+        "value": "0dp-599dp"
+      },
+      {
+        "name": "medium",
+        "value": "600dp-839dp"
+      },
+      {
+        "name": "expanded",
+        "value": "840dp+"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single strongest action in a screen region, such as saving a pet or adding a record.",
+      "html": "<button class=\"ds-btn-primary\">Save pet details</button>",
+      "css": ".ds-btn-primary { background: #075E63; color: #FFFFFF; min-height: 52px; padding: 0 20px; border: 0; border-radius: 999px; font-family: 'Nunito Sans', system-ui, sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.01em; transition: background 180ms cubic-bezier(0.2, 0, 0, 1), transform 180ms cubic-bezier(0.2, 0, 0, 1), border-radius 180ms cubic-bezier(0.2, 0, 0, 1); } .ds-btn-primary:hover { background: #064D51; } .ds-btn-primary:focus-visible { outline: 2px solid #075E63; outline-offset: 3px; } .ds-btn-primary:active { border-radius: 12px; transform: translateY(1px); }"
+    },
+    {
+      "name": "Care Summary Card",
+      "kind": "card",
+      "refersTo": "card-care-summary",
+      "description": "A flat grouped container for pet, record, medication, or food routine summaries.",
+      "html": "<article class=\"ds-care-card\"><h3>Milo</h3><p>Next medication is due tonight at 8:00 PM.</p><span>Shared with 2 caregivers</span></article>",
+      "css": ".ds-care-card { background: #FFFFFF; color: #17201F; border: 1px solid #D5E1DD; border-radius: 16px; padding: 16px; font-family: 'Nunito Sans', system-ui, sans-serif; } .ds-care-card h3 { margin: 0 0 6px; font-size: 18px; line-height: 1.28; font-weight: 700; } .ds-care-card p { margin: 0 0 12px; color: #17201F; font-size: 16px; line-height: 1.45; } .ds-care-card span { color: #52625F; font-size: 14px; font-weight: 700; }"
+    },
+    {
+      "name": "Default Input",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "A clear labeled field for care details, with visible focus and inline error support.",
+      "html": "<label class=\"ds-field\"><span>Medication name</span><input placeholder=\"Example: Heart tablet\" /></label>",
+      "css": ".ds-field { display: grid; gap: 8px; color: #17201F; font-family: 'Nunito Sans', system-ui, sans-serif; font-size: 14px; font-weight: 700; } .ds-field input { min-height: 56px; padding: 0 16px; border: 1px solid #D5E1DD; border-radius: 12px; background: #FFFFFF; color: #17201F; font: inherit; font-size: 16px; font-weight: 400; } .ds-field input::placeholder { color: #52625F; } .ds-field input:focus { outline: 2px solid #075E63; outline-offset: 2px; border-color: #075E63; }"
+    },
+    {
+      "name": "Selected Chip",
+      "kind": "chip",
+      "refersTo": "button-tonal",
+      "description": "A selected filter or status chip for pets, records, medications, and sharing roles.",
+      "html": "<button class=\"ds-chip-selected\">Medication</button>",
+      "css": ".ds-chip-selected { min-height: 40px; padding: 0 14px; border: 0; border-radius: 999px; background: #D9F0ED; color: #075E63; font-family: 'Nunito Sans', system-ui, sans-serif; font-size: 14px; font-weight: 700; transition: background 180ms cubic-bezier(0.2, 0, 0, 1), transform 180ms cubic-bezier(0.2, 0, 0, 1); } .ds-chip-selected:focus-visible { outline: 2px solid #075E63; outline-offset: 3px; } .ds-chip-selected:active { transform: translateY(1px); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Calm Care Journal",
+    "overview": "PetVitals should feel like a practical care journal that a pet owner can trust before a vet visit, after a stressful incident, or during ordinary daily routines. The interface is warm without becoming childish, clinical enough to support health information without feeling like hospital software, and structured enough that records, medications, food routines, and shared access remain easy to scan.",
+    "keyCharacteristics": [
+      "Restrained daily-app density: enough information to act, never a dense admin table by default.",
+      "One calm teal accent: primary actions, active navigation, focus, and selected states only.",
+      "Journal-like surfaces: layered off-white and soft green-gray neutrals, not beige, cream, or sterile blue-white hospital panels.",
+      "Familiar Material structure: top bars, bottom navigation, sheets, inline forms, and confirmation patterns before destructive changes.",
+      "Pet-centered warmth through copy, empty states, and gentle shapes, not cartoons or novelty controls."
+    ],
+    "rules": [
+      {
+        "name": "The One Accent Rule",
+        "body": "Care Teal is the only accent color. It should occupy less than 10 percent of a normal screen so actions and selected states remain clear.",
+        "section": "colors"
+      },
+      {
+        "name": "The No-Hospital Rule",
+        "body": "Do not drift into sterile medical blue-gray dashboards. Surfaces may be clean, but the color temperature must stay humane and journal-like.",
+        "section": "colors"
+      },
+      {
+        "name": "The No-Cute-Type Rule",
+        "body": "Do not use playful display fonts, bouncy letters, or cartoon-style type for pet warmth. Warmth comes from tone and spacing, not novelty typography.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-At-Rest Rule",
+        "body": "Content cards, routine rows, and record lists do not need decorative shadows. If everything floats, nothing feels important.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use familiar Material 3 and Android interaction patterns so care workflows feel predictable.",
+      "Do keep Care Teal rare and meaningful: primary action, active navigation, focus, selection.",
+      "Do use inline confirmation and clear recovery copy for failed saves, permission problems, and validation errors.",
+      "Do use generous touch targets of at least 48dp for all interactive controls.",
+      "Do prioritize scan order: pet identity, current care state, next action, then metadata.",
+      "Do use skeleton loading for record lists, pet cards, and profile summaries instead of centered spinners when layout is known."
+    ],
+    "donts": [
+      "Don't create sterile medical dashboards, harsh hospital-like interfaces, or cold clinical patterns.",
+      "Don't use childish or cartoonish pet-app visuals that reduce trust.",
+      "Don't make routine care feel like dense admin data entry with cramped tables and technical controls.",
+      "Don't use gradient text, neon glows, glassmorphism, or decorative blur cards.",
+      "Don't use colored side-stripe borders on cards, callouts, records, or alerts.",
+      "Don't pair large soft shadows with 1dp decorative borders on the same card.",
+      "Don't over-round cards or inputs past 16dp. Reserve full pills for chips and buttons.",
+      "Don't use pure black, low-contrast gray helper text, or inactive states with saturated color.",
+      "Don't invent custom form controls, scrollbars, or non-standard modals for visual flavor.",
+      "Don't hide health-related changes behind unclear feedback. Every save, failure, delete, and permission change needs a visible result."
+    ]
+  }
+}

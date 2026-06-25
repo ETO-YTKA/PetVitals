@@ -3,24 +3,27 @@ package com.example.petvitals.ui.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -121,10 +124,9 @@ fun PopUp(
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(24.dp)
             ) {
                 Surface(
                     shape = CircleShape,
@@ -140,40 +142,58 @@ fun PopUp(
                     )
                 }
 
+                Spacer(modifier = Modifier.height(12.dp))
+
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleLarge
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     text = message,
+                    modifier = Modifier.fillMaxWidth(),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    textAlign = TextAlign.Center
                 )
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    confirmButtonText?.let {
-                        Button(
-                            onClick = onConfirm,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(text = confirmButtonText)
-                        }
-                    }
+                if (confirmButtonText != null || cancelButtonText != null) {
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                    cancelButtonText?.let {
-                        Button(
-                            onClick = onCancel,
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors().copy(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                contentColor = MaterialTheme.colorScheme.onSurface
-                            )
-                        ) {
-                            Text(text = cancelButtonText)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        cancelButtonText?.let { cancelText ->
+                            val onlyAction = confirmButtonText == null
+                            if (onlyAction) {
+                                Button(
+                                    onClick = onCancel,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(text = cancelText)
+                                }
+                            } else {
+                                TextButton(
+                                    onClick = onCancel,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(text = cancelText)
+                                }
+                            }
+                        }
+
+                        confirmButtonText?.let { confirmText ->
+                            Button(
+                                onClick = onConfirm,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(text = confirmText)
+                            }
                         }
                     }
                 }
