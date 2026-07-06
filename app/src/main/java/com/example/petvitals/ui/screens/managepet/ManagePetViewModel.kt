@@ -8,7 +8,6 @@ import com.example.petvitals.R
 import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.error.FirestoreError
 import com.example.petvitals.domain.error.PetDataError
-import com.example.petvitals.domain.models.DobPrecision
 import com.example.petvitals.domain.models.Gender
 import com.example.petvitals.domain.models.Pet
 import com.example.petvitals.domain.models.PetSpecies
@@ -29,14 +28,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import timber.log.Timber
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+
+private const val MAX_DAY_LENGTH = 2
+private const val MAX_YEAR_LENGTH = 4
 
 @HiltViewModel
 class ManagePetViewModel @Inject constructor(
@@ -51,7 +48,6 @@ class ManagePetViewModel @Inject constructor(
     private var nameValidationJob: Job? = null
     private var breedValidationJob: Job? = null
     private var dobValidationJob: Job? = null
-    private var dobYearValidationJob: Job? = null
     private var speciesValidationJob: Job? = null
     private var pendingSaveOnSuccess: (() -> Unit)? = null
 
@@ -60,8 +56,7 @@ class ManagePetViewModel @Inject constructor(
             state.copy(
                 monthOptions = populateMonthOptions(),
                 speciesOptions = populateSpeciesOptions(),
-                genderOptions = populateGenderOptions(),
-                dobString = context.getString(R.string.tap_to_select_date)
+                genderOptions = populateGenderOptions()
             )
         }
     }
@@ -69,14 +64,12 @@ class ManagePetViewModel @Inject constructor(
     fun onAction(action: ManagePetAction) {
         when(action) {
             is ManagePetAction.OnBreedChange -> onBreedChange(action.breed)
-            is ManagePetAction.OnDobMillisChange -> onDobMillisChange(action.dobMillis)
+            is ManagePetAction.OnDobDayChange -> onDobDayChange(action.day)
             is ManagePetAction.OnDobMonthChange -> onDobMonthChange(action.month)
             is ManagePetAction.OnDobYearChange -> onDobYearChange(action.year)
             is ManagePetAction.OnGenderChange -> onGenderChange(action.gender)
             is ManagePetAction.OnImageUriChange -> onImageUriChange(action.uri)
-            is ManagePetAction.OnIsDobApproxChange -> onIsDobApproxChange(action.isDobApprox)
             is ManagePetAction.OnNameChange -> onNameChange(action.name)
-            is ManagePetAction.OnShowDatePickerChange -> onShowDatePickerChange(action.show)
             is ManagePetAction.OnSpeciesChange -> onSpeciesChange(action.species)
             is ManagePetAction.SavePet -> savePet(action.petId, action.onSuccess)
             ManagePetAction.RetrySavePet -> retrySavePet()
@@ -129,51 +122,51 @@ class ManagePetViewModel @Inject constructor(
         )
     }
 
-    private fun onIsDobApproxChange(isApproximate: Boolean) {
+    private fun onDobMonthChange(month: Int?) {
         _uiState.update { state ->
-            state.copy(isDobApprox = isApproximate)
-        }
-    }
-
-    private fun onShowDatePickerChange(show: Boolean) {
-        _uiState.update { state ->
-            state.copy(showDatePicker = show)
-        }
-    }
-
-    private fun onDobMillisChange(dobMillis: Long?) {
-        _uiState.update { state ->
-            state.copy(
-                dobMillis = dobMillis,
-                dobString = millisToDobString(dobMillis)
-            )
+            state.copy(selectedDobMonth = month)
         }
 
         dobValidationJob = debounceValidation(
             scope = viewModelScope,
             previousJob = dobValidationJob,
-            validate = { validateDob(dobMillis) }
+            validate = { validateDobParts(uiState.value.dobYear, month, uiState.value.dobDay) }
         )
     }
 
-    private fun onDobMonthChange(month: Int?) {
-        _uiState.update { state ->
-            state.copy(selectedDobMonth = month)
+    private fun onDobDayChange(day: String) {
+        val acceptedDay = if (!day.contains(Regex("[^0-9]")) && day.length <= MAX_DAY_LENGTH) {
+
+            _uiState.update { state ->
+                state.copy(dobDay = day)
+            }
+            day
+        } else {
+            uiState.value.dobDay
         }
+
+        dobValidationJob = debounceValidation(
+            scope = viewModelScope,
+            previousJob = dobValidationJob,
+            validate = { validateDobParts(uiState.value.dobYear, uiState.value.selectedDobMonth, acceptedDay) }
+        )
     }
 
     private fun onDobYearChange(year: String) {
-        if (!year.contains(Regex("[^0-9]"))) {
+        val acceptedYear = if (!year.contains(Regex("[^0-9]")) && year.length <= MAX_YEAR_LENGTH) {
 
             _uiState.update { state ->
                 state.copy(dobYear = year)
             }
+            year
+        } else {
+            uiState.value.dobYear
         }
 
-        dobYearValidationJob = debounceValidation(
+        dobValidationJob = debounceValidation(
             scope = viewModelScope,
-            previousJob = dobYearValidationJob,
-            validate = { validateDobYear(year) }
+            previousJob = dobValidationJob,
+            validate = { validateDobParts(acceptedYear, uiState.value.selectedDobMonth, uiState.value.dobDay) }
         )
     }
 
@@ -204,51 +197,51 @@ class ManagePetViewModel @Inject constructor(
             ),
             DropDownOption(
                 display = context.getString(R.string.january),
-                value = 0
-            ),
-            DropDownOption(
-                display = context.getString(R.string.february),
                 value = 1
             ),
             DropDownOption(
-                display = context.getString(R.string.march),
+                display = context.getString(R.string.february),
                 value = 2
             ),
             DropDownOption(
-                display = context.getString(R.string.april),
+                display = context.getString(R.string.march),
                 value = 3
             ),
             DropDownOption(
-                display = context.getString(R.string.may),
+                display = context.getString(R.string.april),
                 value = 4
             ),
             DropDownOption(
-                display = context.getString(R.string.june),
+                display = context.getString(R.string.may),
                 value = 5
             ),
             DropDownOption(
-                display = context.getString(R.string.july),
+                display = context.getString(R.string.june),
                 value = 6
             ),
             DropDownOption(
-                display = context.getString(R.string.august),
+                display = context.getString(R.string.july),
                 value = 7
             ),
             DropDownOption(
-                display = context.getString(R.string.september),
+                display = context.getString(R.string.august),
                 value = 8
             ),
             DropDownOption(
-                display = context.getString(R.string.october),
+                display = context.getString(R.string.september),
                 value = 9
             ),
             DropDownOption(
-                display = context.getString(R.string.november),
+                display = context.getString(R.string.october),
                 value = 10
             ),
             DropDownOption(
-                display = context.getString(R.string.december),
+                display = context.getString(R.string.november),
                 value = 11
+            ),
+            DropDownOption(
+                display = context.getString(R.string.december),
+                value = 12
             )
         )
     }
@@ -283,24 +276,16 @@ class ManagePetViewModel @Inject constructor(
                     val pet = response.data
 
                     pet?.let {
-                        val calendar = Calendar.getInstance().apply { timeInMillis = pet.dobMillis }
-                        val month = when (pet.dobPrecision) {
-                            DobPrecision.YEAR -> null
-                            else -> calendar.get(Calendar.MONTH)
-                        }
-
                         _uiState.update { state ->
                             state.copy(
                                 petId = pet.id,
                                 name = pet.name,
                                 selectedSpecies = pet.species,
-                                breed = pet.breed,
+                                breed = pet.breed.orEmpty(),
                                 selectedGender = pet.gender,
-                                isDobApprox = pet.dobPrecision.isApproximate,
-                                dobMillis = pet.dobMillis,
-                                dobString = millisToDobString(pet.dobMillis),
-                                selectedDobMonth = month,
-                                dobYear = calendar.get(Calendar.YEAR).toString(),
+                                selectedDobMonth = pet.dobMonth,
+                                dobYear = pet.dobYear?.toString().orEmpty(),
+                                dobDay = pet.dobDay?.toString().orEmpty(),
                                 avatarByteArray = pet.avatar?.let { decodeBase64ToImage(it) },
                                 isLoading = false
                             )
@@ -327,12 +312,9 @@ class ManagePetViewModel @Inject constructor(
             val uiState = uiState.value
             pendingSaveOnSuccess = onSuccess
 
-            val dobMillis = when {
-                uiState.isDobApprox -> {
-                    approxDobToMillis(uiState.selectedDobMonth, uiState.dobYear.toInt())
-                }
-                else -> uiState.dobMillis ?: 0
-            }
+            val dobYear = uiState.dobYear.trim().toIntOrNull()
+            val dobMonth = uiState.selectedDobMonth
+            val dobDay = uiState.dobDay.trim().toIntOrNull()
 
             val avatar = when {
                 uiState.avatarUri != null -> processImageUri(context, uiState.avatarUri)
@@ -340,19 +322,14 @@ class ManagePetViewModel @Inject constructor(
                 else -> null
             }
 
-            val dobPrecision = when {
-                !uiState.isDobApprox -> DobPrecision.EXACT
-                uiState.selectedDobMonth != null -> DobPrecision.YEAR_MONTH
-                else -> DobPrecision.YEAR
-            }
-
             val basePet = Pet(
                 name = uiState.name,
                 species = uiState.selectedSpecies!!,
                 breed = uiState.breed,
                 gender = uiState.selectedGender,
-                dobMillis = dobMillis,
-                dobPrecision = dobPrecision,
+                dobYear = dobYear,
+                dobMonth = dobMonth,
+                dobDay = dobDay,
                 avatar = avatar
             )
 
@@ -432,24 +409,18 @@ class ManagePetViewModel @Inject constructor(
         val breedError = petDataValidator.validateBreed(state.breed).messageOrNull()
         val speciesError = petDataValidator.validateSpecies(state.selectedSpecies).messageOrNull()
 
-        val dobError = if (state.isDobApprox) {
-            null
-        } else {
-            petDataValidator.validateExactDob(state.dobMillis).messageOrNull()
-        }
-
-        val dobYearError = if (state.isDobApprox) {
-            petDataValidator.validateApproxDobYear(state.dobYear).messageOrNull()
-        } else {
-            null
-        }
+        val dobValidationResult = petDataValidator.validateDobParts(
+            year = state.dobYear,
+            month = state.selectedDobMonth,
+            day = state.dobDay
+        )
+        val dobError = dobValidationResult.messageOrNull()
 
         _uiState.update {
             it.copy(
                 nameErrorMessage = nameError,
                 breedErrorMessage = breedError,
                 dobErrorMessage = dobError,
-                dobYearErrorMessage = dobYearError,
                 speciesErrorMessage = speciesError
             )
         }
@@ -458,7 +429,6 @@ class ManagePetViewModel @Inject constructor(
             nameError,
             breedError,
             dobError,
-            dobYearError,
             speciesError
         ).all { it == null }
     }
@@ -493,8 +463,8 @@ class ManagePetViewModel @Inject constructor(
         }
     }
 
-    private fun validateDob(dob: Long?) {
-        when (val result = petDataValidator.validateExactDob(dob)) {
+    private fun validateDobParts(year: String, month: Int?, day: String) {
+        when (val result = petDataValidator.validateDobParts(year, month, day)) {
             is AppResult.Success -> {
                 _uiState.update { state ->
                     state.copy(dobErrorMessage = null)
@@ -503,21 +473,6 @@ class ManagePetViewModel @Inject constructor(
             is AppResult.Failure -> {
                 _uiState.update {
                     it.copy(dobErrorMessage = result.error.toMessage())
-                }
-            }
-        }
-    }
-
-    private fun validateDobYear(year: String) {
-        when (val result = petDataValidator.validateApproxDobYear(year)) {
-            is AppResult.Success -> {
-                _uiState.update { state ->
-                    state.copy(dobYearErrorMessage = null)
-                }
-            }
-            is AppResult.Failure -> {
-                _uiState.update {
-                    it.copy(dobYearErrorMessage = result.error.toMessage())
                 }
             }
         }
@@ -546,27 +501,10 @@ class ManagePetViewModel @Inject constructor(
             PetDataError.EMPTY_DOB -> context.getString(R.string.date_of_birth_cannot_be_empty)
             PetDataError.EMPTY_DOB_YEAR -> context.getString(R.string.year_cannot_be_empty)
             PetDataError.INVALID_DOB_YEAR -> context.getString(R.string.year_must_be_number)
+            PetDataError.INVALID_DOB_DAY -> context.getString(R.string.day_must_match_month)
             PetDataError.DOB_YEAR_IN_FUTURE -> context.getString(R.string.year_cannot_be_in_the_future)
             PetDataError.EMPTY_SPECIES -> context.getString(R.string.species_cannot_be_empty)
         }
-    }
-
-    private fun approxDobToMillis(month: Int?, year: Int): Long {
-        val calendar = Calendar.getInstance()
-        val day = 1
-        calendar.set(
-            year,
-            month ?: 1,
-            day
-        )
-        Timber.d("birthDateToMillis: ${Date(calendar.timeInMillis)}")
-        return calendar.timeInMillis
-    }
-
-    private fun millisToDobString(millis: Long?): String {
-        return millis?.let {
-            SimpleDateFormat("dd MMMM yyyy", Locale.getDefault()).format(Date(it))
-        } ?: context.getString(R.string.tap_to_select_date)
     }
 
     private fun AppResult<PetDataError, Unit>.messageOrNull(): String? {

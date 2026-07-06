@@ -18,13 +18,9 @@ data class ManagePetUiState(
     val avatarUri: Uri? = null, //picked image from gallery
     val avatarByteArray: ByteArray? = null, //stored in firestore
 
-    val dobString: String = "",
     val selectedDobMonth: Int? = null,
     val dobYear: String = "",
-    val dobMillis: Long? = null,
-
-    val showDatePicker: Boolean = false,
-    val isDobApprox: Boolean = false,
+    val dobDay: String = "",
 
     val monthOptions: List<DropDownOption<Int?>> = emptyList(),
     val speciesOptions: List<DropDownOption<PetSpecies?>> = emptyList(),
@@ -33,7 +29,6 @@ data class ManagePetUiState(
     val nameErrorMessage: String? = null,
     val breedErrorMessage: String? = null,
     val dobErrorMessage: String? = null,
-    val dobYearErrorMessage: String? = null,
     val speciesErrorMessage: String? = null,
 
     val popUpState: PopUpState<ManagePetAction>? = null,

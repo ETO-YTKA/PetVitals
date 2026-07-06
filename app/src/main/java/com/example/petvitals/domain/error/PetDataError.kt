@@ -9,6 +9,7 @@ enum class PetDataError : AppError {
     EMPTY_DOB,
     EMPTY_DOB_YEAR,
     INVALID_DOB_YEAR,
+    INVALID_DOB_DAY,
     DOB_YEAR_IN_FUTURE,
     EMPTY_SPECIES
 }

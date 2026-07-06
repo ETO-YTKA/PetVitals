@@ -4,6 +4,7 @@ import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.error.PetDataError
 import com.example.petvitals.domain.models.PetSpecies
 import jakarta.inject.Inject
+import java.time.DateTimeException
 import java.time.LocalDate
 
 class PetDataValidator @Inject constructor() {
@@ -30,19 +31,23 @@ class PetDataValidator @Inject constructor() {
         }
     }
 
-    fun validateExactDob(dobMillis: Long?): AppResult<PetDataError, Unit> {
-        return if (dobMillis == null) {
-            AppResult.Failure(PetDataError.EMPTY_DOB)
-        } else {
-            AppResult.Success(Unit)
-        }
-    }
-
-    fun validateApproxDobYear(
+    fun validateDobParts(
         year: String,
+        month: Int?,
+        day: String,
         currentYear: Int = LocalDate.now().year
     ): AppResult<PetDataError, Unit> {
         val trimmedYear = year.trim()
+        val trimmedDay = day.trim()
+        val hasNoDob = trimmedYear.isEmpty() && month == null && trimmedDay.isEmpty()
+
+        if (hasNoDob) {
+            return AppResult.Success(Unit)
+        }
+
+        if (trimmedDay.isNotEmpty() && (trimmedYear.isEmpty() || month == null)) {
+            return AppResult.Failure(PetDataError.EMPTY_DOB)
+        }
 
         if (trimmedYear.isEmpty()) {
             return AppResult.Failure(PetDataError.EMPTY_DOB_YEAR)
@@ -53,6 +58,19 @@ class PetDataValidator @Inject constructor() {
 
         if (yearInt > currentYear) {
             return AppResult.Failure(PetDataError.DOB_YEAR_IN_FUTURE)
+        }
+
+        if (trimmedDay.isEmpty()) {
+            return AppResult.Success(Unit)
+        }
+
+        val dayInt = trimmedDay.toIntOrNull()
+            ?: return AppResult.Failure(PetDataError.INVALID_DOB_DAY)
+
+        try {
+            LocalDate.of(yearInt, month ?: return AppResult.Failure(PetDataError.EMPTY_DOB), dayInt)
+        } catch (_: DateTimeException) {
+            return AppResult.Failure(PetDataError.INVALID_DOB_DAY)
         }
 
         return AppResult.Success(Unit)

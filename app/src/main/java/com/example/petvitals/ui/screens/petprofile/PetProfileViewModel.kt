@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.domain.AppResult
-import com.example.petvitals.domain.models.DobPrecision
 import com.example.petvitals.domain.models.Food
 import com.example.petvitals.domain.models.Medication
 import com.example.petvitals.domain.models.PermissionLevel
@@ -20,11 +19,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.time.Instant
+import java.time.DateTimeException
 import java.time.LocalDate
+import java.time.Month
 import java.time.Period
-import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 import java.util.Locale
 import javax.inject.Inject
 
@@ -164,32 +164,45 @@ class PetProfileViewModel @Inject constructor(
     }
 
     fun getPetDob(pet: Pet): String {
-        val dobMillis = pet.dobMillis
+        val year = pet.dobYear ?: return context.getString(R.string.unknown)
+        val month = pet.dobMonth
+        val day = pet.dobDay
 
-        val pattern = when (pet.dobPrecision) {
-            DobPrecision.EXACT -> "dd MMMM yyyy"
-            DobPrecision.YEAR_MONTH -> "MMMM yyyy"
-            DobPrecision.YEAR -> "yyyy"
+        return runCatching {
+            when {
+                month == null -> year.toString()
+                day == null -> "${Month.of(month).getDisplayName(TextStyle.FULL, Locale.getDefault())} $year"
+                else -> LocalDate.of(year, month, day)
+                    .format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault()))
+            }
+        }.getOrElse {
+            context.getString(R.string.unknown)
         }
-
-       return SimpleDateFormat(pattern, Locale.getDefault()).format(dobMillis)
     }
 
     fun getPetAge(pet: Pet, context: Context): String {
-        val dobMillis = pet.dobMillis
+        val year = pet.dobYear ?: return context.getString(R.string.unknown)
+        val month = pet.dobMonth
+        val day = pet.dobDay
 
         val today = LocalDate.now()
-        val petBirthDate = Instant.ofEpochMilli(dobMillis)
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate()
+        val petBirthDate = try {
+            LocalDate.of(year, month ?: 1, day ?: 1)
+        } catch (_: DateTimeException) {
+            return context.getString(R.string.unknown)
+        }
+
+        if (petBirthDate.isAfter(today)) {
+            return context.getString(R.string.unknown)
+        }
 
         val period = Period.between(petBirthDate, today)
         val years = period.years
         val months = period.months
         val days = period.days
 
-        return when (pet.dobPrecision) {
-            DobPrecision.EXACT -> {
+        return when {
+            day != null -> {
                 when {
                     years >= 1 -> context.resources.getQuantityString(R.plurals.years_old_plural, years, years)
                     months >= 1 -> context.resources.getQuantityString(R.plurals.months_old_plural, months, months)
@@ -197,13 +210,13 @@ class PetProfileViewModel @Inject constructor(
                     else -> context.getString(R.string.just_born)
                 }
             }
-            DobPrecision.YEAR_MONTH -> {
+            month != null -> {
                 when {
                     years >= 1 -> context.resources.getQuantityString(R.plurals.years_old_plural, years, years)
                     else -> context.resources.getQuantityString(R.plurals.months_old_plural, months, months)
                 }
             }
-            DobPrecision.YEAR -> {
+            else -> {
                 when {
                     years >= 1 -> context.resources.getQuantityString(R.plurals.years_old_plural, years, years)
                     else -> context.getString(R.string.less_than_a_year_old)

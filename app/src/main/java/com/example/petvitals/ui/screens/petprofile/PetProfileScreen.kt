@@ -476,9 +476,10 @@ private fun GeneralInfo(uiState: PetProfileUiState) {
         }
     }
 
-    if (uiState.pet.breed.isNotBlank()) {
+    val breed = uiState.pet.breed
+    if (!breed.isNullOrBlank()) {
         Text(
-            text = uiState.pet.breed,
+            text = breed,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.alpha(0.7f)

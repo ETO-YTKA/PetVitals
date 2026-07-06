@@ -174,7 +174,9 @@
     <string name="breed_cannot_be_longer_than_error">Breed cannot be longer than 100 characters</string>
     <string name="year_cannot_be_empty">Year cannot be empty</string>
     <string name="year_must_be_number">Year must be a number</string>
+    <string name="day_must_match_month">Enter a valid day for that month</string>
     <string name="date_of_birth_cannot_be_empty">Date of birth cannot be empty</string>
+    <string name="date_of_birth_optional_helper">Leave blank if unknown.</string>
     <string name="profile_email_not_verified">Email not verified</string>
     <string name="send_verification_email">Send verification email</string>
     <string name="email_not_verified_message">"Please verify your email to continue."</string>

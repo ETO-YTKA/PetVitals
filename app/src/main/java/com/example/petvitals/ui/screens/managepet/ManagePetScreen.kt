@@ -3,7 +3,6 @@ package com.example.petvitals.ui.screens.managepet
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,13 +18,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -44,12 +41,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.example.petvitals.R
-import com.example.petvitals.ui.components.CheckboxWithLabel
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomMediumButton
 import com.example.petvitals.ui.components.CustomTextField
-import com.example.petvitals.ui.components.DatePickerField
-import com.example.petvitals.ui.components.DatePickerModal
 import com.example.petvitals.ui.components.Loading
 import com.example.petvitals.ui.components.PopUpHost
 import com.example.petvitals.ui.components.TopBar
@@ -57,9 +51,7 @@ import com.example.petvitals.ui.components.ValueDropDown
 import com.example.petvitals.ui.navigation.AddEditPet
 import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.ui.theme.PetVitalsTheme
-import com.example.petvitals.ui.utils.PastOrPresentSelectableDates
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManagePetScreen(
     addEditPet: AddEditPet,
@@ -95,14 +87,6 @@ private fun ManagePetScreenContent(
     if (uiState.isLoading) {
         Loading()
         return
-    }
-
-    if (uiState.showDatePicker) {
-        DatePickerModal(
-            onDateSelected = { action(ManagePetAction.OnDobMillisChange(it)) },
-            onDismiss = { action(ManagePetAction.OnShowDatePickerChange(false)) },
-            datePickerState = rememberDatePickerState(selectableDates = PastOrPresentSelectableDates)
-        )
     }
 
     PopUpHost(
@@ -207,10 +191,9 @@ private fun ManagePetScreenContent(
             )
 
             // DOB
-            DobPicker(
-                onShowModalChange = { action(ManagePetAction.OnShowDatePickerChange(it)) },
-                onDobApproxChange = { action(ManagePetAction.OnIsDobApproxChange(it)) },
+            DobPartsPicker(
                 onDobMonthChange = { action(ManagePetAction.OnDobMonthChange(it)) },
+                onDobDayChange = { action(ManagePetAction.OnDobDayChange(it)) },
                 onDobYearChange = { action(ManagePetAction.OnDobYearChange(it)) },
                 uiState = uiState
             )
@@ -280,60 +263,87 @@ private fun PetImage(
 }
 
 @Composable
-private fun DobPicker(
-    onShowModalChange: (Boolean) -> Unit,
-    onDobApproxChange: (Boolean) -> Unit,
+private fun DobPartsPicker(
     onDobMonthChange: (Int?) -> Unit,
+    onDobDayChange: (String) -> Unit,
     onDobYearChange: (String) -> Unit,
     uiState: ManagePetUiState,
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    val hasDobError = uiState.dobErrorMessage != null
 
-        AnimatedContent(
-            targetState = uiState.isDobApprox,
-        ) { targetState ->
-            if (targetState) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
-                ) {
-                    ValueDropDown(
-                        value = uiState.selectedDobMonth,
-                        onValueChange = onDobMonthChange,
-                        options = uiState.monthOptions,
-                        label = stringResource(R.string.month),
-                        modifier = Modifier.weight(1f),
-                    )
-                    CustomTextField(
-                        value = uiState.dobYear,
-                        onValueChange = onDobYearChange,
-                        label = { Text(stringResource(R.string.year)) },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Done
-                        ),
-                        modifier = Modifier.weight(1f),
-                        isError = uiState.dobYearErrorMessage != null,
-                        supportingText = uiState.dobYearErrorMessage?.let { { Text(it) } }
-                    )
-                }
-            } else {
-                DatePickerField(
-                    value = uiState.dobString,
-                    onClick = { onShowModalChange(true) },
-                    label = stringResource(R.string.date_of_birth),
-                    modifier = Modifier.fillMaxWidth(),
-                    isError = uiState.dobErrorMessage != null,
-                    supportingText = uiState.dobErrorMessage
-                )
-            }
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = Modifier.padding(start = 8.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.date_of_birth),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Text(
+                text = stringResource(R.string.date_of_birth_optional_helper),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
 
-        CheckboxWithLabel(
-            checked = uiState.isDobApprox,
-            onCheckedChange = onDobApproxChange,
-            label = stringResource(R.string.approximate_date)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            CustomTextField(
+                value = uiState.dobDay,
+                onValueChange = onDobDayChange,
+                label = { Text(stringResource(R.string.day)) },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next
+                ),
+                modifier = Modifier.weight(0.75f),
+                isError = hasDobError,
+                maxLines = 1
+            )
+
+            ValueDropDown(
+                value = uiState.selectedDobMonth,
+                onValueChange = onDobMonthChange,
+                options = uiState.monthOptions,
+                label = stringResource(R.string.month),
+                modifier = Modifier.weight(1.15f),
+                isError = hasDobError,
+            )
+
+            CustomTextField(
+                value = uiState.dobYear,
+                onValueChange = onDobYearChange,
+                label = { Text(stringResource(R.string.year)) },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+                modifier = Modifier.weight(1f),
+                isError = hasDobError,
+                maxLines = 1
+            )
+        }
+
+        uiState.dobErrorMessage?.let {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(
+                    start = 16.dp,
+                    top = 4.dp,
+                    end = 16.dp
+                )
+            )
+        }
     }
 }
 
@@ -353,10 +363,33 @@ private fun ManagePetScreenContentNotApproxDatePreview() {
 
 @PreviewLightDark
 @Composable
-private fun ManagePetScreenContentApproxDate() {
+private fun ManagePetScreenContentWithDobPartsPreview() {
     PetVitalsTheme {
         ManagePetScreenContent(
-            uiState = ManagePetUiState(isDobApprox = true),
+            uiState = ManagePetUiState(
+                selectedDobMonth = 5,
+                dobDay = "12",
+                dobYear = "2020"
+            ),
+            action = {},
+            isNewPet = false,
+            onNavigateToPets = {},
+            onPopBackStack = {},
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun ManagePetScreenContentFieldErrorsPreview() {
+    PetVitalsTheme {
+        ManagePetScreenContent(
+            uiState = ManagePetUiState(
+                nameErrorMessage = "Name is required",
+                dobErrorMessage = "Date of birth is required",
+                breedErrorMessage = "Breed is required",
+                speciesErrorMessage = "Species is required"
+            ),
             action = {},
             isNewPet = false,
             onNavigateToPets = {},

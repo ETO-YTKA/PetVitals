@@ -175,7 +175,9 @@
     <string name="breed_cannot_be_longer_than_error">Порода не может быть длиннее 100 символов</string>
     <string name="year_cannot_be_empty">Год не может быть пустым</string>
     <string name="year_must_be_number">Год должен быть числом</string>
+    <string name="day_must_match_month">Введите корректный день для этого месяца</string>
     <string name="date_of_birth_cannot_be_empty">Дата рождения не может быть пустой</string>
+    <string name="date_of_birth_optional_helper">Оставьте пустым, если неизвестно.</string>
     <string name="profile_email_not_verified">Эл. почта не подтверждена</string>
     <string name="send_verification_email">Отправить письмо для подтверждения</string>
     <string name="email_not_verified_message">Пожалуйста, подтвердите свою почту, чтобы продолжить.</string>

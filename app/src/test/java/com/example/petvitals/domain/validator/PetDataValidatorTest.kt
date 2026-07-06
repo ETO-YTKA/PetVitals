@@ -46,37 +46,91 @@ class PetDataValidatorTest {
     }
 
     @Test
-    fun validateExactDob_withNullDob_returnsEmptyDob() {
-        val result = validator.validateExactDob(null)
+    fun validateDobParts_withNoDobParts_returnsSuccess() {
+        val result = validator.validateDobParts(
+            year = "",
+            month = null,
+            day = ""
+        )
 
-        assertEquals(AppResult.Failure(PetDataError.EMPTY_DOB), result)
+        assertTrue(result is AppResult.Success<*>)
     }
 
     @Test
-    fun validateApproxDobYear_withBlankYear_returnsEmptyDobYear() {
-        val result = validator.validateApproxDobYear("", currentYear = 2026)
+    fun validateDobParts_withYearOnly_returnsSuccess() {
+        val result = validator.validateDobParts(
+            year = "2020",
+            month = null,
+            day = "",
+            currentYear = 2026
+        )
+
+        assertTrue(result is AppResult.Success<*>)
+    }
+
+    @Test
+    fun validateDobParts_withYearAndMonth_returnsSuccess() {
+        val result = validator.validateDobParts(
+            year = "2020",
+            month = 5,
+            day = "",
+            currentYear = 2026
+        )
+
+        assertTrue(result is AppResult.Success<*>)
+    }
+
+    @Test
+    fun validateDobParts_withCompleteDob_returnsSuccess() {
+        val result = validator.validateDobParts(
+            year = "2020",
+            month = 5,
+            day = "12",
+            currentYear = 2026
+        )
+
+        assertTrue(result is AppResult.Success<*>)
+    }
+
+    @Test
+    fun validateDobParts_withBlankYearAndMonth_returnsEmptyDobYear() {
+        val result = validator.validateDobParts("", month = 5, day = "", currentYear = 2026)
 
         assertEquals(AppResult.Failure(PetDataError.EMPTY_DOB_YEAR), result)
     }
 
     @Test
-    fun validateApproxDobYear_withNonNumericYear_returnsInvalidDobYear() {
-        val result = validator.validateApproxDobYear("20ab", currentYear = 2026)
+    fun validateDobParts_withDayAndNoYearOrMonth_returnsEmptyDob() {
+        val result = validator.validateDobParts("", month = null, day = "12", currentYear = 2026)
+
+        assertEquals(AppResult.Failure(PetDataError.EMPTY_DOB), result)
+    }
+
+    @Test
+    fun validateDobParts_withDayAndNoMonth_returnsEmptyDob() {
+        val result = validator.validateDobParts("2020", month = null, day = "12", currentYear = 2026)
+
+        assertEquals(AppResult.Failure(PetDataError.EMPTY_DOB), result)
+    }
+
+    @Test
+    fun validateDobParts_withNonNumericYear_returnsInvalidDobYear() {
+        val result = validator.validateDobParts("20ab", month = null, day = "", currentYear = 2026)
 
         assertEquals(AppResult.Failure(PetDataError.INVALID_DOB_YEAR), result)
     }
 
     @Test
-    fun validateApproxDobYear_withFutureYear_returnsDobYearInFuture() {
-        val result = validator.validateApproxDobYear("2027", currentYear = 2026)
+    fun validateDobParts_withFutureYear_returnsDobYearInFuture() {
+        val result = validator.validateDobParts("2027", month = null, day = "", currentYear = 2026)
 
         assertEquals(AppResult.Failure(PetDataError.DOB_YEAR_IN_FUTURE), result)
     }
 
     @Test
-    fun validateApproxDobYear_withValidYear_returnsSuccess() {
-        val result = validator.validateApproxDobYear("2020", currentYear = 2026)
+    fun validateDobParts_withInvalidDayForMonth_returnsInvalidDobDay() {
+        val result = validator.validateDobParts("2021", month = 2, day = "29", currentYear = 2026)
 
-        assertTrue(result is AppResult.Success<*>)
+        assertEquals(AppResult.Failure(PetDataError.INVALID_DOB_DAY), result)
     }
 }
