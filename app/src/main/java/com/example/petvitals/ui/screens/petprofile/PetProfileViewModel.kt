@@ -5,18 +5,24 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.domain.AppResult
+import com.example.petvitals.domain.error.FirestoreError
 import com.example.petvitals.domain.models.Food
 import com.example.petvitals.domain.models.Medication
-import com.example.petvitals.domain.models.PermissionLevel
 import com.example.petvitals.domain.models.Pet
+import com.example.petvitals.domain.models.canDeletePet
+import com.example.petvitals.domain.models.canManagePetCare
 import com.example.petvitals.domain.repository.FoodRepository
 import com.example.petvitals.domain.repository.MedicationRepository
-import com.example.petvitals.domain.repository.PetPermissionRepository
 import com.example.petvitals.domain.repository.PetRepository
+import com.example.petvitals.domain.usecase.GetPetPermissionUseCase
+import com.example.petvitals.ui.components.SnackbarType
+import com.example.petvitals.ui.utils.toMessageRes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.DateTimeException
@@ -28,143 +34,267 @@ import java.time.format.TextStyle
 import java.util.Locale
 import javax.inject.Inject
 
-data class PetProfileUiState(
-    val isLoading: Boolean = false,
-
-    //Main screen
-    val pet: Pet = Pet(),
-    val dob: String = "",
-    val age: String = "",
-    val medications: List<Medication> = emptyList(),
-    val food: List<Food> = emptyList(),
-    val updatedHealthNote: String = "",
-    val updatedFoodNote: String = "",
-    val permissionLevel: PermissionLevel = PermissionLevel.VIEWER,
-
-    //Modals state
-    val showStartDatePicker: Boolean = false,
-    val showEndDatePicker: Boolean = false,
-    val showOnDeleteModal: Boolean = false,
-    val showShareModal: Boolean = false,
-
-    //States
-    val isHealthNoteInEditMode: Boolean = false,
-    val isFoodNoteInEditMode: Boolean = false
-)
-
 @HiltViewModel
 class PetProfileViewModel @Inject constructor(
     private val petRepository: PetRepository,
     private val medicationRepository: MedicationRepository,
     private val foodRepository: FoodRepository,
-    private val petPermissionRepository: PetPermissionRepository,
+    private val getPetPermission: GetPetPermissionUseCase,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PetProfileUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun toggleOnDeleteModal() {
+    private val _eventChannel = Channel<PetProfileEvent>()
+    val events = _eventChannel.receiveAsFlow()
+
+    fun onAction(action: PetProfileAction) {
+        when (action) {
+            is PetProfileAction.LoadPet -> getPetData(action.petId)
+            PetProfileAction.ToggleDeleteModal -> toggleOnDeleteModal()
+            is PetProfileAction.EditNote -> editNote(action.noteType)
+            PetProfileAction.CancelNoteEdit -> cancelNoteEdit()
+            is PetProfileAction.OnNoteChange -> onNoteChange(action.value)
+            PetProfileAction.SaveNote -> saveNote()
+            is PetProfileAction.DeletePet -> deletePet(action.petId)
+            is PetProfileAction.DeleteMedication -> onDeleteMedicationClick(action.medication)
+            is PetProfileAction.DeleteFood -> onDeleteFoodClick(action.food)
+        }
+    }
+
+    private fun toggleOnDeleteModal() {
         _uiState.update { state ->
-            state.copy(showOnDeleteModal = !state.showOnDeleteModal)
+            if (state.permissionLevel.canDeletePet) {
+                state.copy(showOnDeleteModal = !state.showOnDeleteModal)
+            } else {
+                state
+            }
         }
     }
-    fun toggleHealthNoteEditMode() {
+
+    private fun editNote(noteType: PetNoteType) {
         _uiState.update { state ->
-            state.copy(isHealthNoteInEditMode = !state.isHealthNoteInEditMode)
+            if (!state.permissionLevel.canManagePetCare || state.noteEditor.isSaving) {
+                state
+            } else {
+                val content = when (noteType) {
+                    PetNoteType.HEALTH -> state.pet.healthNote
+                    PetNoteType.FOOD -> state.pet.foodNote
+                }
+                state.copy(noteEditor = state.noteEditor.open(noteType, content))
+            }
         }
     }
 
-    fun toggleFoodNoteEditMode() {
+    private fun cancelNoteEdit() {
         _uiState.update { state ->
-            state.copy(isFoodNoteInEditMode = !state.isFoodNoteInEditMode)
+            if (state.noteEditor.isSaving) {
+                state
+            } else {
+                state.copy(noteEditor = state.noteEditor.cancel())
+            }
         }
     }
 
-    fun onHealthNoteChange(value: String) {
+    private fun onNoteChange(value: String) {
         _uiState.update { state ->
-            state.copy(updatedHealthNote = value)
+            if (state.noteEditor.noteType == null || state.noteEditor.isSaving) {
+                state
+            } else {
+                state.copy(noteEditor = state.noteEditor.updateDraft(value))
+            }
         }
     }
 
-    fun onUpdatedFoodNoteChange(value: String) {
-        _uiState.update { state ->
-            state.copy(updatedFoodNote = value)
-        }
-    }
-
-    fun onSaveHealthNoteClick() {
-        viewModelScope.launch {
-            val pet = uiState.value.pet
-            petRepository.savePet(pet.copy(healthNote = uiState.value.updatedHealthNote))
-            toggleHealthNoteEditMode()
-            getPetData(pet.id)
-        }
-    }
-
-    fun onDeleteMedicationClick(medication: Medication) {
-        viewModelScope.launch {
-            medicationRepository.deleteMedication(medication)
-
-            val petId = uiState.value.pet.id
-            getPetData(petId)
-        }
-    }
-
-    fun onSaveFoodNoteClick() {
-        viewModelScope.launch {
-            val pet = uiState.value.pet
-            petRepository.savePet(pet.copy(foodNote = uiState.value.updatedFoodNote))
-            toggleFoodNoteEditMode()
-            getPetData(pet.id)
-        }
-    }
-
-    fun onDeleteFoodClick(food: Food) {
-        viewModelScope.launch {
-            foodRepository.deleteFood(food)
-            getPetData(food.petId)
-        }
-    }
-
-    fun getPetData(petId: String) {
-        _uiState.update { state ->
-            state.copy(isLoading = true)
-        }
+    private fun onDeleteMedicationClick(medication: Medication) {
+        val state = uiState.value
+        if (!state.permissionLevel.canManagePetCare || medication.petId != state.pet.id) return
 
         viewModelScope.launch {
+            when (val result = medicationRepository.deleteMedication(medication)) {
+                is AppResult.Success -> _uiState.update { currentState ->
+                    currentState.copy(
+                        medications = currentState.medications.filterNot { it.id == medication.id }
+                    )
+                }
+                is AppResult.Failure -> _eventChannel.send(
+                    PetProfileEvent.ShowSnackbar(
+                        messageRes = result.error.toMessageRes(),
+                        snackbarType = SnackbarType.ERROR
+                    )
+                )
+            }
+        }
+    }
+
+    private fun saveNote() {
+        val state = uiState.value
+        val editor = state.noteEditor
+        val noteType = editor.noteType ?: return
+        if (!state.permissionLevel.canManagePetCare || !editor.canSave) return
+
+        val updatedPet = when (noteType) {
+            PetNoteType.HEALTH -> state.pet.copy(healthNote = editor.normalizedValue)
+            PetNoteType.FOOD -> state.pet.copy(foodNote = editor.normalizedValue)
+        }
+
+        _uiState.update { currentState ->
+            currentState.copy(noteEditor = currentState.noteEditor.beginSaving())
+        }
+
+        viewModelScope.launch {
+            when (val result = petRepository.savePet(updatedPet)) {
+                is AppResult.Success -> {
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            pet = updatedPet,
+                            noteEditor = currentState.noteEditor.cancel()
+                        )
+                    }
+                    _eventChannel.send(
+                        PetProfileEvent.ShowSnackbar(
+                            messageRes = when (noteType) {
+                                PetNoteType.HEALTH -> R.string.health_note_saved
+                                PetNoteType.FOOD -> R.string.food_note_saved
+                            },
+                            snackbarType = SnackbarType.SUCCESS,
+                            withDismissAction = false
+                        )
+                    )
+                }
+                is AppResult.Failure -> {
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            noteEditor = currentState.noteEditor.saveFailed(
+                                result.error.toMessageRes()
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun onDeleteFoodClick(food: Food) {
+        val state = uiState.value
+        if (!state.permissionLevel.canManagePetCare || food.petId != state.pet.id) return
+
+        viewModelScope.launch {
+            when (val result = foodRepository.deleteFood(food)) {
+                is AppResult.Success -> _uiState.update { currentState ->
+                    currentState.copy(
+                        food = currentState.food.filterNot { it.id == food.id }
+                    )
+                }
+                is AppResult.Failure -> _eventChannel.send(
+                    PetProfileEvent.ShowSnackbar(
+                        messageRes = result.error.toMessageRes(),
+                        snackbarType = SnackbarType.ERROR
+                    )
+                )
+            }
+        }
+    }
+
+    private fun getPetData(petId: String) {
+        _uiState.update { state ->
+            state.copy(
+                isLoading = true,
+                loadErrorMessageRes = null
+            )
+        }
+
+        viewModelScope.launch {
+            val permissionResult = getPetPermission(petId)
+            val permissionLevel = when (permissionResult) {
+                is AppResult.Success -> permissionResult.data
+                is AppResult.Failure -> {
+                    _uiState.update { state ->
+                        state.copy(
+                            isLoading = false,
+                            loadErrorMessageRes = if (
+                                permissionResult.error == FirestoreError.PermissionDenied
+                            ) {
+                                R.string.pet_profile_access_denied
+                            } else {
+                                permissionResult.error.toMessageRes()
+                            }
+                        )
+                    }
+                    return@launch
+                }
+            }
+
             val response = petRepository.getPetById(petId)
 
             when (response) {
                 is AppResult.Success -> {
-                    val pet = response.data
-
-                    pet?.let { pet ->
-                        val dob = getPetDob(pet)
-                        val age = getPetAge(pet, context)
-
+                    val pet = response.data ?: run {
                         _uiState.update { state ->
                             state.copy(
-                                pet = pet,
-                                dob = dob,
-                                age = age,
-                                updatedHealthNote = pet.healthNote ?: "",
-                                medications = medicationRepository.getMedications(petId),
-                                food = foodRepository.getAllFood(petId),
-                                permissionLevel = petPermissionRepository.getCurrentUserPermissionLevel(petId) ?: PermissionLevel.VIEWER,
-                                isLoading = false
+                                isLoading = false,
+                                loadErrorMessageRes = R.string.pet_not_found_error
                             )
                         }
+                        return@launch
+                    }
+
+                    val dob = getPetDob(pet)
+                    val age = getPetAge(pet, context)
+                    val medications = when (
+                        val result = medicationRepository.getMedications(petId)
+                    ) {
+                        is AppResult.Success -> result.data
+                        is AppResult.Failure -> {
+                            showLoadError(result.error.toMessageRes())
+                            return@launch
+                        }
+                    }
+                    val food = when (val result = foodRepository.getAllFood(petId)) {
+                        is AppResult.Success -> result.data
+                        is AppResult.Failure -> {
+                            showLoadError(result.error.toMessageRes())
+                            return@launch
+                        }
+                    }
+
+                    _uiState.update { state ->
+                        state.copy(
+                            pet = pet,
+                            dob = dob,
+                            age = age,
+                            medications = medications,
+                            food = food,
+                            permissionLevel = permissionLevel,
+                            noteEditor = NoteEditorState(),
+                            loadErrorMessageRes = null,
+                            isLoading = false
+                        )
                     }
                 }
-                is AppResult.Failure -> return@launch //TODO
+                is AppResult.Failure -> _uiState.update { state ->
+                    state.copy(
+                        isLoading = false,
+                        loadErrorMessageRes = response.error.toMessageRes()
+                    )
+                }
             }
 
         }
     }
 
-    fun getPetDob(pet: Pet): String {
-        val year = pet.dobYear ?: return context.getString(R.string.unknown)
+    private fun showLoadError(messageRes: Int) {
+        _uiState.update { state ->
+            state.copy(
+                isLoading = false,
+                loadErrorMessageRes = messageRes
+            )
+        }
+    }
+
+    fun getPetDob(pet: Pet): String? {
+        val year = pet.dobYear ?: return null
         val month = pet.dobMonth
         val day = pet.dobDay
 
@@ -180,8 +310,8 @@ class PetProfileViewModel @Inject constructor(
         }
     }
 
-    fun getPetAge(pet: Pet, context: Context): String {
-        val year = pet.dobYear ?: return context.getString(R.string.unknown)
+    fun getPetAge(pet: Pet, context: Context): String? {
+        val year = pet.dobYear ?: return null
         val month = pet.dobMonth
         val day = pet.dobDay
 
@@ -225,9 +355,20 @@ class PetProfileViewModel @Inject constructor(
         }
     }
 
-    fun deletePet(petId: String) {
+    private fun deletePet(petId: String) {
+        val state = uiState.value
+        if (!state.permissionLevel.canDeletePet || petId != state.pet.id) return
+
         viewModelScope.launch {
-            petRepository.deletePet(petId)
+            when (val result = petRepository.deletePet(petId)) {
+                is AppResult.Success -> _eventChannel.send(PetProfileEvent.PetDeleted)
+                is AppResult.Failure -> _eventChannel.send(
+                    PetProfileEvent.ShowSnackbar(
+                        messageRes = result.error.toMessageRes(),
+                        snackbarType = SnackbarType.ERROR
+                    )
+                )
+            }
         }
     }
 }

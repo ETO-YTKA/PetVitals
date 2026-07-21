@@ -7,6 +7,7 @@ import com.example.petvitals.domain.error.FirestoreError
 import com.example.petvitals.domain.models.Member
 import com.example.petvitals.domain.models.Pet
 import com.example.petvitals.domain.repository.PetRepository
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
@@ -67,13 +68,51 @@ class PetRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deletePet(petId: String): AppResult<FirestoreError, Unit> {
+        val currentUserId = accountService.currentUserId
+            ?: return AppResult.Failure(FirestoreError.Unauthenticated)
 
         return safeFirestoreCall {
-            firestore
+            val petRef = firestore
                 .collection(FirestoreCollections.PETS)
                 .document(petId)
-                .delete()
+
+            val members = petRef.collection(FirestoreCollections.PET_MEMBERS)
+            deleteCollection(
+                collection = members,
+                retainedDocumentId = currentUserId
+            )
+
+            listOf(
+                FirestoreCollections.FOOD,
+                FirestoreCollections.MEDICATIONS,
+                FirestoreCollections.RECORD_REFS
+            ).forEach { subcollection ->
+                deleteCollection(petRef.collection(subcollection))
+            }
+
+            firestore.runBatch { batch ->
+                batch.delete(members.document(currentUserId))
+                batch.delete(petRef)
+            }.await()
+        }
+    }
+
+    private suspend fun deleteCollection(
+        collection: CollectionReference,
+        retainedDocumentId: String? = null
+    ) {
+        while (true) {
+            val documents = collection
+                .limit(DELETE_BATCH_SIZE.toLong())
+                .get()
                 .await()
+                .documents
+                .filterNot { it.id == retainedDocumentId }
+            if (documents.isEmpty()) return
+
+            firestore.runBatch { batch ->
+                documents.forEach { document -> batch.delete(document.reference) }
+            }.await()
         }
     }
 
@@ -96,5 +135,9 @@ class PetRepositoryImpl @Inject constructor(
                 batch.set(memberRef, member)
             }.await()
         }
+    }
+
+    private companion object {
+        const val DELETE_BATCH_SIZE = 450
     }
 }

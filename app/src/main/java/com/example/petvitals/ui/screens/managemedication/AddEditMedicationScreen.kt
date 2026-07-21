@@ -54,6 +54,7 @@ fun AddEditMedicationScreen(
     viewModel: AddEditMedicationViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val permissionErrorMessageRes = uiState.permissionErrorMessageRes
 
     LaunchedEffect(Unit) {
         viewModel.loadInitialData(addEditMedication)
@@ -86,7 +87,15 @@ fun AddEditMedicationScreen(
             )
         }
     ) {
-        if (uiState.isLoading) { Loading() } else {
+        if (uiState.isLoading) {
+            Loading()
+        } else if (permissionErrorMessageRes != null) {
+            Text(
+                text = stringResource(permissionErrorMessageRes),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
 
             CustomOutlinedTextField(
                 value = uiState.name,

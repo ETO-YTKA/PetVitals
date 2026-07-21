@@ -7,11 +7,14 @@ import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.domain.AppResult
+import com.example.petvitals.domain.models.Member
 import com.example.petvitals.domain.models.PermissionLevel
-import com.example.petvitals.domain.models.PetPermission
 import com.example.petvitals.domain.models.User
-import com.example.petvitals.domain.repository.PetPermissionRepository
+import com.example.petvitals.domain.models.canDeletePet
+import com.example.petvitals.domain.repository.PetMemberRepository
 import com.example.petvitals.domain.repository.UserRepository
+import com.example.petvitals.domain.usecase.GetPetPermissionUseCase
+import com.example.petvitals.ui.utils.toMessageRes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
@@ -19,10 +22,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 data class SharePetUiState(
     val isLoading: Boolean = false,
+    val hasOwnerPermission: Boolean = false,
+    val permissionErrorMessageRes: Int? = null,
 
     val petId: String = "",
     val email: String = "",
@@ -39,9 +43,10 @@ data class UserPermission(
 
 @HiltViewModel
 class SharePetViewModel @Inject constructor(
-    private val petPermissionRepository: PetPermissionRepository,
+    private val petMemberRepository: PetMemberRepository,
     private val userRepository: UserRepository,
     private val accountService: AccountService,
+    private val getPetPermission: GetPetPermissionUseCase,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SharePetUiState())
@@ -53,12 +58,33 @@ class SharePetViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val petPermissions = petPermissionRepository.getUsersByPetId(petId)
-            val currentUserId = accountService.currentUserId ?: return@launch
+            if (!verifyOwnerPermission(petId)) return@launch
 
-            val userPermissions = petPermissions.mapNotNull { petPermission ->
+            val petMembers = when (val result = petMemberRepository.getPetMembers(petId)) {
+                is AppResult.Success -> result.data
+                is AppResult.Failure -> {
+                    _uiState.update { state ->
+                        state.copy(
+                            shareErrorMessage = context.getString(R.string.something_went_wrong_error),
+                            isLoading = false
+                        )
+                    }
+                    return@launch
+                }
+            }
+            val currentUserId = accountService.currentUserId ?: run {
+                _uiState.update { state ->
+                    state.copy(
+                        shareErrorMessage = context.getString(R.string.something_went_wrong_error),
+                        isLoading = false
+                    )
+                }
+                return@launch
+            }
 
-                val result = userRepository.getUserById(petPermission.userId)
+            val userPermissions = petMembers.mapNotNull { member ->
+
+                val result = userRepository.getUserById(member.userId)
 
                 when (result) {
                     is AppResult.Success -> {
@@ -66,7 +92,7 @@ class SharePetViewModel @Inject constructor(
 
                         UserPermission(
                             user = result.data ?: return@mapNotNull null,
-                            permissionLevel = petPermission.permissionLevel
+                            permissionLevel = member.permissionLevel
                         )
                     }
                     is AppResult.Failure -> {
@@ -101,6 +127,8 @@ class SharePetViewModel @Inject constructor(
     }
 
     fun onShareClick() {
+        if (!uiState.value.hasOwnerPermission) return
+
         _uiState.update { state ->
             state.copy(isLoading = true)
         }
@@ -109,6 +137,8 @@ class SharePetViewModel @Inject constructor(
         val petId = uiState.value.petId
 
         viewModelScope.launch {
+            if (!verifyOwnerPermission(petId)) return@launch
+
             val targetUser = when (val result = userRepository.getUserByEmail(email)) {
                 is AppResult.Success -> result.data
                 is AppResult.Failure -> {
@@ -163,25 +193,27 @@ class SharePetViewModel @Inject constructor(
                 }
                 //Share with user
                 else -> {
-                    val petPermission = PetPermission(
+                    val member = Member(
                         userId = targetUser.id,
-                        petId = petId,
                         permissionLevel = uiState.value.permissionLevel
                     )
 
-                    try {
-                        petPermissionRepository.savePetPermission(petPermission)
-                        getPetPermissions(petId)
-
-                        Toast.makeText(
-                            context,
-                            context.getString(R.string.shared_with_user),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } catch (e: Exception) {
-                        Timber.d("onShareClick: $e")
-                        _uiState.update { state ->
-                            state.copy(shareErrorMessage = context.getString(R.string.something_went_wrong_error))
+                    when (petMemberRepository.savePetMember(petId, member)) {
+                        is AppResult.Success -> {
+                            getPetPermissions(petId)
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.shared_with_user),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        is AppResult.Failure -> {
+                            _uiState.update { state ->
+                                state.copy(
+                                    shareErrorMessage = context.getString(R.string.something_went_wrong_error),
+                                    isLoading = false
+                                )
+                            }
                         }
                     }
                 }
@@ -190,13 +222,52 @@ class SharePetViewModel @Inject constructor(
     }
 
     fun onDeleteAccessClick(petId: String, userId: String) {
+        if (!uiState.value.hasOwnerPermission || petId != uiState.value.petId) return
+
         viewModelScope.launch {
             _uiState.update { state ->
                 state.copy(isLoading = true)
             }
 
-            petPermissionRepository.deletePetPermissionByUserPetIds(petId, userId)
-            getPetPermissions(petId)
+            if (!verifyOwnerPermission(petId)) return@launch
+
+            when (petMemberRepository.deletePetMember(petId, userId)) {
+                is AppResult.Success -> getPetPermissions(petId)
+                is AppResult.Failure -> _uiState.update { state ->
+                    state.copy(
+                        shareErrorMessage = context.getString(R.string.something_went_wrong_error),
+                        isLoading = false
+                    )
+                }
+            }
         }
+    }
+
+    private suspend fun verifyOwnerPermission(petId: String): Boolean {
+        val permissionResult = getPetPermission(petId)
+        val isOwner = permissionResult is AppResult.Success &&
+                permissionResult.data.canDeletePet
+        if (isOwner) {
+            _uiState.update { state ->
+                state.copy(
+                    hasOwnerPermission = true,
+                    permissionErrorMessageRes = null
+                )
+            }
+            return true
+        }
+
+        val errorMessageRes = when (permissionResult) {
+            is AppResult.Success -> R.string.pet_sharing_access_denied
+            is AppResult.Failure -> permissionResult.error.toMessageRes()
+        }
+        _uiState.update { state ->
+            state.copy(
+                isLoading = false,
+                hasOwnerPermission = false,
+                permissionErrorMessageRes = errorMessageRes
+            )
+        }
+        return false
     }
 }

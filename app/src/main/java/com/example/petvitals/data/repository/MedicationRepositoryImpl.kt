@@ -1,6 +1,9 @@
 package com.example.petvitals.data.repository
 
 import com.example.petvitals.data.service.account.AccountService
+import com.example.petvitals.data.utils.safeFirestoreCall
+import com.example.petvitals.domain.AppResult
+import com.example.petvitals.domain.error.FirestoreError
 import com.example.petvitals.domain.models.Medication
 import com.example.petvitals.domain.repository.MedicationRepository
 import com.google.firebase.firestore.FirebaseFirestore
@@ -13,10 +16,10 @@ class MedicationRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : MedicationRepository {
 
-    override suspend fun getMedications(petId: String): List<Medication> {
-
-        accountService.currentUserId
-        return firestore
+    override suspend fun getMedications(
+        petId: String
+    ): AppResult<FirestoreError, List<Medication>> = safeFirestoreCall {
+        firestore
             .collection("pets").document(petId)
             .collection("medications")
             .get()
@@ -34,13 +37,14 @@ class MedicationRepositoryImpl @Inject constructor(
             .await()
     }
 
-    override suspend fun deleteMedication(medication: Medication) {
-
-        accountService.currentUserId
+    override suspend fun deleteMedication(
+        medication: Medication
+    ): AppResult<FirestoreError, Unit> = safeFirestoreCall<Unit> {
         firestore
             .collection("pets").document(medication.petId)
             .collection("medications").document(medication.id)
             .delete()
+            .await()
     }
 
     override suspend fun getMedicationById(

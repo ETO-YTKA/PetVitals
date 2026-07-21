@@ -6,8 +6,12 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
+import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.models.Food
+import com.example.petvitals.domain.models.canManagePetCare
 import com.example.petvitals.domain.repository.FoodRepository
+import com.example.petvitals.domain.usecase.GetPetPermissionUseCase
+import com.example.petvitals.ui.utils.toMessageRes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
@@ -18,6 +22,8 @@ import kotlinx.coroutines.launch
 
 data class AddEditFoodUiState(
     val isLoading: Boolean = false,
+    val hasEditPermission: Boolean = false,
+    val permissionErrorMessageRes: Int? = null,
 
     val petId: String = "",
     val foodId: String? = null,
@@ -36,6 +42,7 @@ data class AddEditFoodUiState(
 @HiltViewModel
 class AddEditFoodViewModel @Inject constructor(
     private val foodRepository: FoodRepository,
+    private val getPetPermission: GetPetPermissionUseCase,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AddEditFoodUiState())
@@ -51,6 +58,36 @@ class AddEditFoodViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            when (val permissionResult = getPetPermission(petId)) {
+                is AppResult.Success -> {
+                    if (!permissionResult.data.canManagePetCare) {
+                        _uiState.update { state ->
+                            state.copy(
+                                isLoading = false,
+                                permissionErrorMessageRes = R.string.pet_care_edit_access_denied
+                            )
+                        }
+                        return@launch
+                    }
+                }
+                is AppResult.Failure -> {
+                    _uiState.update { state ->
+                        state.copy(
+                            isLoading = false,
+                            permissionErrorMessageRes = permissionResult.error.toMessageRes()
+                        )
+                    }
+                    return@launch
+                }
+            }
+
+            _uiState.update { state ->
+                state.copy(
+                    hasEditPermission = true,
+                    permissionErrorMessageRes = null
+                )
+            }
+
             foodId?.let { foodId ->
                 val food = foodRepository.getFoodById(petId, foodId)
                 if (food != null) {
@@ -156,6 +193,7 @@ class AddEditFoodViewModel @Inject constructor(
     }
 
     fun save(onSuccess: () -> Unit) {
+        if (!uiState.value.hasEditPermission) return
         if (!isFormValid()) return
 
         viewModelScope.launch {

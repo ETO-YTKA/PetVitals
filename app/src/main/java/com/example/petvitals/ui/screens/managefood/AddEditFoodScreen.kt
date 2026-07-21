@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,6 +35,7 @@ fun AddEditFoodScreen(
     viewModel: AddEditFoodViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val permissionErrorMessageRes = uiState.permissionErrorMessageRes
 
     LaunchedEffect(Unit) {
         viewModel.loadInitialData(
@@ -71,7 +73,15 @@ fun AddEditFoodScreen(
         }
     ) {
 
-        if (uiState.isLoading) { Loading() } else {
+        if (uiState.isLoading) {
+            Loading()
+        } else if (permissionErrorMessageRes != null) {
+            Text(
+                text = stringResource(permissionErrorMessageRes),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
 
             CustomOutlinedTextField(
                 value = uiState.name,

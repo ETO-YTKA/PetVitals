@@ -1,7 +1,6 @@
 package com.example.petvitals.data.repository
 
 import com.example.petvitals.data.service.account.AccountService
-import com.example.petvitals.domain.models.PetPermission
 import com.example.petvitals.domain.models.Record
 import com.example.petvitals.domain.repository.RecordRepository
 import com.google.firebase.firestore.FirebaseFirestore
@@ -35,22 +34,32 @@ class RecordRepositoryImpl @Inject constructor(
         val userId = accountService.currentUserId
 
         val petsId = firestore
-            .collection("petPermissions")
+            .collectionGroup(FirestoreCollections.PET_MEMBERS)
             .whereEqualTo("userId", userId)
             .get()
             .await()
-            .map { it.toObject<PetPermission>().petId }
+            .mapNotNull { memberDocument ->
+                val petDocument = memberDocument.reference.parent.parent
+                    ?: return@mapNotNull null
+                petDocument
+                    .get()
+                    .await()
+                    .takeIf { it.exists() }
+                    ?.id
+            }
+            .distinct()
 
 
-        var accessedRecords: List<Record> = emptyList()
-        if (petsId.isNotEmpty()) {
-            accessedRecords = firestore
-                .collection("records")
-                .whereArrayContainsAny("petIds", petsId)
-                .get()
-                .await()
-                .map { it.toObject<Record>() }
-        }
+        val accessedRecords = petsId
+            .chunked(MAX_WHERE_ARRAY_CONTAINS_ANY_VALUES)
+            .flatMap { petIdChunk ->
+                firestore
+                    .collection("records")
+                    .whereArrayContainsAny("petIds", petIdChunk)
+                    .get()
+                    .await()
+                    .map { it.toObject<Record>() }
+            }
 
         val userRecords = firestore
             .collection("records")
@@ -59,7 +68,8 @@ class RecordRepositoryImpl @Inject constructor(
             .await()
             .map { it.toObject<Record>() }
 
-        val records = userRecords.minus(accessedRecords).plus(accessedRecords)
+        val records = (userRecords + accessedRecords)
+            .distinctBy { it.id }
             .sortedByDescending {
                 it.date
             }
@@ -72,5 +82,9 @@ class RecordRepositoryImpl @Inject constructor(
         firestore
             .collection("records").document(record.id)
             .delete()
+    }
+
+    private companion object {
+        const val MAX_WHERE_ARRAY_CONTAINS_ANY_VALUES = 30
     }
 }

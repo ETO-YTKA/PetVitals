@@ -48,6 +48,7 @@ fun SharePetScreen(
     viewModel: SharePetViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val permissionErrorMessageRes = uiState.permissionErrorMessageRes
 
     LaunchedEffect(Unit) {
         viewModel.getPetPermissions(petId)
@@ -68,11 +69,23 @@ fun SharePetScreen(
             )
         }
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(Dimen.spaceLarge),
-            verticalArrangement = Arrangement.spacedBy(Dimen.spaceLarge)
-        ) {
+        if (permissionErrorMessageRes != null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(permissionErrorMessageRes),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(Dimen.spaceLarge),
+                verticalArrangement = Arrangement.spacedBy(Dimen.spaceLarge)
+            ) {
             //Who has access
             item {
                 SectionHeader(
@@ -122,13 +135,14 @@ fun SharePetScreen(
                 )
             }
 
-            item {
-                InviteUserForm(
-                    uiState = uiState,
-                    onEmailChange = viewModel::onEmailChange,
-                    onPermissionLevelChange = viewModel::onPermissionLevelChange,
-                    onShareClick = viewModel::onShareClick
-                )
+                item {
+                    InviteUserForm(
+                        uiState = uiState,
+                        onEmailChange = viewModel::onEmailChange,
+                        onPermissionLevelChange = viewModel::onPermissionLevelChange,
+                        onShareClick = viewModel::onShareClick
+                    )
+                }
             }
         }
     }

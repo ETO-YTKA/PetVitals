@@ -87,9 +87,32 @@
 
     <!-- Pet profile -->
     <string name="breed">Breed</string>
+    <string name="age">Age</string>
     <string name="pet_image">Pet Image</string>
     <string name="delete_pet">Delete pet</string>
     <string name="pet_profile">Pet Profile</string>
+    <string name="details">Details</string>
+    <string name="health_note">Health note</string>
+    <string name="food_note">Food note</string>
+    <string name="edit_named_note">Edit %1$s</string>
+    <string name="add_health_note_prompt">Add care instructions, allergies, or observations.</string>
+    <string name="add_food_note_prompt">Add feeding preferences, allergies, or restrictions.</string>
+    <string name="health_note_placeholder">Enter health information</string>
+    <string name="food_note_placeholder">Enter feeding information</string>
+    <string name="health_note_supporting_text">Care instructions, allergies, or observations.</string>
+    <string name="food_note_supporting_text">Feeding preferences, allergies, or restrictions.</string>
+    <string name="empty_note_removal_supporting_text">Saving will remove this note.</string>
+    <string name="save_note">Save note</string>
+    <string name="saving">Saving...</string>
+    <string name="health_note_saved">Health note saved.</string>
+    <string name="food_note_saved">Food note saved.</string>
+    <string name="pet_care_edit_access_denied">You don\'t have permission to edit this pet\'s care.</string>
+    <string name="pet_not_found_error">This pet is no longer available.</string>
+    <string name="pet_sharing_access_denied">Only the pet owner can manage sharing.</string>
+    <string name="pet_profile_access_denied">You don\'t have access to this pet.</string>
+    <string name="edit_medication_notes">Edit medication notes</string>
+    <string name="edit_food_note">Edit food note</string>
+    <string name="share_access">Share access</string>
     <string name="back">Back</string>
     <plurals name="days_old_plural">
         <item quantity="one">%d day old</item>
@@ -129,7 +152,7 @@
     <string name="add_medication">Add Medication</string>
     <string name="none">None</string>
     <string name="edit">Edit</string>
-    <string name="edit_note_content">Note content</string>
+    <string name="edit_note">Edit note</string>
     <string name="empty_note_placeholder_for_editor">This note is empty. Click edit to add content.</string>
     <string name="health">Health</string>
     <string name="dosage">Dosage</string>
@@ -264,4 +287,5 @@
     <string name="breed_optional">Breed (optional)</string>
     <string name="species_cannot_be_empty">Species cannot be empty</string>
     <string name="refresh">Refresh</string>
+    <string name="medication_history">Medication history (%1$d)</string>
 </resources>

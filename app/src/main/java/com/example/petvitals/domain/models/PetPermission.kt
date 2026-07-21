@@ -7,7 +7,7 @@ data class PetPermission(
     val id: String = UUID.randomUUID().toString(),
     val userId: String = "",
     val petId: String = "",
-    val permissionLevel: PermissionLevel = PermissionLevel.OWNER
+    val permissionLevel: PermissionLevel = PermissionLevel.VIEWER
 )
 
 enum class PermissionLevel(val nameResId: Int) {
@@ -15,3 +15,9 @@ enum class PermissionLevel(val nameResId: Int) {
     EDITOR(R.string.permission_level_editor),
     VIEWER(R.string.permission_level_viewer)
 }
+
+val PermissionLevel.canManagePetCare: Boolean
+    get() = this != PermissionLevel.VIEWER
+
+val PermissionLevel.canDeletePet: Boolean
+    get() = this == PermissionLevel.OWNER
