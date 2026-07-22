@@ -4,13 +4,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 object Dimen {
-    val spaceSmall = 4.dp
-    val spaceMedium = 8.dp
-    val spaceLarge = 16.dp
-
-    val petIconSize = 150.dp
-
-
     object FontSize {
         val mediumButton = 19.5.sp
     }

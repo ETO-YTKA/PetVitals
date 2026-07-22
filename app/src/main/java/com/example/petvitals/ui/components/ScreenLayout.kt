@@ -9,7 +9,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.example.petvitals.ui.theme.Dimen
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun ScreenLayout(
@@ -38,7 +38,7 @@ fun ScreenLayout(
             modifier = columnModifier
                 .fillMaxSize()
                 .padding(contentPadding)
-                .padding(horizontal =  Dimen.spaceMedium)
+                .padding(horizontal =  8.dp)
         ) {
             content()
         }

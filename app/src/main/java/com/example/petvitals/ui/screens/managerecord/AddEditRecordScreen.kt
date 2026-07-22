@@ -57,7 +57,6 @@ import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.components.ValueDropDown
 import com.example.petvitals.ui.navigation.AddEditRecord
-import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.ui.utils.decodeBase64ToImage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -105,7 +104,7 @@ fun AddEditRecordScreen(
     }
 
     ScreenLayout(
-        verticalArrangement = Arrangement.spacedBy(Dimen.spaceLarge),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         topBar = {
             val title = when (addEditRecord.recordId) {
@@ -125,7 +124,7 @@ fun AddEditRecordScreen(
         },
         columnModifier = Modifier
             .verticalScroll(rememberScrollState())
-            .padding( vertical = Dimen.spaceMedium)
+            .padding( vertical = 8.dp)
     ) {
         //Title
         CustomOutlinedTextField(
@@ -199,13 +198,13 @@ fun AttachedPetsSection(
     Column(
         Modifier
             .fillMaxWidth()
-            .padding(top = Dimen.spaceMedium)
+            .padding(top = 8.dp)
             .border(
                 1.dp,
                 MaterialTheme.colorScheme.outline,
                 MaterialTheme.shapes.large
             )
-            .padding(Dimen.spaceMedium),
+            .padding(8.dp),
     ) {
         ButtonWithIcon(
             onClick = { onShowBottomSheetChange(true) },
@@ -220,12 +219,12 @@ fun AttachedPetsSection(
         )
 
         if (uiState.selectedPets.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(Dimen.spaceMedium))
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
         FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
-            verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             uiState.selectedPets.forEach { pet ->
                 PetCard(
@@ -322,9 +321,9 @@ private fun BottomSheetModal(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(350.dp)
-                .padding(horizontal = Dimen.spaceSmall),
-            horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
-            verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
+                .padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             pets.forEach { pet ->
                 PetCard(
@@ -350,7 +349,7 @@ private fun PetCard(
         modifier = modifier
     ) {
         Row(
-            modifier = Modifier.padding(Dimen.spaceMedium),
+            modifier = Modifier.padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             val painterRes = if (pet.species == PetSpecies.CAT) R.drawable.ic_cat
@@ -368,7 +367,7 @@ private fun PetCard(
                 modifier = imageModifier
             )
 
-            Spacer(modifier = Modifier.width(Dimen.spaceMedium))
+            Spacer(modifier = Modifier.width(8.dp))
 
             Text(
                 text = pet.name,
@@ -377,7 +376,7 @@ private fun PetCard(
                 overflow = TextOverflow.Ellipsis
             )
 
-            Spacer(modifier = Modifier.width(Dimen.spaceMedium))
+            Spacer(modifier = Modifier.width(8.dp))
 
             Icon(
                 painter = if (isSelected) painterResource(id = R.drawable.ic_remove) else painterResource(id = R.drawable.ic_add),

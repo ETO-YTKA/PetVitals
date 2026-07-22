@@ -89,7 +89,6 @@ import com.example.petvitals.domain.models.Record
 import com.example.petvitals.domain.models.RecordType
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
-import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.ui.utils.decodeBase64ToImage
 import com.example.petvitals.ui.utils.formatDateToStringLocale
 
@@ -128,8 +127,8 @@ fun RecordsScreen(
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(vertical = Dimen.spaceMedium),
-                verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
+                contentPadding = PaddingValues(vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 item {
                     FilterBar(
@@ -141,7 +140,7 @@ fun RecordsScreen(
                         onTypeChipClicked = viewModel::onTypeFilterChipClicked
                     )
 
-                    HorizontalDivider(modifier = Modifier.padding(top = Dimen.spaceSmall))
+                    HorizontalDivider(modifier = Modifier.padding(top = 4.dp))
                 }
 
                 items(
@@ -163,8 +162,8 @@ fun RecordsScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(
-                                        horizontal = Dimen.spaceMedium,
-                                        vertical = Dimen.spaceSmall
+                                        horizontal = 8.dp,
+                                        vertical = 4.dp
                                     )
                             )
                         }
@@ -266,7 +265,7 @@ private fun RecordCardMainContent(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(Dimen.spaceMedium),
+            .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         RecordMainInfo(
@@ -292,7 +291,7 @@ private fun RecordMainInfo(
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         //Indicator Icon
         Icon(
@@ -302,7 +301,7 @@ private fun RecordMainInfo(
             modifier = Modifier
                 .size(32.dp)
                 .background(record.type.color.copy(alpha = 0.15f), CircleShape)
-                .padding(Dimen.spaceSmall)
+                .padding(4.dp)
         )
 
         //Title, Type
@@ -412,11 +411,11 @@ private fun ExpandableContent(
         Column(
             modifier = modifier
                 .padding(
-                    start = Dimen.spaceMedium,
-                    end = Dimen.spaceMedium,
-                    bottom = Dimen.spaceMedium
+                    start = 8.dp,
+                    end = 8.dp,
+                    bottom = 8.dp
                 ),
-            verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             HorizontalDivider()
 
@@ -430,8 +429,8 @@ private fun ExpandableContent(
             //Attached pets
             if (pets.isNotEmpty()) {
                 FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall),
-                    verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     pets.forEach { pet ->
                         PetChip(pet = pet, onClick = { onPetChipClick(pet) })
@@ -559,7 +558,7 @@ fun RecordsTopAppBar(
                 onQueryChange = onSearchQueryChange,
                 onSearchTriggered = onSearchTriggered,
                 placeholderText = stringResource(R.string.search),
-                modifier = Modifier.padding(vertical = Dimen.spaceSmall)
+                modifier = Modifier.padding(vertical = 4.dp)
             )
         },
         navigationIcon = {
@@ -619,7 +618,7 @@ fun FilterBar(
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         // --- Pet Filters ---
         if (allPets.isNotEmpty()) {
@@ -629,7 +628,7 @@ fun FilterBar(
                 fontWeight = FontWeight.Bold
             )
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 items(allPets, key = { it.id }) { pet ->
                     val isSelected = selectedPetIds.contains(pet.id)
@@ -658,7 +657,7 @@ fun FilterBar(
             fontWeight = FontWeight.Bold
         )
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(allTypes, key = { it.name }) { type ->
                 val isSelected = selectedTypes.contains(type)

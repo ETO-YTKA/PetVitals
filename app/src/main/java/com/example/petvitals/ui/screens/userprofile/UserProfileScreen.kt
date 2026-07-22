@@ -46,7 +46,6 @@ import com.example.petvitals.ui.components.CustomSnackbarHost
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.components.showSnackbar
-import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.ui.utils.ObserveAsEvents
 
 @Composable
@@ -75,7 +74,7 @@ fun UserProfileScreen(
     ScreenLayout(
         columnModifier = Modifier
             .verticalScroll(rememberScrollState())
-            .padding(vertical = Dimen.spaceMedium),
+            .padding(vertical = 8.dp),
         verticalArrangement = Arrangement.Top,
         topBar = {
             TopBar(
@@ -95,7 +94,7 @@ fun UserProfileScreen(
     ) {
         Box(
             modifier = Modifier
-                .size(Dimen.petIconSize)
+                .size(150.dp)
                 .background(
                     color = MaterialTheme.colorScheme.primary,
                     shape = CircleShape
@@ -108,14 +107,14 @@ fun UserProfileScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(Dimen.spaceMedium))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             text = uiState.username,
             style = MaterialTheme.typography.displaySmall
         )
 
-        Spacer(modifier = Modifier.height(Dimen.spaceSmall))
+        Spacer(modifier = Modifier.height(4.dp))
 
         Text(
             text = uiState.email,
@@ -123,7 +122,7 @@ fun UserProfileScreen(
             modifier = Modifier.alpha(0.7f)
         )
 
-        Spacer(modifier = Modifier.height(Dimen.spaceLarge))
+        Spacer(modifier = Modifier.height(16.dp))
 
         ButtonWithIcon(
             onClick = { viewModel.sendPasswordResetEmail() },
@@ -137,7 +136,7 @@ fun UserProfileScreen(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        Spacer(modifier = Modifier.height(Dimen.spaceMedium))
+        Spacer(modifier = Modifier.height(8.dp))
 
         ButtonWithIcon(
             onClick = { viewModel.logout() },
@@ -154,7 +153,7 @@ fun UserProfileScreen(
 
         )
 
-        Spacer(modifier = Modifier.height(Dimen.spaceMedium))
+        Spacer(modifier = Modifier.height(8.dp))
 
         ButtonWithIcon(
             onClick = { viewModel.showModal(true) },
@@ -200,7 +199,7 @@ fun DeleteAccountModal(
         text = {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
                     text = stringResource(R.string.delete_account_confirmation_message),

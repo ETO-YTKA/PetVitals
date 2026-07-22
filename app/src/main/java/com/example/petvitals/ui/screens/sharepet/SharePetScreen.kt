@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.domain.models.PermissionLevel
@@ -39,7 +40,6 @@ import com.example.petvitals.ui.components.DropDownOption
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.components.ValueDropDown
-import com.example.petvitals.ui.theme.Dimen
 
 @Composable
 fun SharePetScreen(
@@ -83,8 +83,8 @@ fun SharePetScreen(
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(Dimen.spaceLarge),
-                verticalArrangement = Arrangement.spacedBy(Dimen.spaceLarge)
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
             //Who has access
             item {
@@ -131,7 +131,7 @@ fun SharePetScreen(
                 SectionHeader(
                     title = stringResource(R.string.invite_new_user),
                     icon = { Icon(painter = painterResource(R.drawable.ic_person_add), contentDescription = null) },
-                    modifier = Modifier.padding(top = Dimen.spaceMedium)
+                    modifier = Modifier.padding(top = 8.dp)
                 )
             }
 
@@ -157,7 +157,7 @@ private fun SectionHeader(
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         icon()
         Text(
@@ -176,7 +176,7 @@ private fun UserPermissionCard(
     onDeleteClick: () -> Unit,
 ) {
     ListItem(
-        modifier = modifier.clip(RoundedCornerShape(Dimen.spaceLarge)),
+        modifier = modifier.clip(RoundedCornerShape(16.dp)),
         headlineContent = {
             Text(
                 text = username,
@@ -220,8 +220,8 @@ private fun InviteUserForm(
 ) {
     OutlinedCard(modifier = modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.padding(Dimen.spaceLarge),
-            verticalArrangement = Arrangement.spacedBy(Dimen.spaceSmall)
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             CustomOutlinedTextField(
                 value = uiState.email,

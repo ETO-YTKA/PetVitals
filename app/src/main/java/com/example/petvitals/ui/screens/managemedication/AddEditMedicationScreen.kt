@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.ButtonWithIcon
@@ -43,7 +44,6 @@ import com.example.petvitals.ui.components.Loading
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.navigation.AddEditMedication
-import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.ui.utils.formatDateToString
 import java.util.Date
 
@@ -61,10 +61,10 @@ fun AddEditMedicationScreen(
     }
 
     ScreenLayout(
-        verticalArrangement = Arrangement.spacedBy(Dimen.spaceLarge),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.Start,
         columnModifier = Modifier
-            .padding(vertical = Dimen.spaceMedium)
+            .padding(vertical = 8.dp)
             .fillMaxSize()
             .then(if (uiState.isLoading) Modifier else Modifier.verticalScroll(rememberScrollState())),
         topBar = {
@@ -204,8 +204,8 @@ private fun MedicationScheduleCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.padding(Dimen.spaceMedium),
-            verticalArrangement = Arrangement.spacedBy(Dimen.spaceLarge)
+            modifier = Modifier.padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
                 text = stringResource(R.string.medication_schedule),
@@ -242,7 +242,7 @@ private fun MedicationScheduleCard(
                 ) + fadeOut(animationSpec = tween(durationMillis = 200))
             ) {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(Dimen.spaceMedium)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     //StartDate
                     DatePickerField(

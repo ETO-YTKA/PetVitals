@@ -804,7 +804,7 @@ fun MedicationsList(
                     onEditClick = onEditMedicationClick,
                     onDeleteClick = onDeleteMedicationClick,
                     permissionLevel = uiState.permissionLevel,
-                    modifier = Modifier.padding(vertical = Dimen.spaceMedium)
+                    modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
         }
@@ -1013,7 +1013,7 @@ fun FoodList(
                     onEditClick = onEditFoodClick,
                     onDeleteClick = onDeleteFoodClick,
                     permissionLevel = uiState.permissionLevel,
-                    modifier = Modifier.padding(vertical = Dimen.spaceMedium)
+                    modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
         }

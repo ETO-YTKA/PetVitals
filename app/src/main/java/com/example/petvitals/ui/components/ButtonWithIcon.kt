@@ -18,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
-import com.example.petvitals.ui.theme.Dimen
 
 @Composable
 fun ButtonWithIcon(
@@ -46,7 +45,7 @@ fun ButtonWithIcon(
         interactionSource = interactionSource
     ) {
         icon()
-        Spacer(modifier = Modifier.width(Dimen.spaceSmall))
+        Spacer(modifier = Modifier.width(4.dp))
         Row(
             modifier = Modifier,
             horizontalArrangement = Arrangement.Center,

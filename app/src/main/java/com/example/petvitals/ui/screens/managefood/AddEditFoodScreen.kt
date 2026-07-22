@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.ButtonWithIcon
@@ -26,7 +27,6 @@ import com.example.petvitals.ui.components.Loading
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.navigation.AddEditFood
-import com.example.petvitals.ui.theme.Dimen
 
 @Composable
 fun AddEditFoodScreen(
@@ -45,10 +45,10 @@ fun AddEditFoodScreen(
     }
 
     ScreenLayout(
-        verticalArrangement = Arrangement.spacedBy(Dimen.spaceLarge),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.Start,
         columnModifier = Modifier
-            .padding(vertical = Dimen.spaceMedium)
+            .padding(vertical = 8.dp)
             .fillMaxSize()
             .then(if (uiState.isLoading) Modifier else Modifier.verticalScroll(rememberScrollState())),
         topBar = {
