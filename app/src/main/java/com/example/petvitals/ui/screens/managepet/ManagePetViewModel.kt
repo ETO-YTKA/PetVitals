@@ -23,6 +23,7 @@ import com.example.petvitals.ui.utils.decodeBase64ToImage
 import com.example.petvitals.ui.utils.processImageUri
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -308,18 +309,26 @@ class ManagePetViewModel @Inject constructor(
         petId: String?,
         onSuccess: () -> Unit
     ) {
-        if (isFormValid()) {
-            val uiState = uiState.value
-            pendingSaveOnSuccess = onSuccess
+        if (_uiState.value.isSaving || !isFormValid()) return
+        if (petId != null) return // TODO Update pet
 
-            val dobYear = uiState.dobYear.trim().toIntOrNull()
-            val dobMonth = uiState.selectedDobMonth
-            val dobDay = uiState.dobDay.trim().toIntOrNull()
+        val uiState = uiState.value
+        pendingSaveOnSuccess = onSuccess
+        _uiState.update { state -> state.copy(isSaving = true) }
 
-            val avatar = when {
-                uiState.avatarUri != null -> processImageUri(context, uiState.avatarUri)
-                uiState.avatarByteArray != null -> Base64.encode(uiState.avatarByteArray)
-                else -> null
+        viewModelScope.launch {
+            val avatar = try {
+                when {
+                    uiState.avatarUri != null -> processImageUri(context, uiState.avatarUri)
+                    uiState.avatarByteArray != null -> Base64.encode(uiState.avatarByteArray)
+                    else -> null
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Exception) {
+                pendingSaveOnSuccess = null
+                showImageProcessingFailurePopUp()
+                return@launch
             }
 
             val basePet = Pet(
@@ -327,27 +336,22 @@ class ManagePetViewModel @Inject constructor(
                 species = uiState.selectedSpecies!!,
                 breed = uiState.breed,
                 gender = uiState.selectedGender,
-                dobYear = dobYear,
-                dobMonth = dobMonth,
-                dobDay = dobDay,
+                dobYear = uiState.dobYear.trim().toIntOrNull(),
+                dobMonth = uiState.selectedDobMonth,
+                dobDay = uiState.dobDay.trim().toIntOrNull(),
                 avatar = avatar
             )
 
-            if (petId == null) {
-                viewModelScope.launch {
-                    when (val result = createPetUseCase.invoke(pet = basePet)) {
-                        is AppResult.Success -> {
-                            pendingSaveOnSuccess = null
-                            dismissPopUp()
-                            onSuccess()
-                        }
-                        is AppResult.Failure -> {
-                            showSaveFailurePopUp(result.error)
-                        }
-                    }
+            when (val result = createPetUseCase.invoke(pet = basePet)) {
+                is AppResult.Success -> {
+                    pendingSaveOnSuccess = null
+                    _uiState.update { state -> state.copy(isSaving = false) }
+                    dismissPopUp()
+                    onSuccess()
                 }
-            } else {
-                //TODO Update pet
+                is AppResult.Failure -> {
+                    showSaveFailurePopUp(result.error)
+                }
             }
         }
     }
@@ -398,7 +402,27 @@ class ManagePetViewModel @Inject constructor(
         }
 
         _uiState.update { state ->
-            state.copy(popUpState = popUpState)
+            state.copy(
+                isSaving = false,
+                popUpState = popUpState
+            )
+        }
+    }
+
+    private fun showImageProcessingFailurePopUp() {
+        _uiState.update { state ->
+            state.copy(
+                isSaving = false,
+                popUpState = PopUpState(
+                    type = PopUpType.ALERT,
+                    title = context.getString(R.string.manage_pet_image_processing_error_title),
+                    message = context.getString(R.string.manage_pet_image_processing_error_message),
+                    primaryButton = PopUpButton(
+                        text = context.getString(R.string.keep_editing),
+                        action = ManagePetAction.DismissPopUp
+                    )
+                )
+            )
         }
     }
 

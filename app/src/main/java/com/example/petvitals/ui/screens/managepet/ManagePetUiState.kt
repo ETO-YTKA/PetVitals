@@ -8,6 +8,7 @@ import com.example.petvitals.ui.components.PopUpState
 
 data class ManagePetUiState(
     val isLoading: Boolean = false,
+    val isSaving: Boolean = false,
 
     val petId: String? = null,
     val name: String = "",

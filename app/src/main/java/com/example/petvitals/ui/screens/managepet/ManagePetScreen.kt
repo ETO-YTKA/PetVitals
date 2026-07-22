@@ -200,7 +200,8 @@ private fun ManagePetScreenContent(
 
             CustomMediumButton(
                 onClick = { action(ManagePetAction.SavePet(uiState.petId, onNavigateToPets)) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isSaving
             ) {
                 Text(
                     text = stringResource(R.string.save),

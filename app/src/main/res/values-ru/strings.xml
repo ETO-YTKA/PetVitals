@@ -94,6 +94,8 @@
     <string name="manage_pet_save_network_error_message">Проверьте подключение и попробуйте сохранить снова. Ваши изменения останутся на экране.</string>
     <string name="manage_pet_save_error_title">Питомец не сохранён</string>
     <string name="manage_pet_save_error_message">Не удалось сохранить изменения. Пожалуйста, попробуйте снова.</string>
+    <string name="manage_pet_image_processing_error_title">Не удалось обработать фотографию</string>
+    <string name="manage_pet_image_processing_error_message">Выберите другую фотографию и повторите попытку.</string>
     <string name="unexpected_error">Произошла непредвиденная ошибка</string>
     <string name="empty_fields_error">Поля не могут быть пустыми</string>
     <string name="email_already_in_use_error">Этот адрес электронной почты уже используется</string>
