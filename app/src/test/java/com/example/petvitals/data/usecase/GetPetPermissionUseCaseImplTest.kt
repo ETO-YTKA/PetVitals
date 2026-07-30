@@ -116,7 +116,7 @@ class GetPetPermissionUseCaseImplTest {
             AppResult.Success(Unit)
         override suspend fun signUp(email: String, password: String): AppResult<AccountError, String> =
             AppResult.Success(currentUserId.orEmpty())
-        override suspend fun logout() = Unit
+        override fun logout() = Unit
         override suspend fun deleteAccount(): AppResult<AccountError, Unit> = AppResult.Success(Unit)
         override suspend fun sendVerificationEmail(): AppResult<AccountError, Unit> = AppResult.Success(Unit)
         override suspend fun sendPasswordResetEmail(

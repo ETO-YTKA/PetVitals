@@ -58,7 +58,7 @@ class AccountServiceImpl @Inject constructor(
         }
     }
 
-    override suspend fun logout() {
+    override fun logout() {
         auth.signOut()
     }
 

@@ -13,7 +13,7 @@ interface AccountService {
     fun hasUser(): Boolean
     suspend fun signIn(email: String, password: String): AppResult<AccountError, Unit>
     suspend fun signUp(email: String, password: String): AppResult<AccountError, String>
-    suspend fun logout()
+    fun logout()
     suspend fun deleteAccount(): AppResult<AccountError, Unit>
     suspend fun sendVerificationEmail(): AppResult<AccountError, Unit>
     suspend fun sendPasswordResetEmail(email: String): AppResult<AccountError, Unit>

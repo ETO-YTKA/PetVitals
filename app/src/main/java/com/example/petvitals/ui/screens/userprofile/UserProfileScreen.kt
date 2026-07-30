@@ -1,7 +1,6 @@
 package com.example.petvitals.ui.screens.userprofile
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,7 +21,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -36,16 +37,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.petvitals.R
-import com.example.petvitals.ui.components.ButtonWithIcon
+import com.example.petvitals.domain.models.User
 import com.example.petvitals.ui.components.CustomIconButton
+import com.example.petvitals.ui.components.CustomMediumButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.CustomSnackbarHost
-import com.example.petvitals.ui.components.ScreenLayout
+import com.example.petvitals.ui.components.Loading
 import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.components.showSnackbar
+import com.example.petvitals.ui.theme.Dimen
+import com.example.petvitals.ui.theme.PetVitalsTheme
 import com.example.petvitals.ui.utils.ObserveAsEvents
 
 @Composable
@@ -62,20 +67,31 @@ fun UserProfileScreen(
         }
     }
 
+    UserProfileScreenContent(
+        uiState = uiState,
+        snackbarHostState = snackbarHostState,
+        onAction = viewModel::onAction,
+        onPopBackStack = onPopBackStack
+    )
+}
+
+@Composable
+private fun UserProfileScreenContent(
+    uiState: UserProfileUiState,
+    snackbarHostState: SnackbarHostState,
+    onAction: (UserProfileAction) -> Unit,
+    onPopBackStack: () -> Unit,
+) {
     if (uiState.showDeleteAccountModal) {
         DeleteAccountModal(
             uiState = uiState,
-            onPasswordChange = viewModel::onPasswordChange,
-            onDismissRequest = { viewModel.showModal(false) },
-            onConfirmDelete = viewModel::deleteAccount,
+            onPasswordChange = { onAction(UserProfileAction.OnPasswordChange(it)) },
+            onDismissRequest = { onAction(UserProfileAction.ShowModal(false)) },
+            onConfirmDelete = { onAction(UserProfileAction.DeleteAccount) },
         )
     }
 
-    ScreenLayout(
-        columnModifier = Modifier
-            .verticalScroll(rememberScrollState())
-            .padding(vertical = 8.dp),
-        verticalArrangement = Arrangement.Top,
+    Scaffold(
         topBar = {
             TopBar(
                 title = { Text(stringResource(R.string.profile)) },
@@ -91,14 +107,68 @@ fun UserProfileScreen(
         snackbarHost = {
             CustomSnackbarHost(hostState = snackbarHostState)
         }
-    ) {
-        Box(
-            modifier = Modifier
-                .size(150.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = CircleShape
+    ) { paddingValues ->
+        val user = uiState.user
+        val errorMessageRes = uiState.errorMessageRes
+
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                Loading()
+            }
+        } else if (user == null) {
+            ErrorMessage(
+                message = stringResource(errorMessageRes ?: R.string.unexpected_error),
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .padding(horizontal = Dimen.Screen.horizontalPadding)
+            ) {
+                Button(
+                    onClick = { onAction(UserProfileAction.Retry) }
+                ) {
+                    Text(stringResource(R.string.retry))
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(paddingValues)
+                    .padding(horizontal = Dimen.Screen.horizontalPadding),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Spacer(modifier = Modifier.height(0.dp))
+
+                UserInfo(user)
+
+                ActionButtons(
+                    modifier = Modifier.fillMaxWidth(),
+                    onAction = onAction
                 )
+            }
+        }
+    }
+
+}
+
+@Composable
+private fun UserInfo(
+    user: User,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Surface(
+            modifier = Modifier.size(150.dp),
+            color = MaterialTheme.colorScheme.primary,
+            shape = CircleShape
         ) {
             Image(
                 painter = painterResource(R.drawable.ic_person),
@@ -107,73 +177,83 @@ fun UserProfileScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
         Text(
-            text = uiState.username,
+            text = user.username,
             style = MaterialTheme.typography.displaySmall
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
-
         Text(
-            text = uiState.email,
+            text = user.email,
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.alpha(0.7f)
         )
+    }
+}
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        ButtonWithIcon(
-            onClick = { viewModel.sendPasswordResetEmail() },
-            text = stringResource(R.string.reset_password),
-            icon = {
-                Icon(
-                    painter = painterResource(R.drawable.ic_lock_reset),
-                    contentDescription = null
-                )
-            },
+@Composable
+private fun ActionButtons(
+    modifier: Modifier = Modifier,
+    onAction: (UserProfileAction) -> Unit
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        CustomMediumButton(
+            onClick = { onAction(UserProfileAction.SendPasswordResetEmail) },
             modifier = Modifier.fillMaxWidth(),
-        )
+        ) {
+            Text(
+                text = stringResource(R.string.reset_password),
+                fontSize = Dimen.FontSize.mediumButton
+            )
+        }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        ButtonWithIcon(
-            onClick = { viewModel.logout() },
-            text = stringResource(R.string.logout),
-            icon = {
-                Icon(
-                    painter = painterResource(R.drawable.ic_logout),
-                    contentDescription = null
-                )
-            },
+        CustomMediumButton(
+            onClick = { onAction(UserProfileAction.Logout) },
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors()
-                .copy(containerColor = MaterialTheme.colorScheme.error),
+        ) {
+            Text(
+                text = stringResource(R.string.logout),
+                fontSize = Dimen.FontSize.mediumButton
+            )
+        }
 
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        ButtonWithIcon(
-            onClick = { viewModel.showModal(true) },
-            text = stringResource(R.string.delete_account),
-            icon = {
-                Icon(
-                    painter = painterResource(R.drawable.ic_delete_forever),
-                    contentDescription = null
-                )
-            },
+        CustomMediumButton(
+            onClick = { onAction(UserProfileAction.ShowModal(true)) },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors()
                 .copy(containerColor = MaterialTheme.colorScheme.error)
-        )
+        ) {
+            Text(
+                text = stringResource(R.string.delete_account),
+                fontSize = Dimen.FontSize.mediumButton
+            )
+        }
+    }
+}
+
+@Composable
+private fun ErrorMessage(
+    message: String,
+    modifier: Modifier = Modifier,
+    action: @Composable () -> Unit
+) {
+    Column(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
+    ) {
+        Text(text = message)
+
+        action()
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DeleteAccountModal(
+private fun DeleteAccountModal(
     uiState: UserProfileUiState,
     onPasswordChange: (String) -> Unit,
     onDismissRequest: () -> Unit,
@@ -235,4 +315,40 @@ fun DeleteAccountModal(
             }
         }
     )
+}
+
+@PreviewLightDark
+@Composable
+private fun UserProfileScreenContentPreview() {
+    PetVitalsTheme {
+        UserProfileScreenContent(
+            uiState = UserProfileUiState(
+                user = User(
+                    username = "username",
+                    email = "email",
+                    id = "id"
+                ),
+                isLoading = false
+            ),
+            snackbarHostState = SnackbarHostState(),
+            onAction = {},
+            onPopBackStack = {}
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun UserProfileScreenContentErrorPreview() {
+    PetVitalsTheme {
+        UserProfileScreenContent(
+            uiState = UserProfileUiState(
+                isLoading = false,
+                errorMessageRes = R.string.network_error
+            ),
+            snackbarHostState = SnackbarHostState(),
+            onAction = {},
+            onPopBackStack = {}
+        )
+    }
 }

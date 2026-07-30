@@ -97,6 +97,9 @@
     <string name="manage_pet_image_processing_error_title">Не удалось обработать фотографию</string>
     <string name="manage_pet_image_processing_error_message">Выберите другую фотографию и повторите попытку.</string>
     <string name="unexpected_error">Произошла непредвиденная ошибка</string>
+    <string name="session_expired_error">Срок действия сеанса истек. Войдите снова.</string>
+    <string name="user_profile_not_found_error">Не удалось найти ваш профиль. Попробуйте еще раз.</string>
+    <string name="you_do_not_have_permission_to_access_this_data">У вас нет доступа к этим данным</string>
     <string name="empty_fields_error">Поля не могут быть пустыми</string>
     <string name="email_already_in_use_error">Этот адрес электронной почты уже используется</string>
     <string name="invalid_characters_error">Поле должно содержать только буквы и пробелы</string>

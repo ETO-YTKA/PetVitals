@@ -1,15 +1,16 @@
 package com.example.petvitals.ui.screens.userprofile
 
 import android.content.Context
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.R
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.error.AccountError
+import com.example.petvitals.domain.error.FirestoreError
 import com.example.petvitals.domain.repository.UserRepository
 import com.example.petvitals.ui.components.SnackbarState
 import com.example.petvitals.ui.components.SnackbarType
-import com.example.petvitals.ui.screens.PetVitalsAppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
@@ -18,24 +19,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
-
-data class UserProfileUiState(
-    val username: String = "",
-    val email: String = "",
-
-    //Modal
-    val showDeleteAccountModal: Boolean = false,
-    val password: String = "",
-    val passwordErrorMessage: String? = null
-)
 
 @HiltViewModel
 class UserProfileViewModel @Inject constructor(
     private val accountService: AccountService,
     private val userRepository: UserRepository,
     @ApplicationContext private val context: Context
-): PetVitalsAppViewModel() {
+): ViewModel() {
 
     private val _uiState = MutableStateFlow(UserProfileUiState())
     val uiState = _uiState.asStateFlow()
@@ -47,10 +39,19 @@ class UserProfileViewModel @Inject constructor(
         getUserData()
     }
 
-    fun logout() {
-        launchCatching {
-            accountService.logout()
+    fun onAction(action: UserProfileAction) {
+        when (action) {
+            is UserProfileAction.Retry -> getUserData()
+            is UserProfileAction.Logout -> logout()
+            is UserProfileAction.DeleteAccount -> deleteAccount()
+            is UserProfileAction.ShowModal -> showModal(action.show)
+            is UserProfileAction.OnPasswordChange -> onPasswordChange(action.password)
+            is UserProfileAction.SendPasswordResetEmail -> sendPasswordResetEmail()
         }
+    }
+
+    fun logout() {
+        accountService.logout()
     }
 
     fun deleteAccount() {
@@ -69,7 +70,7 @@ class UserProfileViewModel @Inject constructor(
                     }
                 }
 
-                val currentUserId = accountService.currentUserId ?: return@launch //TODO: Handle this
+                val currentUserId = accountService.currentUserId ?: return@launch
 
                 userRepository.deleteUser(currentUserId)
                 when (val deleteResult = accountService.deleteAccount()) {
@@ -81,6 +82,7 @@ class UserProfileViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
+                Timber.e(e)
                 _uiState.update { state ->
                     state.copy(passwordErrorMessage = context.getString(R.string.unexpected_error))
                 }
@@ -99,22 +101,39 @@ class UserProfileViewModel @Inject constructor(
     }
 
     fun getUserData() {
+        _uiState.update { state -> state.startLoading() }
+
         viewModelScope.launch {
-            val currentUserId = accountService.currentUserId ?: return@launch //TODO: Handle this
-            val user = when (val result = userRepository.getUserById(currentUserId)) {
-                is AppResult.Success -> result.data
-                is AppResult.Failure -> return@launch
+            val currentUserId = accountService.currentUserId
+            if (currentUserId == null) {
+                _uiState.update { state ->
+                    state.showError(R.string.session_expired_error)
+                }
+                return@launch
             }
 
-            if (user != null) {
+            val user = when (val result = userRepository.getUserById(currentUserId)) {
+                is AppResult.Success -> result.data
+                is AppResult.Failure -> {
+                    val errorMessageRes = when (result.error) {
+                        FirestoreError.Network -> R.string.network_error
+                        FirestoreError.PermissionDenied -> R.string.you_do_not_have_permission_to_access_this_data
+                        FirestoreError.Unauthenticated -> R.string.session_expired_error
+                        FirestoreError.Unknown -> R.string.unexpected_error
+                    }
+                    _uiState.update { state ->
+                        state.showError(errorMessageRes)
+                    }
+                    return@launch
+                }
+            }
+
+            if (user == null) {
                 _uiState.update { state ->
-                    state.copy(
-                        username = user.username,
-                        email = user.email
-                    )
+                    state.showError(R.string.user_profile_not_found_error)
                 }
             } else {
-                //TODO: Handle this
+                _uiState.update { state -> state.showUser(user) }
             }
         }
     }
