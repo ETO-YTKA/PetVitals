@@ -49,13 +49,15 @@ import com.example.petvitals.R
 import com.example.petvitals.domain.models.Pet
 import com.example.petvitals.domain.models.PetSpecies
 import com.example.petvitals.ui.components.ButtonWithIcon
+import com.example.petvitals.ui.components.CenterAlignedTopBar
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.DatePickerField
 import com.example.petvitals.ui.components.DatePickerModal
+import com.example.petvitals.ui.components.ResetTopBarWhenNotScrollable
 import com.example.petvitals.ui.components.ScreenLayout
-import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.components.ValueDropDown
+import com.example.petvitals.ui.components.rememberTopBarScrollBehavior
 import com.example.petvitals.ui.navigation.AddEditRecord
 import com.example.petvitals.ui.utils.decodeBase64ToImage
 
@@ -68,7 +70,15 @@ fun AddEditRecordScreen(
     viewModel: AddEditRecordViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val scrollBehavior = rememberTopBarScrollBehavior()
+    val contentScrollState = rememberScrollState()
     val context = LocalContext.current
+
+    ResetTopBarWhenNotScrollable(
+        scrollBehavior = scrollBehavior,
+        canScrollBackward = contentScrollState.canScrollBackward,
+        canScrollForward = contentScrollState.canScrollForward
+    )
 
     LaunchedEffect(Unit) {
         addEditRecord.recordId?.let { id ->
@@ -104,6 +114,7 @@ fun AddEditRecordScreen(
     }
 
     ScreenLayout(
+        scrollBehavior = scrollBehavior,
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         topBar = {
@@ -111,7 +122,8 @@ fun AddEditRecordScreen(
                 null -> stringResource(R.string.create_record)
                 else -> stringResource(R.string.edit_record)
             }
-            TopBar(
+            CenterAlignedTopBar(
+                scrollBehavior = scrollBehavior,
                 title = { Text(title) },
                 navigationIcon = {
                     CustomIconButton(
@@ -123,7 +135,7 @@ fun AddEditRecordScreen(
             )
         },
         columnModifier = Modifier
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(contentScrollState)
             .padding( vertical = 8.dp)
     ) {
         //Title

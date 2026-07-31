@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -34,12 +35,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.domain.models.PermissionLevel
 import com.example.petvitals.ui.components.ButtonWithIcon
+import com.example.petvitals.ui.components.CenterAlignedTopBar
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.DropDownOption
+import com.example.petvitals.ui.components.ResetTopBarWhenNotScrollable
 import com.example.petvitals.ui.components.ScreenLayout
-import com.example.petvitals.ui.components.TopBar
 import com.example.petvitals.ui.components.ValueDropDown
+import com.example.petvitals.ui.components.rememberTopBarScrollBehavior
 
 @Composable
 fun SharePetScreen(
@@ -49,15 +52,26 @@ fun SharePetScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val permissionErrorMessageRes = uiState.permissionErrorMessageRes
+    val scrollBehavior = rememberTopBarScrollBehavior()
+    val listState = rememberLazyListState()
 
     LaunchedEffect(Unit) {
         viewModel.getPetPermissions(petId)
     }
 
+    ResetTopBarWhenNotScrollable(
+        scrollBehavior = scrollBehavior,
+        canScrollBackward = listState.canScrollBackward,
+        canScrollForward = listState.canScrollForward,
+        contentVisible = permissionErrorMessageRes == null
+    )
+
     ScreenLayout(
+        scrollBehavior = scrollBehavior,
         horizontalAlignment = Alignment.Start,
         topBar = {
-            TopBar(
+            CenterAlignedTopBar(
+                scrollBehavior = scrollBehavior,
                 title = { Text(stringResource(R.string.pet_sharing)) },
                 navigationIcon = {
                     CustomIconButton(
@@ -83,6 +97,7 @@ fun SharePetScreen(
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
+                state = listState,
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {

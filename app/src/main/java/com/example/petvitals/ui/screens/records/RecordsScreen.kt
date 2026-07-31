@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -57,6 +58,7 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -87,8 +89,10 @@ import com.example.petvitals.domain.models.Pet
 import com.example.petvitals.domain.models.PetSpecies
 import com.example.petvitals.domain.models.Record
 import com.example.petvitals.domain.models.RecordType
+import com.example.petvitals.ui.components.CenterAlignedTopBar
+import com.example.petvitals.ui.components.ResetTopBarWhenNotScrollable
 import com.example.petvitals.ui.components.ScreenLayout
-import com.example.petvitals.ui.components.TopBar
+import com.example.petvitals.ui.components.rememberTopBarScrollBehavior
 import com.example.petvitals.ui.utils.decodeBase64ToImage
 import com.example.petvitals.ui.utils.formatDateToStringLocale
 
@@ -101,8 +105,17 @@ fun RecordsScreen(
     viewModel: RecordsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val scrollBehavior = rememberTopBarScrollBehavior()
+    val listState = rememberLazyListState()
+
+    ResetTopBarWhenNotScrollable(
+        scrollBehavior = scrollBehavior,
+        canScrollBackward = listState.canScrollBackward,
+        canScrollForward = listState.canScrollForward
+    )
 
     ScreenLayout(
+        scrollBehavior = scrollBehavior,
         topBar = {
             val keyboardController = LocalSoftwareKeyboardController.current
             val focusManager = LocalFocusManager.current
@@ -117,7 +130,8 @@ fun RecordsScreen(
                 isSelectionMode = uiState.selectionMode,
                 onDeleteClick = viewModel::deleteSelectedRecords,
                 onAddClick = { onNavigateToAddEditRecord(null) },
-                onNavigateToProfile = onNavigateToProfile
+                onNavigateToProfile = onNavigateToProfile,
+                scrollBehavior = scrollBehavior
             )
         }
     ) {
@@ -127,6 +141,7 @@ fun RecordsScreen(
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
+                state = listState,
                 contentPadding = PaddingValues(vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -548,10 +563,12 @@ fun RecordsTopAppBar(
     onDeleteClick: () -> Unit,
     onAddClick: () -> Unit,
     onNavigateToProfile: () -> Unit,
+    scrollBehavior: TopAppBarScrollBehavior,
     modifier: Modifier = Modifier
 ) {
-    TopBar(
+    CenterAlignedTopBar(
         modifier = modifier,
+        scrollBehavior = scrollBehavior,
         title = {
             SearchAppBarField(
                 query = searchQuery,

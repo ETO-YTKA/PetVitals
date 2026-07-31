@@ -15,8 +15,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -41,9 +40,12 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.petvitals.R
+import com.example.petvitals.ui.components.CenterAlignedTopBar
 import com.example.petvitals.ui.components.CustomMediumButton
 import com.example.petvitals.ui.components.CustomSnackbarHost
 import com.example.petvitals.ui.components.CustomTextField
+import com.example.petvitals.ui.components.ResetTopBarWhenNotScrollable
+import com.example.petvitals.ui.components.rememberTopBarScrollBehavior
 import com.example.petvitals.ui.components.showSnackbar
 import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.ui.theme.PetVitalsTheme
@@ -86,21 +88,50 @@ private fun LoginScreenContent(
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
 ) {
+    val scrollBehavior = rememberTopBarScrollBehavior()
+    val contentScrollState = rememberScrollState()
+
+    ResetTopBarWhenNotScrollable(
+        scrollBehavior = scrollBehavior,
+        canScrollBackward = contentScrollState.canScrollBackward,
+        canScrollForward = contentScrollState.canScrollForward
+    )
+
     Scaffold(
-        topBar = { TopBar() },
+        topBar = {
+            CenterAlignedTopBar(
+                scrollBehavior = scrollBehavior,
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_pets),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = stringResource(R.string.app_name),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            )
+        },
         snackbarHost = {
             CustomSnackbarHost(
                 hostState = snackbarHostState
             )
         },
-        modifier = modifier
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .imePadding()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(contentScrollState)
                 .padding(horizontal = Dimen.Screen.horizontalPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -128,30 +159,6 @@ private fun LoginScreenContent(
             }
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TopBar(modifier: Modifier = Modifier) {
-    CenterAlignedTopAppBar(
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_pets),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = stringResource(R.string.app_name),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        },
-        modifier = modifier
-    )
 }
 
 @Composable

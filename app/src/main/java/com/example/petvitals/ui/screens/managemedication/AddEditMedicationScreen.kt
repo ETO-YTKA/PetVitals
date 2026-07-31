@@ -36,13 +36,15 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.ButtonWithIcon
+import com.example.petvitals.ui.components.CenterAlignedTopBar
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.DatePickerField
 import com.example.petvitals.ui.components.DatePickerModal
 import com.example.petvitals.ui.components.Loading
+import com.example.petvitals.ui.components.ResetTopBarWhenNotScrollable
 import com.example.petvitals.ui.components.ScreenLayout
-import com.example.petvitals.ui.components.TopBar
+import com.example.petvitals.ui.components.rememberTopBarScrollBehavior
 import com.example.petvitals.ui.navigation.AddEditMedication
 import com.example.petvitals.ui.utils.formatDateToString
 import java.util.Date
@@ -55,18 +57,28 @@ fun AddEditMedicationScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val permissionErrorMessageRes = uiState.permissionErrorMessageRes
+    val scrollBehavior = rememberTopBarScrollBehavior()
+    val contentScrollState = rememberScrollState()
 
     LaunchedEffect(Unit) {
         viewModel.loadInitialData(addEditMedication)
     }
 
+    ResetTopBarWhenNotScrollable(
+        scrollBehavior = scrollBehavior,
+        canScrollBackward = contentScrollState.canScrollBackward,
+        canScrollForward = contentScrollState.canScrollForward,
+        contentVisible = !uiState.isLoading && permissionErrorMessageRes == null
+    )
+
     ScreenLayout(
+        scrollBehavior = scrollBehavior,
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.Start,
         columnModifier = Modifier
             .padding(vertical = 8.dp)
             .fillMaxSize()
-            .then(if (uiState.isLoading) Modifier else Modifier.verticalScroll(rememberScrollState())),
+            .then(if (uiState.isLoading) Modifier else Modifier.verticalScroll(contentScrollState)),
         topBar = {
             val titleText = stringResource(
                 when (addEditMedication.medicationId) {
@@ -75,7 +87,8 @@ fun AddEditMedicationScreen(
                 }
             )
 
-            TopBar(
+            CenterAlignedTopBar(
+                scrollBehavior = scrollBehavior,
                 title = { Text(titleText) },
                 navigationIcon = {
                     CustomIconButton(

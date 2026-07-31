@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
@@ -33,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -45,8 +47,10 @@ import com.example.petvitals.R
 import com.example.petvitals.domain.models.PermissionLevel
 import com.example.petvitals.domain.models.Pet
 import com.example.petvitals.domain.models.PetSpecies
+import com.example.petvitals.ui.components.CenterAlignedTopBar
 import com.example.petvitals.ui.components.CustomIconButton
-import com.example.petvitals.ui.components.TopBar
+import com.example.petvitals.ui.components.ResetTopBarWhenNotScrollable
+import com.example.petvitals.ui.components.rememberTopBarScrollBehavior
 import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.ui.theme.PetVitalsTheme
 import com.example.petvitals.ui.utils.decodeBase64ToImage
@@ -82,9 +86,22 @@ private fun PetsScreenContent(
     onNavigateToPetProfile: (String) -> Unit,
     onNavigateToUserProfile: () -> Unit,
 ) {
+    val scrollBehavior = rememberTopBarScrollBehavior()
+    val listState = rememberLazyListState()
+    val pets = uiState.pets
+
+    ResetTopBarWhenNotScrollable(
+        scrollBehavior = scrollBehavior,
+        canScrollBackward = listState.canScrollBackward,
+        canScrollForward = listState.canScrollForward,
+        contentVisible = uiState.errorMessage == null && (pets.isNotEmpty() || uiState.isRefreshing)
+    )
+
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopBar(
+            CenterAlignedTopBar(
+                scrollBehavior = scrollBehavior,
                 title = { Text(stringResource(R.string.pets)) },
                 navigationIcon = {
                     CustomIconButton(
@@ -110,8 +127,6 @@ private fun PetsScreenContent(
                 .padding(horizontal = Dimen.Screen.horizontalPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val pets = uiState.pets
-
             PullToRefreshBox(
                 isRefreshing = uiState.isRefreshing,
                 onRefresh = { onAction(PetsAction.RefreshPets) }
@@ -168,6 +183,7 @@ private fun PetsScreenContent(
                     else -> {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
+                            state = listState,
                             contentPadding = PaddingValues(vertical = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {

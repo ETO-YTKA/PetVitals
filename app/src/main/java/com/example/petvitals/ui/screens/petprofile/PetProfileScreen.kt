@@ -44,7 +44,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -60,6 +60,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
@@ -82,11 +83,14 @@ import com.example.petvitals.domain.models.Pet
 import com.example.petvitals.domain.models.PetSpecies
 import com.example.petvitals.domain.models.canDeletePet
 import com.example.petvitals.domain.models.canManagePetCare
+import com.example.petvitals.ui.components.CenterAlignedTopBar
 import com.example.petvitals.ui.components.ConfirmationDialog
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomSnackbarHost
 import com.example.petvitals.ui.components.Loading
+import com.example.petvitals.ui.components.ResetTopBarWhenNotScrollable
 import com.example.petvitals.ui.components.SnackbarState
+import com.example.petvitals.ui.components.rememberTopBarScrollBehavior
 import com.example.petvitals.ui.components.showSnackbar
 import com.example.petvitals.ui.navigation.AddEditFood
 import com.example.petvitals.ui.navigation.AddEditMedication
@@ -160,10 +164,26 @@ private fun PetProfileScreenContent(
         return
     }
 
+    val scrollBehavior = rememberTopBarScrollBehavior()
+    val contentScrollState = rememberScrollState()
     val loadErrorMessageRes = uiState.loadErrorMessageRes
+
+    ResetTopBarWhenNotScrollable(
+        scrollBehavior = scrollBehavior,
+        canScrollBackward = contentScrollState.canScrollBackward,
+        canScrollForward = contentScrollState.canScrollForward,
+        contentVisible = loadErrorMessageRes == null
+    )
+
     if (loadErrorMessageRes != null) {
         Scaffold(
-            topBar = { PetProfileTopBar(onNavigateToPets) }
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            topBar = {
+                PetProfileTopBar(
+                    onNavigateToPets = onNavigateToPets,
+                    scrollBehavior = scrollBehavior
+                )
+            }
         ) { paddingValues ->
             Box(
                 modifier = Modifier
@@ -184,10 +204,16 @@ private fun PetProfileScreenContent(
     }
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = {
             CustomSnackbarHost(hostState = snackbarHostState)
         },
-        topBar = { PetProfileTopBar(onNavigateToPets) }
+        topBar = {
+            PetProfileTopBar(
+                onNavigateToPets = onNavigateToPets,
+                scrollBehavior = scrollBehavior
+            )
+        }
     ) { paddingValues ->
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -196,7 +222,7 @@ private fun PetProfileScreenContent(
                 .padding(horizontal = Dimen.Screen.horizontalPadding)
                 .fillMaxSize()
                 .imePadding()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(contentScrollState)
         ) {
             PetProfileHeader(uiState = uiState)
 
@@ -336,8 +362,12 @@ private fun PetProfileScreenContent(
 }
 
 @Composable
-private fun PetProfileTopBar(onNavigateToPets: () -> Unit) {
-    TopAppBar(
+private fun PetProfileTopBar(
+    onNavigateToPets: () -> Unit,
+    scrollBehavior: TopAppBarScrollBehavior
+) {
+    CenterAlignedTopBar(
+        scrollBehavior = scrollBehavior,
         title = { Text(stringResource(R.string.pet_profile)) },
         navigationIcon = {
             CustomIconButton(

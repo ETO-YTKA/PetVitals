@@ -30,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -41,13 +42,15 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.example.petvitals.R
+import com.example.petvitals.ui.components.CenterAlignedTopBar
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomMediumButton
 import com.example.petvitals.ui.components.CustomTextField
 import com.example.petvitals.ui.components.Loading
 import com.example.petvitals.ui.components.PopUpHost
-import com.example.petvitals.ui.components.TopBar
+import com.example.petvitals.ui.components.ResetTopBarWhenNotScrollable
 import com.example.petvitals.ui.components.ValueDropDown
+import com.example.petvitals.ui.components.rememberTopBarScrollBehavior
 import com.example.petvitals.ui.navigation.AddEditPet
 import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.ui.theme.PetVitalsTheme
@@ -95,9 +98,20 @@ private fun ManagePetScreenContent(
         onDismiss = { action(ManagePetAction.DismissPopUp) }
     )
 
+    val scrollBehavior = rememberTopBarScrollBehavior()
+    val contentScrollState = rememberScrollState()
+
+    ResetTopBarWhenNotScrollable(
+        scrollBehavior = scrollBehavior,
+        canScrollBackward = contentScrollState.canScrollBackward,
+        canScrollForward = contentScrollState.canScrollForward
+    )
+
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopBar(
+            CenterAlignedTopBar(
+                scrollBehavior = scrollBehavior,
                 title = {
                     Text(
                         stringResource(
@@ -121,7 +135,7 @@ private fun ManagePetScreenContent(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = Dimen.Screen.horizontalPadding)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(contentScrollState),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {

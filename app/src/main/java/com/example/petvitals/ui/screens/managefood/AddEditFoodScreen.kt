@@ -22,10 +22,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.ButtonWithIcon
+import com.example.petvitals.ui.components.CenterAlignedTopBar
 import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.Loading
+import com.example.petvitals.ui.components.ResetTopBarWhenNotScrollable
 import com.example.petvitals.ui.components.ScreenLayout
-import com.example.petvitals.ui.components.TopBar
+import com.example.petvitals.ui.components.rememberTopBarScrollBehavior
 import com.example.petvitals.ui.navigation.AddEditFood
 
 @Composable
@@ -36,6 +38,8 @@ fun AddEditFoodScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val permissionErrorMessageRes = uiState.permissionErrorMessageRes
+    val scrollBehavior = rememberTopBarScrollBehavior()
+    val contentScrollState = rememberScrollState()
 
     LaunchedEffect(Unit) {
         viewModel.loadInitialData(
@@ -44,20 +48,29 @@ fun AddEditFoodScreen(
         )
     }
 
+    ResetTopBarWhenNotScrollable(
+        scrollBehavior = scrollBehavior,
+        canScrollBackward = contentScrollState.canScrollBackward,
+        canScrollForward = contentScrollState.canScrollForward,
+        contentVisible = !uiState.isLoading && permissionErrorMessageRes == null
+    )
+
     ScreenLayout(
+        scrollBehavior = scrollBehavior,
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.Start,
         columnModifier = Modifier
             .padding(vertical = 8.dp)
             .fillMaxSize()
-            .then(if (uiState.isLoading) Modifier else Modifier.verticalScroll(rememberScrollState())),
+            .then(if (uiState.isLoading) Modifier else Modifier.verticalScroll(contentScrollState)),
         topBar = {
             val title = when (addEditFood.foodId) {
                 null -> stringResource(R.string.add_food)
                 else -> stringResource(R.string.edit_food)
             }
 
-            TopBar(
+            CenterAlignedTopBar(
+                scrollBehavior = scrollBehavior,
                 title = { Text(title) },
                 navigationIcon = {
                     IconButton(
