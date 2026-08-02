@@ -21,7 +21,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.petvitals.R
-import com.example.petvitals.ui.screens.managefood.AddEditFoodScreen
+import com.example.petvitals.ui.screens.managefood.ManageFoodScreen
 import com.example.petvitals.ui.screens.managemedication.AddEditMedicationScreen
 import com.example.petvitals.ui.screens.managepet.ManagePetScreen
 import com.example.petvitals.ui.screens.managerecord.AddEditRecordScreen
@@ -135,7 +135,7 @@ fun MainAppScreen(
             }
             composable<AddEditFood> { backStackEntry ->
                 val addEditFood: AddEditFood = backStackEntry.toRoute()
-                AddEditFoodScreen(
+                ManageFoodScreen(
                     addEditFood = addEditFood,
                     onPopBackStack = { navController.popBackStack() }
                 )

@@ -10,8 +10,10 @@ import com.example.petvitals.domain.models.PermissionLevel
 import com.example.petvitals.domain.repository.FoodRepository
 import com.example.petvitals.domain.repository.MedicationRepository
 import com.example.petvitals.domain.usecase.GetPetPermissionUseCase
+import com.example.petvitals.domain.validator.FoodDataValidator
 import com.example.petvitals.ui.navigation.AddEditMedication
-import com.example.petvitals.ui.screens.managefood.AddEditFoodViewModel
+import com.example.petvitals.ui.screens.managefood.ManageFoodAction
+import com.example.petvitals.ui.screens.managefood.ManageFoodViewModel
 import com.example.petvitals.ui.screens.managemedication.AddEditMedicationViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -64,32 +66,36 @@ class CareEditorPermissionTest {
     }
 
     @Test
-    fun foodEditor_asViewer_hidesFormAndRejectsSave() = runTest(dispatcher) {
+    fun foodEditor_asViewer_rejectsSave() = runTest(dispatcher) {
         val repository = FakeFoodRepository()
-        val viewModel = AddEditFoodViewModel(
+        val permissionUseCase = FakeGetPetPermissionUseCase(PermissionLevel.VIEWER)
+        val viewModel = ManageFoodViewModel(
             foodRepository = repository,
-            getPetPermission = FakeGetPetPermissionUseCase(PermissionLevel.VIEWER),
-            context = ContextWrapper(null)
+            getPetPermission = permissionUseCase,
+            foodValidator = FoodDataValidator()
         )
 
         viewModel.loadInitialData(petId = PET_ID, foodId = null)
         advanceUntilIdle()
-        viewModel.save {}
+        assertEquals(0, permissionUseCase.calls)
+
+        viewModel.onAction(ManageFoodAction.OnNameChange("Dry food"))
+        viewModel.onAction(ManageFoodAction.OnPortionChange("100 g"))
+        viewModel.onAction(ManageFoodAction.OnFrequencyChange("Twice daily"))
+        viewModel.onAction(ManageFoodAction.OnSave {})
         advanceUntilIdle()
 
-        assertFalse(viewModel.uiState.value.hasEditPermission)
-        assertEquals(
-            R.string.pet_care_edit_access_denied,
-            viewModel.uiState.value.permissionErrorMessageRes
-        )
+        assertEquals(1, permissionUseCase.calls)
         assertEquals(0, repository.saveCalls)
     }
 
     private class FakeGetPetPermissionUseCase(
         private val permissionLevel: PermissionLevel
     ) : GetPetPermissionUseCase {
+        var calls = 0
+
         override suspend fun invoke(petId: String): AppResult<FirestoreError, PermissionLevel> =
-            AppResult.Success(permissionLevel)
+            AppResult.Success(permissionLevel).also { calls++ }
     }
 
     private class FakeMedicationRepository : MedicationRepository {

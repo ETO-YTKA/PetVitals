@@ -8,65 +8,81 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.petvitals.R
-import com.example.petvitals.ui.components.ButtonWithIcon
 import com.example.petvitals.ui.components.CenterAlignedTopBar
-import com.example.petvitals.ui.components.CustomOutlinedTextField
+import com.example.petvitals.ui.components.CustomMediumButton
+import com.example.petvitals.ui.components.CustomTextField
 import com.example.petvitals.ui.components.Loading
 import com.example.petvitals.ui.components.ResetTopBarWhenNotScrollable
 import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.rememberTopBarScrollBehavior
 import com.example.petvitals.ui.navigation.AddEditFood
+import com.example.petvitals.ui.theme.Dimen
+import com.example.petvitals.ui.theme.PetVitalsTheme
 
 @Composable
-fun AddEditFoodScreen(
+fun ManageFoodScreen(
     addEditFood: AddEditFood,
     onPopBackStack: () -> Unit,
-    viewModel: AddEditFoodViewModel = hiltViewModel()
+    viewModel: ManageFoodViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val permissionErrorMessageRes = uiState.permissionErrorMessageRes
-    val scrollBehavior = rememberTopBarScrollBehavior()
-    val contentScrollState = rememberScrollState()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(addEditFood) {
         viewModel.loadInitialData(
             petId = addEditFood.petId,
             foodId = addEditFood.foodId
         )
     }
 
+    ManageFoodScreenContent(
+        uiState = uiState,
+        onAction = viewModel::onAction,
+        isEditing = addEditFood.foodId != null,
+        onPopBackStack = onPopBackStack
+    )
+}
+
+@Composable
+private fun ManageFoodScreenContent(
+    uiState: ManageFoodUiState,
+    onAction: (ManageFoodAction) -> Unit,
+    isEditing: Boolean,
+    onPopBackStack: () -> Unit
+) {
+    val scrollBehavior = rememberTopBarScrollBehavior()
+    val contentScrollState = rememberScrollState()
+
     ResetTopBarWhenNotScrollable(
         scrollBehavior = scrollBehavior,
         canScrollBackward = contentScrollState.canScrollBackward,
         canScrollForward = contentScrollState.canScrollForward,
-        contentVisible = !uiState.isLoading && permissionErrorMessageRes == null
+        contentVisible = !uiState.isLoading
     )
 
     ScreenLayout(
         scrollBehavior = scrollBehavior,
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.Start,
         columnModifier = Modifier
             .padding(vertical = 8.dp)
             .fillMaxSize()
             .then(if (uiState.isLoading) Modifier else Modifier.verticalScroll(contentScrollState)),
         topBar = {
-            val title = when (addEditFood.foodId) {
-                null -> stringResource(R.string.add_food)
-                else -> stringResource(R.string.edit_food)
+            val title = if (isEditing) {
+                stringResource(R.string.edit_food)
+            } else {
+                stringResource(R.string.add_food)
             }
 
             CenterAlignedTopBar(
@@ -85,20 +101,13 @@ fun AddEditFoodScreen(
             )
         }
     ) {
-
         if (uiState.isLoading) {
             Loading()
-        } else if (permissionErrorMessageRes != null) {
-            Text(
-                text = stringResource(permissionErrorMessageRes),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         } else {
 
-            CustomOutlinedTextField(
+            CustomTextField(
                 value = uiState.name,
-                onValueChange = { viewModel.onNameChange(it) },
+                onValueChange = { onAction(ManageFoodAction.OnNameChange(it)) },
                 label = { Text(stringResource(R.string.name)) },
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = {
@@ -107,13 +116,13 @@ fun AddEditFoodScreen(
                         contentDescription = null
                     )
                 },
-                isError = uiState.nameErrorMessage != null,
-                supportingText = uiState.nameErrorMessage
+                isError = uiState.nameErrorMessageRes != null,
+                supportingText = uiState.nameErrorMessageRes?.let { { Text(stringResource(it)) } }
             )
 
-            CustomOutlinedTextField(
+            CustomTextField(
                 value = uiState.portion,
-                onValueChange = { viewModel.onPortionChange(it) },
+                onValueChange = { onAction(ManageFoodAction.OnPortionChange(it)) },
                 label = { Text(stringResource(R.string.portion)) },
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = {
@@ -122,13 +131,13 @@ fun AddEditFoodScreen(
                         contentDescription = null
                     )
                 },
-                isError = uiState.portionErrorMessage != null,
-                supportingText = uiState.portionErrorMessage
+                isError = uiState.portionErrorMessageRes != null,
+                supportingText = uiState.portionErrorMessageRes?.let { { Text(stringResource(it)) } }
             )
 
-            CustomOutlinedTextField(
+            CustomTextField(
                 value = uiState.frequency,
-                onValueChange = { viewModel.onFrequencyChange(it) },
+                onValueChange = { onAction(ManageFoodAction.OnFrequencyChange(it)) },
                 label = { Text(stringResource(R.string.frequency)) },
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = {
@@ -137,13 +146,13 @@ fun AddEditFoodScreen(
                         contentDescription = null
                     )
                 },
-                isError = uiState.frequencyErrorMessage != null,
-                supportingText = uiState.frequencyErrorMessage
+                isError = uiState.frequencyErrorMessageRes != null,
+                supportingText = uiState.frequencyErrorMessageRes?.let { { Text(stringResource(it)) } }
             )
 
-            CustomOutlinedTextField(
+            CustomTextField(
                 value = uiState.note,
-                onValueChange = { viewModel.onNoteChange(it) },
+                onValueChange = { onAction(ManageFoodAction.OnNoteChange(it)) },
                 label = { Text(stringResource(R.string.note)) },
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = {
@@ -152,21 +161,32 @@ fun AddEditFoodScreen(
                         contentDescription = null
                     )
                 },
-                isError = uiState.noteErrorMessage != null,
-                supportingText = uiState.noteErrorMessage
+                isError = uiState.noteErrorMessageRes != null,
+                supportingText = uiState.noteErrorMessageRes?.let { { Text(stringResource(it)) } }
             )
 
-            ButtonWithIcon(
-                text = stringResource(R.string.save),
-                onClick = { viewModel.save(onSuccess = onPopBackStack) },
-                icon = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_save),
-                        contentDescription = stringResource(R.string.save)
-                    )
-                },
+            CustomMediumButton(
+                onClick = { onAction(ManageFoodAction.OnSave(onSuccess = onPopBackStack)) },
                 modifier = Modifier.fillMaxWidth()
-            )
+            ) {
+                Text(
+                    text = stringResource(R.string.save),
+                    fontSize = Dimen.FontSize.mediumButton
+                )
+            }
         }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun ManageFoodScreenContentPreview() {
+    PetVitalsTheme {
+        ManageFoodScreenContent(
+            uiState = ManageFoodUiState(),
+            onAction = {},
+            isEditing = false,
+            onPopBackStack = {}
+        )
     }
 }
