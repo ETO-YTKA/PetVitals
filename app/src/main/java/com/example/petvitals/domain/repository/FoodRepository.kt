@@ -7,6 +7,6 @@ import com.example.petvitals.domain.models.Food
 interface FoodRepository {
     suspend fun getAllFood(petId: String): AppResult<FirestoreError, List<Food>>
     suspend fun getFoodById(petId: String, foodId: String): Food?
-    suspend fun saveFood(food: Food)
+    suspend fun saveFood(food: Food): AppResult<FirestoreError, Unit>
     suspend fun deleteFood(food: Food): AppResult<FirestoreError, Unit>
 }

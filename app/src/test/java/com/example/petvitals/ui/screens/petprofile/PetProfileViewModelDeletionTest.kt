@@ -326,7 +326,9 @@ class PetProfileViewModelDeletionTest {
             petId: String
         ): AppResult<FirestoreError, List<Food>> = AppResult.Success(food)
         override suspend fun getFoodById(petId: String, foodId: String): Food? = null
-        override suspend fun saveFood(food: Food) = Unit
+        override suspend fun saveFood(
+            food: Food
+        ): AppResult<FirestoreError, Unit> = AppResult.Success(Unit)
         override suspend fun deleteFood(food: Food): AppResult<FirestoreError, Unit> {
             deleteCalls++
             return deleteResult

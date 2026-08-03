@@ -1,6 +1,7 @@
 package com.example.petvitals.ui.screens.managefood
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -8,11 +9,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -25,11 +30,12 @@ import com.example.petvitals.ui.components.CustomMediumButton
 import com.example.petvitals.ui.components.CustomTextField
 import com.example.petvitals.ui.components.Loading
 import com.example.petvitals.ui.components.ResetTopBarWhenNotScrollable
-import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.rememberTopBarScrollBehavior
+import com.example.petvitals.ui.components.showSnackbar
 import com.example.petvitals.ui.navigation.AddEditFood
 import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.ui.theme.PetVitalsTheme
+import com.example.petvitals.ui.utils.ObserveAsEvents
 
 @Composable
 fun ManageFoodScreen(
@@ -38,6 +44,7 @@ fun ManageFoodScreen(
     viewModel: ManageFoodViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(addEditFood) {
         viewModel.loadInitialData(
@@ -46,10 +53,19 @@ fun ManageFoodScreen(
         )
     }
 
+    ObserveAsEvents(viewModel.events) {
+        when (it) {
+            is ManageFoodEvent.OnShowSnackbar -> {
+                snackbarHostState.showSnackbar(it.snackbarState)
+            }
+        }
+    }
+
     ManageFoodScreenContent(
         uiState = uiState,
-        onAction = viewModel::onAction,
         isEditing = addEditFood.foodId != null,
+        snackbarHostState = snackbarHostState,
+        onAction = viewModel::onAction,
         onPopBackStack = onPopBackStack
     )
 }
@@ -57,8 +73,9 @@ fun ManageFoodScreen(
 @Composable
 private fun ManageFoodScreenContent(
     uiState: ManageFoodUiState,
-    onAction: (ManageFoodAction) -> Unit,
     isEditing: Boolean,
+    snackbarHostState: SnackbarHostState,
+    onAction: (ManageFoodAction) -> Unit,
     onPopBackStack: () -> Unit
 ) {
     val scrollBehavior = rememberTopBarScrollBehavior()
@@ -71,13 +88,8 @@ private fun ManageFoodScreenContent(
         contentVisible = !uiState.isLoading
     )
 
-    ScreenLayout(
-        scrollBehavior = scrollBehavior,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        columnModifier = Modifier
-            .padding(vertical = 8.dp)
-            .fillMaxSize()
-            .then(if (uiState.isLoading) Modifier else Modifier.verticalScroll(contentScrollState)),
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             val title = if (isEditing) {
                 stringResource(R.string.edit_food)
@@ -100,79 +112,88 @@ private fun ManageFoodScreenContent(
                 }
             )
         }
-    ) {
-        if (uiState.isLoading) {
-            Loading()
-        } else {
+    ) { paddingValues ->
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .padding(paddingValues)
+                .padding(horizontal = Dimen.Screen.horizontalPadding)
+                .fillMaxSize()
+                .verticalScroll(contentScrollState)
+        ) {
+            if (uiState.isLoading) {
+                Loading()
+            } else {
 
-            CustomTextField(
-                value = uiState.name,
-                onValueChange = { onAction(ManageFoodAction.OnNameChange(it)) },
-                label = { Text(stringResource(R.string.name)) },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_label),
-                        contentDescription = null
-                    )
-                },
-                isError = uiState.nameErrorMessageRes != null,
-                supportingText = uiState.nameErrorMessageRes?.let { { Text(stringResource(it)) } }
-            )
-
-            CustomTextField(
-                value = uiState.portion,
-                onValueChange = { onAction(ManageFoodAction.OnPortionChange(it)) },
-                label = { Text(stringResource(R.string.portion)) },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_scale),
-                        contentDescription = null
-                    )
-                },
-                isError = uiState.portionErrorMessageRes != null,
-                supportingText = uiState.portionErrorMessageRes?.let { { Text(stringResource(it)) } }
-            )
-
-            CustomTextField(
-                value = uiState.frequency,
-                onValueChange = { onAction(ManageFoodAction.OnFrequencyChange(it)) },
-                label = { Text(stringResource(R.string.frequency)) },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_history),
-                        contentDescription = null
-                    )
-                },
-                isError = uiState.frequencyErrorMessageRes != null,
-                supportingText = uiState.frequencyErrorMessageRes?.let { { Text(stringResource(it)) } }
-            )
-
-            CustomTextField(
-                value = uiState.note,
-                onValueChange = { onAction(ManageFoodAction.OnNoteChange(it)) },
-                label = { Text(stringResource(R.string.note)) },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_sticky_note),
-                        contentDescription = null
-                    )
-                },
-                isError = uiState.noteErrorMessageRes != null,
-                supportingText = uiState.noteErrorMessageRes?.let { { Text(stringResource(it)) } }
-            )
-
-            CustomMediumButton(
-                onClick = { onAction(ManageFoodAction.OnSave(onSuccess = onPopBackStack)) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = stringResource(R.string.save),
-                    fontSize = Dimen.FontSize.mediumButton
+                CustomTextField(
+                    value = uiState.name,
+                    onValueChange = { onAction(ManageFoodAction.OnNameChange(it)) },
+                    label = { Text(stringResource(R.string.name)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_label),
+                            contentDescription = null
+                        )
+                    },
+                    isError = uiState.nameErrorMessageRes != null,
+                    supportingText = uiState.nameErrorMessageRes?.let { { Text(stringResource(it)) } }
                 )
+
+                CustomTextField(
+                    value = uiState.portion,
+                    onValueChange = { onAction(ManageFoodAction.OnPortionChange(it)) },
+                    label = { Text(stringResource(R.string.portion)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_scale),
+                            contentDescription = null
+                        )
+                    },
+                    isError = uiState.portionErrorMessageRes != null,
+                    supportingText = uiState.portionErrorMessageRes?.let { { Text(stringResource(it)) } }
+                )
+
+                CustomTextField(
+                    value = uiState.frequency,
+                    onValueChange = { onAction(ManageFoodAction.OnFrequencyChange(it)) },
+                    label = { Text(stringResource(R.string.frequency)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_history),
+                            contentDescription = null
+                        )
+                    },
+                    isError = uiState.frequencyErrorMessageRes != null,
+                    supportingText = uiState.frequencyErrorMessageRes?.let { { Text(stringResource(it)) } }
+                )
+
+                CustomTextField(
+                    value = uiState.note,
+                    onValueChange = { onAction(ManageFoodAction.OnNoteChange(it)) },
+                    label = { Text(stringResource(R.string.note)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_sticky_note),
+                            contentDescription = null
+                        )
+                    },
+                    isError = uiState.noteErrorMessageRes != null,
+                    supportingText = uiState.noteErrorMessageRes?.let { { Text(stringResource(it)) } }
+                )
+
+                CustomMediumButton(
+                    onClick = { onAction(ManageFoodAction.OnSave(onSuccess = onPopBackStack)) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(R.string.save),
+                        fontSize = Dimen.FontSize.mediumButton
+                    )
+                }
             }
         }
     }
@@ -184,8 +205,9 @@ private fun ManageFoodScreenContentPreview() {
     PetVitalsTheme {
         ManageFoodScreenContent(
             uiState = ManageFoodUiState(),
-            onAction = {},
             isEditing = false,
+            snackbarHostState = SnackbarHostState(),
+            onAction = {},
             onPopBackStack = {}
         )
     }

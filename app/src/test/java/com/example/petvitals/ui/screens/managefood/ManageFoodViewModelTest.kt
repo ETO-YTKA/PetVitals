@@ -1,11 +1,11 @@
 package com.example.petvitals.ui.screens.managefood
 
+import android.content.ContextWrapper
 import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.error.FirestoreError
 import com.example.petvitals.domain.models.Food
-import com.example.petvitals.domain.models.PermissionLevel
 import com.example.petvitals.domain.repository.FoodRepository
-import com.example.petvitals.domain.usecase.GetPetPermissionUseCase
+import com.example.petvitals.domain.usecase.SaveFoodUseCase
 import com.example.petvitals.domain.validator.FoodDataValidator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,15 +38,16 @@ class ManageFoodViewModelTest {
     @Test
     fun saveInAddMode_usesRoutePetId() = runTest(dispatcher) {
         val repository = FakeFoodRepository()
-        val viewModel = createViewModel(repository)
+        val saveFoodUseCase = FakeSaveFoodUseCase()
+        val viewModel = createViewModel(repository, saveFoodUseCase)
 
         viewModel.loadInitialData(PET_ID, foodId = null)
         enterValidFood(viewModel)
         viewModel.onAction(ManageFoodAction.OnSave {})
         advanceUntilIdle()
 
-        assertEquals(PET_ID, repository.savedFood?.petId)
-        assertTrue(repository.savedFood?.id?.isNotBlank() == true)
+        assertEquals(PET_ID, saveFoodUseCase.savedFood?.petId)
+        assertTrue(saveFoodUseCase.savedFood?.id?.isNotBlank() == true)
     }
 
     @Test
@@ -60,7 +61,8 @@ class ManageFoodViewModelTest {
                 frequency = "Twice daily"
             )
         )
-        val viewModel = createViewModel(repository)
+        val saveFoodUseCase = FakeSaveFoodUseCase()
+        val viewModel = createViewModel(repository, saveFoodUseCase)
 
         viewModel.loadInitialData(PET_ID, FOOD_ID)
         advanceUntilIdle()
@@ -68,14 +70,18 @@ class ManageFoodViewModelTest {
         viewModel.onAction(ManageFoodAction.OnSave {})
         advanceUntilIdle()
 
-        assertEquals(FOOD_ID, repository.savedFood?.id)
-        assertEquals("Updated food", repository.savedFood?.name)
+        assertEquals(FOOD_ID, saveFoodUseCase.savedFood?.id)
+        assertEquals("Updated food", saveFoodUseCase.savedFood?.name)
     }
 
-    private fun createViewModel(repository: FoodRepository) = ManageFoodViewModel(
+    private fun createViewModel(
+        repository: FoodRepository,
+        saveFoodUseCase: SaveFoodUseCase
+    ) = ManageFoodViewModel(
         foodRepository = repository,
-        getPetPermission = FakeGetPetPermissionUseCase(PermissionLevel.EDITOR),
-        foodValidator = FoodDataValidator()
+        saveFoodUseCase = saveFoodUseCase,
+        foodValidator = FoodDataValidator(),
+        context = ContextWrapper(null)
     )
 
     private fun enterValidFood(viewModel: ManageFoodViewModel) {
@@ -84,32 +90,31 @@ class ManageFoodViewModelTest {
         viewModel.onAction(ManageFoodAction.OnFrequencyChange("Twice daily"))
     }
 
-    private class FakeGetPetPermissionUseCase(
-        private val permissionLevel: PermissionLevel
-    ) : GetPetPermissionUseCase {
-        override suspend fun invoke(
-            petId: String
-        ): AppResult<FirestoreError, PermissionLevel> = AppResult.Success(permissionLevel)
-    }
-
     private class FakeFoodRepository(
         private val loadedFood: Food? = null
     ) : FoodRepository {
-        var savedFood: Food? = null
-
         override suspend fun getAllFood(
             petId: String
         ): AppResult<FirestoreError, List<Food>> = AppResult.Success(emptyList())
 
         override suspend fun getFoodById(petId: String, foodId: String): Food? = loadedFood
 
-        override suspend fun saveFood(food: Food) {
-            savedFood = food
-        }
+        override suspend fun saveFood(
+            food: Food
+        ): AppResult<FirestoreError, Unit> = AppResult.Success(Unit)
 
         override suspend fun deleteFood(
             food: Food
         ): AppResult<FirestoreError, Unit> = AppResult.Success(Unit)
+    }
+
+    private class FakeSaveFoodUseCase : SaveFoodUseCase {
+        var savedFood: Food? = null
+
+        override suspend fun invoke(food: Food): AppResult<FirestoreError, Unit> {
+            savedFood = food
+            return AppResult.Success(Unit)
+        }
     }
 
     private companion object {

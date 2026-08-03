@@ -1,6 +1,5 @@
 package com.example.petvitals.data.repository
 
-import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.data.utils.safeFirestoreCall
 import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.error.FirestoreError
@@ -12,18 +11,20 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.tasks.await
 
 class FoodRepositoryImpl @Inject constructor(
-    private val firestore: FirebaseFirestore,
-    private val accountService: AccountService
+    private val firestore: FirebaseFirestore
 ): FoodRepository {
-    override suspend fun getAllFood(
-        petId: String
-    ): AppResult<FirestoreError, List<Food>> = safeFirestoreCall {
-        firestore
-            .collection("pets").document(petId)
-            .collection("food")
-            .get()
-            .await()
-            .map { it.toObject<Food>() }
+
+    override suspend fun getAllFood(petId: String): AppResult<FirestoreError, List<Food>> {
+
+        return safeFirestoreCall {
+            firestore
+                .collection(FirestoreCollections.PETS)
+                .document(petId)
+                .collection(FirestoreCollections.FOOD)
+                .get()
+                .await()
+                .map { it.toObject<Food>() }
+        }
     }
 
     override suspend fun getFoodById(
@@ -32,29 +33,38 @@ class FoodRepositoryImpl @Inject constructor(
     ): Food? {
 
         return firestore
-            .collection("pets").document(petId)
-            .collection("food").document(foodId)
+            .collection(FirestoreCollections.PETS)
+            .document(petId)
+            .collection(FirestoreCollections.FOOD)
+            .document(foodId)
             .get()
             .await()
             .toObject<Food>()
     }
 
-    override suspend fun saveFood(food: Food) {
+    override suspend fun saveFood(food: Food): AppResult<FirestoreError, Unit> {
 
-        firestore
-            .collection("pets").document(food.petId)
-            .collection("food").document(food.id)
-            .set(food)
-            .await()
+        return safeFirestoreCall {
+            firestore
+                .collection(FirestoreCollections.PETS)
+                .document(food.petId)
+                .collection(FirestoreCollections.FOOD)
+                .document(food.id)
+                .set(food)
+                .await()
+        }
     }
 
-    override suspend fun deleteFood(
-        food: Food
-    ): AppResult<FirestoreError, Unit> = safeFirestoreCall<Unit> {
-        firestore
-            .collection("pets").document(food.petId)
-            .collection("food").document(food.id)
-            .delete()
-            .await()
+    override suspend fun deleteFood(food: Food): AppResult<FirestoreError, Unit> {
+
+        return safeFirestoreCall {
+            firestore
+                .collection(FirestoreCollections.PETS)
+                .document(food.petId)
+                .collection(FirestoreCollections.FOOD)
+                .document(food.id)
+                .delete()
+                .await()
+        }
     }
 }

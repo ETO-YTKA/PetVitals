@@ -2,9 +2,11 @@ package com.example.petvitals.di
 
 import com.example.petvitals.data.usecase.CreatePetUseCaseImpl
 import com.example.petvitals.data.usecase.GetPetPermissionUseCaseImpl
+import com.example.petvitals.data.usecase.SaveFoodUseCaseImpl
 import com.example.petvitals.data.usecase.SignUpUseCaseImpl
 import com.example.petvitals.domain.usecase.CreatePetUseCase
 import com.example.petvitals.domain.usecase.GetPetPermissionUseCase
+import com.example.petvitals.domain.usecase.SaveFoodUseCase
 import com.example.petvitals.domain.usecase.SignUpUseCase
 import dagger.Binds
 import dagger.Module
@@ -25,4 +27,7 @@ abstract class UseCaseModule {
     abstract fun bindGetPetPermissionUseCase(
         getPetPermissionUseCase: GetPetPermissionUseCaseImpl
     ): GetPetPermissionUseCase
+
+    @Binds
+    abstract fun bindSaveFoodUseCase(saveFood: SaveFoodUseCaseImpl): SaveFoodUseCase
 }

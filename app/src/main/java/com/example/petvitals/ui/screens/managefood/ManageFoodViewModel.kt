@@ -1,32 +1,41 @@
 package com.example.petvitals.ui.screens.managefood
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.models.Food
-import com.example.petvitals.domain.models.canManagePetCare
 import com.example.petvitals.domain.repository.FoodRepository
-import com.example.petvitals.domain.usecase.GetPetPermissionUseCase
+import com.example.petvitals.domain.usecase.SaveFoodUseCase
 import com.example.petvitals.domain.validator.FoodDataValidator
+import com.example.petvitals.ui.components.SnackbarState
+import com.example.petvitals.ui.components.SnackbarType
+import com.example.petvitals.ui.utils.toMessageRes
 import com.example.petvitals.ui.utils.toMessageResOrNull
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.util.UUID
 
 @HiltViewModel
 class ManageFoodViewModel @Inject constructor(
     private val foodRepository: FoodRepository,
-    private val getPetPermission: GetPetPermissionUseCase,
-    private val foodValidator: FoodDataValidator
+    private val saveFoodUseCase: SaveFoodUseCase,
+    private val foodValidator: FoodDataValidator,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ManageFoodUiState())
     val uiState = _uiState.asStateFlow()
+
+    private val _eventChannel = Channel<ManageFoodEvent>()
+    val events = _eventChannel.receiveAsFlow()
 
     fun onAction(action: ManageFoodAction) {
         when (action) {
@@ -122,19 +131,14 @@ class ManageFoodViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            val permissionResult = getPetPermission(uiState.petId)
-            val canSave = permissionResult is AppResult.Success &&
-                    permissionResult.data.canManagePetCare
-
-            if (!canSave) return@launch
-
-            try {
-                foodRepository.saveFood(food)
-                //TODO
-                onSuccess()
-            } catch (e: Exception) {
-                Timber.d(e.message.orEmpty())
-                //TODO
+            when (val result = saveFoodUseCase.invoke(food)) {
+                is AppResult.Success -> onSuccess()
+                is AppResult.Failure -> {
+                    showSnackbar(
+                        message = context.getString(result.error.toMessageRes()),
+                        snackbarType = SnackbarType.ERROR
+                    )
+                }
             }
         }
     }
@@ -201,5 +205,19 @@ class ManageFoodViewModel @Inject constructor(
             frequencyErrorMessageRes,
             noteErrorMessageRes
         ).all { it == null }
+    }
+
+    private suspend fun showSnackbar(
+        message: String,
+        snackbarType: SnackbarType
+    ) {
+        _eventChannel.send(
+            ManageFoodEvent.OnShowSnackbar(
+                snackbarState = SnackbarState(
+                    message = message,
+                    snackbarType = snackbarType
+                )
+            )
+        )
     }
 }
