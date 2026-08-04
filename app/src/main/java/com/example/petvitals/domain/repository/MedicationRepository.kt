@@ -7,7 +7,10 @@ import com.example.petvitals.domain.models.Medication
 interface MedicationRepository {
 
     suspend fun getMedications(petId: String): AppResult<FirestoreError, List<Medication>>
-    suspend fun saveMedication(medication: Medication)
+    suspend fun saveMedication(medication: Medication): AppResult<FirestoreError, Unit>
     suspend fun deleteMedication(medication: Medication): AppResult<FirestoreError, Unit>
-    suspend fun getMedicationById(medicationId: String, petId: String): Medication?
+    suspend fun getMedicationById(
+        petId: String,
+        medicationId: String
+    ): AppResult<FirestoreError, Medication?>
 }

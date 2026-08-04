@@ -22,7 +22,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.petvitals.R
 import com.example.petvitals.ui.screens.managefood.ManageFoodScreen
-import com.example.petvitals.ui.screens.managemedication.AddEditMedicationScreen
+import com.example.petvitals.ui.screens.managemedication.ManageMedicationScreen
 import com.example.petvitals.ui.screens.managepet.ManagePetScreen
 import com.example.petvitals.ui.screens.managerecord.AddEditRecordScreen
 import com.example.petvitals.ui.screens.petprofile.PetProfileScreen
@@ -128,7 +128,7 @@ fun MainAppScreen(
 
             composable<AddEditMedication> { backStackEntry ->
                 val addEditMedication: AddEditMedication = backStackEntry.toRoute()
-                AddEditMedicationScreen(
+                ManageMedicationScreen(
                     addEditMedication = addEditMedication,
                     onPopBackStack = { navController.popBackStack() }
                 )

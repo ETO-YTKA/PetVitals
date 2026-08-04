@@ -306,14 +306,19 @@ class PetProfileViewModelDeletionTest {
         override suspend fun getMedications(
             petId: String
         ): AppResult<FirestoreError, List<Medication>> = getResult
-        override suspend fun saveMedication(medication: Medication) = Unit
+        override suspend fun saveMedication(
+            medication: Medication
+        ): AppResult<FirestoreError, Unit> = AppResult.Success(Unit)
         override suspend fun deleteMedication(
             medication: Medication
         ): AppResult<FirestoreError, Unit> {
             deleteCalls++
             return deleteResult
         }
-        override suspend fun getMedicationById(medicationId: String, petId: String): Medication? = null
+        override suspend fun getMedicationById(
+            petId: String,
+            medicationId: String
+        ): AppResult<FirestoreError, Medication?> = AppResult.Success(null)
     }
 
     private class FakeFoodRepository(

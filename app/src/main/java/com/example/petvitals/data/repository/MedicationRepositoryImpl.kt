@@ -1,6 +1,5 @@
 package com.example.petvitals.data.repository
 
-import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.data.utils.safeFirestoreCall
 import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.error.FirestoreError
@@ -12,7 +11,6 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.tasks.await
 
 class MedicationRepositoryImpl @Inject constructor(
-    private val accountService: AccountService,
     private val firestore: FirebaseFirestore
 ) : MedicationRepository {
 
@@ -20,41 +18,47 @@ class MedicationRepositoryImpl @Inject constructor(
         petId: String
     ): AppResult<FirestoreError, List<Medication>> = safeFirestoreCall {
         firestore
-            .collection("pets").document(petId)
-            .collection("medications")
+            .collection(FirestoreCollections.PETS)
+            .document(petId)
+            .collection(FirestoreCollections.MEDICATIONS)
             .get()
             .await()
             .map { it.toObject<Medication>() }
     }
 
-    override suspend fun saveMedication(medication: Medication) {
-
-        accountService.currentUserId
+    override suspend fun saveMedication(
+        medication: Medication
+    ): AppResult<FirestoreError, Unit> = safeFirestoreCall {
         firestore
-            .collection("pets").document(medication.petId)
-            .collection("medications").document(medication.id)
+            .collection(FirestoreCollections.PETS)
+            .document(medication.petId)
+            .collection(FirestoreCollections.MEDICATIONS)
+            .document(medication.id)
             .set(medication)
             .await()
     }
 
     override suspend fun deleteMedication(
         medication: Medication
-    ): AppResult<FirestoreError, Unit> = safeFirestoreCall<Unit> {
+    ): AppResult<FirestoreError, Unit> = safeFirestoreCall {
         firestore
-            .collection("pets").document(medication.petId)
-            .collection("medications").document(medication.id)
+            .collection(FirestoreCollections.PETS)
+            .document(medication.petId)
+            .collection(FirestoreCollections.MEDICATIONS)
+            .document(medication.id)
             .delete()
             .await()
     }
 
     override suspend fun getMedicationById(
-        medicationId: String,
-        petId: String
-    ): Medication? {
-
-        return firestore
-            .collection("pets").document(petId)
-            .collection("medications").document(medicationId)
+        petId: String,
+        medicationId: String
+    ): AppResult<FirestoreError, Medication?> = safeFirestoreCall {
+        firestore
+            .collection(FirestoreCollections.PETS)
+            .document(petId)
+            .collection(FirestoreCollections.MEDICATIONS)
+            .document(medicationId)
             .get()
             .await()
             .toObject<Medication>()

@@ -32,6 +32,7 @@
     <string name="species">Вид</string>
     <string name="date_of_birth">Дата рождения</string>
     <string name="tap_to_select_date">Нажмите, чтобы выбрать дату</string>
+    <string name="select_date">Выберите дату</string>
     <string name="ok">ОК</string>
     <string name="cancel">Отмена</string>
     <string name="retry">Повторить</string>
@@ -164,6 +165,15 @@
     <string name="regular">Регулярный</string>
     <string name="regularly">Регулярно</string>
     <string name="specific_dates">Конкретные даты</string>
+    <string name="medication_schedule_helper">Укажите, принимается ли препарат постоянно или в определенный период.</string>
+    <string name="medication_schedule_ongoing">Постоянно</string>
+    <string name="medication_schedule_date_range">Период</string>
+    <string name="medication_ongoing_helper">Даты начала и окончания не требуются.</string>
+    <string name="medication_end_date_optional">Дата окончания (необязательно)</string>
+    <string name="medication_end_date_helper">Оставьте дату окончания пустой, если срок завершения лечения не запланирован.</string>
+    <string name="select_start_date">Выберите дату начала</string>
+    <string name="select_end_date">Выберите дату окончания</string>
+    <string name="clear_end_date">Очистить дату окончания</string>
     <string name="ongoing">Принимается</string>
     <string name="scheduled">Запланировано</string>
     <string name="completed">Завершено</string>
@@ -272,6 +282,7 @@
     <string name="medication_start_date_must_be_selected_error">Необходимо выбрать дату начала.</string>
     <string name="medication_start_date_cannot_be_after_end_date_error">Дата окончания должна быть после даты начала.</string>
     <string name="medication_note_too_long_error">Заметка не может превышать 500 символов.</string>
+    <string name="medication_not_found_error">Не удалось найти этот препарат.</string>
     <string name="something_went_wrong_please_try_again_error">Ой! Что-то пошло не так. Пожалуйста, попробуйте снова.</string>
     <string name="today">Сегодня</string>
     <string name="yesterday">Вчера</string>

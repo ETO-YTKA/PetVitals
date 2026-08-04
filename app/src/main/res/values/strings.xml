@@ -35,6 +35,7 @@
     <string name="species">Species</string>
     <string name="date_of_birth">Date of Birth</string>
     <string name="tap_to_select_date">Tap to select date</string>
+    <string name="select_date">Select date</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="retry">Retry</string>
@@ -163,9 +164,18 @@
     <string name="end_date">End Date</string>
     <string name="medication_name">Name</string>
     <string name="regular">Regular</string>
-    <string name="medication_schedule">Schedule</string>
+    <string name="medication_schedule">Medication schedule</string>
     <string name="regularly">Regularly</string>
     <string name="specific_dates">Specific dates</string>
+    <string name="medication_schedule_helper">Choose whether this medication is ongoing or follows a date range.</string>
+    <string name="medication_schedule_ongoing">Ongoing</string>
+    <string name="medication_schedule_date_range">Date range</string>
+    <string name="medication_ongoing_helper">No start or end date required.</string>
+    <string name="medication_end_date_optional">End date (optional)</string>
+    <string name="medication_end_date_helper">Leave End date blank if treatment has no planned stop date.</string>
+    <string name="select_start_date">Select start date</string>
+    <string name="select_end_date">Select end date</string>
+    <string name="clear_end_date">Clear end date</string>
     <string name="ongoing">Ongoing</string>
     <string name="scheduled">Scheduled</string>
     <string name="completed">Completed</string>
@@ -267,6 +277,7 @@
     <string name="medication_start_date_must_be_selected_error">Start date must be selected.</string>
     <string name="medication_start_date_cannot_be_after_end_date_error">Start date must be before the end date.</string>
     <string name="medication_note_too_long_error">Note cannot exceed 500 characters.</string>
+    <string name="medication_not_found_error">This medication could not be found.</string>
     <string name="something_went_wrong_please_try_again_error">Oops! Something went wrong. Please try again.</string>
     <string name="food_name_cannot_be_empty_error">Food name cannot be empty.</string>
     <string name="food_name_too_long_error">Name cannot exceed 50 characters.</string>
