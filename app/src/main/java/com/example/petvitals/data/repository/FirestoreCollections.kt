@@ -7,7 +7,5 @@ object FirestoreCollections {
     const val PET_MEMBERS = "petMembers"
     const val FOOD = "food"
     const val MEDICATIONS = "medications"
-    const val RECORD_REFS = "recordRefs"
-
-    const val RECORD_GROUPS = "recordGroups"
+    const val RECORDS = "records"
 }

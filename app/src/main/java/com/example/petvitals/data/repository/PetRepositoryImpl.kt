@@ -85,7 +85,7 @@ class PetRepositoryImpl @Inject constructor(
             listOf(
                 FirestoreCollections.FOOD,
                 FirestoreCollections.MEDICATIONS,
-                FirestoreCollections.RECORD_REFS
+                FirestoreCollections.RECORDS
             ).forEach { subcollection ->
                 deleteCollection(petRef.collection(subcollection))
             }

@@ -43,7 +43,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.example.petvitals.R
 import com.example.petvitals.domain.models.Pet
@@ -184,6 +184,8 @@ fun AddEditRecordScreen(
         //Save button
         ButtonWithIcon(
             text = stringResource(R.string.save),
+            enabled = !uiState.isSaving &&
+                (addEditRecord.recordId == null || uiState.isEditRecordLoaded),
             onClick = {
                 viewModel.saveRecord(
                     recordId = addEditRecord.recordId,
@@ -198,6 +200,22 @@ fun AddEditRecordScreen(
             },
             modifier = Modifier.fillMaxWidth()
         )
+
+        uiState.recordLoadErrorMessage?.let { message ->
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        uiState.saveErrorMessage?.let { message ->
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
     }
 }
 
@@ -213,7 +231,11 @@ fun AttachedPetsSection(
             .padding(top = 8.dp)
             .border(
                 1.dp,
-                MaterialTheme.colorScheme.outline,
+                if (uiState.petSelectionErrorMessage == null) {
+                    MaterialTheme.colorScheme.outline
+                } else {
+                    MaterialTheme.colorScheme.error
+                },
                 MaterialTheme.shapes.large
             )
             .padding(8.dp),
@@ -245,6 +267,15 @@ fun AttachedPetsSection(
                     isSelected = true,
                 )
             }
+        }
+
+        uiState.petSelectionErrorMessage?.let { message ->
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
         }
     }
 }

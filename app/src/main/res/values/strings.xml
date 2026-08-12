@@ -68,6 +68,7 @@
 
     <!-- Create record -->
     <string name="create_record">Create Record</string>
+    <string name="new_record">New record</string>
     <string name="title">Title</string>
     <string name="type">Type</string>
     <string name="date">Date</string>
@@ -83,7 +84,21 @@
 
     <!-- Records -->
     <string name="records">Records</string>
+    <string name="records_search_label">Search records</string>
+    <string name="records_search_placeholder">Title or notes</string>
+    <string name="records_empty_title">No records yet</string>
+    <string name="records_empty_message">Create a record to start building your pet’s care history.</string>
+    <string name="records_no_results_title">No matching records</string>
+    <string name="records_no_results_message">Try changing your search or filters.</string>
+    <string name="clear_filters">Clear filters</string>
+    <string name="delete_record_title">Delete record?</string>
+    <string name="delete_record_confirmation">This permanently removes the record from every linked pet.</string>
+    <string name="records_error_title">Couldn’t load records</string>
+    <string name="records_no_description">No additional notes.</string>
     <string name="attach_pet">Attach pet</string>
+    <string name="select_at_least_one_pet_error">Select at least one pet.</string>
+    <string name="record_save_failed">Couldn’t save this record. Please try again.</string>
+    <string name="record_changed_reloaded">This record changed elsewhere. The latest version was loaded.</string>
     <string name="search">Search</string>
 
     <!-- Pet profile -->
@@ -244,7 +259,6 @@
     <string name="no_pets_added_yet">No pets have been added yet</string>
     <string name="clear_search">Clear search</string>
     <string name="filter_by_pet">Filter by pet</string>
-    <string name="selected_option">Selected</string>
     <string name="filter_by_type">Filter by type</string>
     <string name="email_sent">A verification email has been sent to %1$s. Please check your inbox.</string>
     <string name="failed_to_send_email">Couldn\'t send verification email. Please try again later.</string>

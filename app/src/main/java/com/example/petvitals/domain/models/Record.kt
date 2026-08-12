@@ -9,15 +9,15 @@ import java.util.Date
 import java.util.UUID
 
 data class Record(
+    @get:Exclude
     val id: String = UUID.randomUUID().toString(),
-    val userId: String = "",
     val title: String = "",
     val type: RecordType = RecordType.NOTE,
-    val date: Date = Date(),
-    val description: String = "",
+    val eventDate: Date? = null,
+    val createdAt: Date = Date(),
+    val description: String? = null,
     val petIds: List<String> = emptyList(),
-    @get:Exclude
-    val currentUserPermission: PermissionLevel = PermissionLevel.OWNER
+    val revision: Long = 0
 )
 
 enum class RecordType(@StringRes val titleResId: Int, @DrawableRes val iconResId: Int, val color: Color) {

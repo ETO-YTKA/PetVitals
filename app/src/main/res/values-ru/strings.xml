@@ -62,6 +62,7 @@
 
     <!-- Create record -->
     <string name="create_record">Создать запись</string>
+    <string name="new_record">Новая запись</string>
     <string name="title">Заголовок</string>
     <string name="type">Тип</string>
     <string name="date">Дата</string>
@@ -77,6 +78,20 @@
 
     <!-- Records -->
     <string name="records">Записи</string>
+    <string name="records_search_label">Поиск записей</string>
+    <string name="records_search_placeholder">Название или заметки</string>
+    <string name="records_empty_title">Записей пока нет</string>
+    <string name="records_empty_message">Создайте первую запись, чтобы начать историю ухода за питомцем.</string>
+    <string name="records_no_results_title">Подходящих записей нет</string>
+    <string name="records_no_results_message">Измените запрос или выбранные фильтры.</string>
+    <string name="clear_filters">Сбросить фильтры</string>
+    <string name="delete_record_title">Удалить запись?</string>
+    <string name="delete_record_confirmation">Запись будет навсегда удалена у всех связанных питомцев.</string>
+    <string name="records_error_title">Не удалось загрузить записи</string>
+    <string name="records_no_description">Дополнительных заметок нет.</string>
+    <string name="select_at_least_one_pet_error">Выберите хотя бы одного питомца.</string>
+    <string name="record_save_failed">Не удалось сохранить запись. Повторите попытку.</string>
+    <string name="record_changed_reloaded">Запись была изменена. Загружена последняя версия.</string>
 
     <!-- Errors -->
     <string name="password_short_error">Пароль должен содержать не менее 8 символов</string>
@@ -249,7 +264,6 @@
     <string name="no_pets_added_yet">У вас пока нет питомцев</string>
     <string name="clear_search">Очистить поиск</string>
     <string name="filter_by_pet">Фильтр по питомцу</string>
-    <string name="selected_option">Выбрано</string>
     <string name="filter_by_type">Фильтр по типу</string>
     <string name="email_sent">Письмо для подтверждения отправлено на адрес %1$s. Пожалуйста, проверьте вашу почту.</string>
     <string name="failed_to_send_email">Не удалось отправить письмо для подтверждения. Пожалуйста, попробуйте позже.</string>

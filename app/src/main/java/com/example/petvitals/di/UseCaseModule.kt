@@ -1,11 +1,15 @@
 package com.example.petvitals.di
 
 import com.example.petvitals.data.usecase.CreatePetUseCaseImpl
+import com.example.petvitals.data.usecase.DeleteRecordUseCaseImpl
+import com.example.petvitals.data.usecase.GetCurrentUserRecordsImpl
 import com.example.petvitals.data.usecase.GetPetPermissionUseCaseImpl
 import com.example.petvitals.data.usecase.SaveFoodUseCaseImpl
 import com.example.petvitals.data.usecase.SaveMedicationUseCaseImpl
 import com.example.petvitals.data.usecase.SignUpUseCaseImpl
 import com.example.petvitals.domain.usecase.CreatePetUseCase
+import com.example.petvitals.domain.usecase.DeleteRecordUseCase
+import com.example.petvitals.domain.usecase.GetCurrentUserRecords
 import com.example.petvitals.domain.usecase.GetPetPermissionUseCase
 import com.example.petvitals.domain.usecase.SaveFoodUseCase
 import com.example.petvitals.domain.usecase.SaveMedicationUseCase
@@ -37,4 +41,14 @@ abstract class UseCaseModule {
     abstract fun bindSaveMedicationUseCase(
         saveMedication: SaveMedicationUseCaseImpl
     ): SaveMedicationUseCase
+
+    @Binds
+    abstract fun bindDeleteRecordUseCase(
+        deleteRecordUseCase: DeleteRecordUseCaseImpl
+    ): DeleteRecordUseCase
+
+    @Binds
+    abstract fun bindGetCurrentUserRecords(
+        getCurrentUserRecords: GetCurrentUserRecordsImpl
+    ): GetCurrentUserRecords
 }
