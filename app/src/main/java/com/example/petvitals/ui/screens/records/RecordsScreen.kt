@@ -51,6 +51,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -67,6 +68,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -97,7 +99,6 @@ import com.example.petvitals.ui.components.CustomSnackbarHost
 import com.example.petvitals.ui.components.CustomTextField
 import com.example.petvitals.ui.components.Loading
 import com.example.petvitals.ui.components.ResetTopBarWhenNotScrollable
-import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.SnackbarState
 import com.example.petvitals.ui.components.SnackbarType
 import com.example.petvitals.ui.components.rememberTopBarScrollBehavior
@@ -176,15 +177,14 @@ internal fun RecordsScreenContent(
         contentVisible = !uiState.isInitialLoading && uiState.errorMessageRes == null
     )
 
-    ScreenLayout(
-        modifier = modifier,
-        scrollBehavior = scrollBehavior,
+    Scaffold(
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = { CustomSnackbarHost(snackbarHostState) },
         floatingActionButton = {
             val expanded by remember {
                 derivedStateOf {
                     listState.firstVisibleItemIndex == 0 &&
-                        listState.firstVisibleItemScrollOffset < 24
+                            listState.firstVisibleItemScrollOffset < 24
                 }
             }
             ExtendedFloatingActionButton(
@@ -206,39 +206,46 @@ internal fun RecordsScreenContent(
                 scrollBehavior = scrollBehavior
             )
         }
-    ) {
-        PullToRefreshBox(
-            isRefreshing = uiState.isRefreshing,
-            onRefresh = { onAction(RecordsAction.OnRefresh) },
-            modifier = Modifier.fillMaxSize()
+    ) { paddingValues ->
+        Column(
+            modifier = modifier
+                .padding(paddingValues)
+                .padding(horizontal = Dimen.Screen.horizontalPadding)
+                .fillMaxSize()
         ) {
-            when {
-                uiState.isInitialLoading -> Loading()
+            PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { onAction(RecordsAction.OnRefresh) },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                when {
+                    uiState.isInitialLoading -> Loading()
 
-                uiState.errorMessageRes != null -> RecordsStateMessage(
-                    iconRes = R.drawable.ic_error,
-                    title = stringResource(R.string.records_error_title),
-                    message = stringResource(uiState.errorMessageRes),
-                    actionLabel = stringResource(R.string.retry),
-                    onAction = { onAction(RecordsAction.OnRefresh) }
-                )
+                    uiState.errorMessageRes != null -> RecordsStateMessage(
+                        iconRes = R.drawable.ic_error,
+                        title = stringResource(R.string.records_error_title),
+                        message = stringResource(uiState.errorMessageRes),
+                        actionLabel = stringResource(R.string.retry),
+                        onAction = { onAction(RecordsAction.OnRefresh) }
+                    )
 
-                uiState.records.isEmpty() -> RecordsStateMessage(
-                    iconRes = R.drawable.ic_history,
-                    title = stringResource(R.string.records_empty_title),
-                    message = stringResource(R.string.records_empty_message),
-                    actionLabel = stringResource(R.string.create_record),
-                    onAction = onNavigateToAddRecord
-                )
+                    uiState.records.isEmpty() -> RecordsStateMessage(
+                        iconRes = R.drawable.ic_history,
+                        title = stringResource(R.string.records_empty_title),
+                        message = stringResource(R.string.records_empty_message),
+                        actionLabel = stringResource(R.string.create_record),
+                        onAction = onNavigateToAddRecord
+                    )
 
-                else -> RecordsTimeline(
-                    uiState = uiState,
-                    listState = listState,
-                    onAction = onAction,
-                    onDeleteRequest = { recordPendingDeletion = it },
-                    onNavigateToEditRecord = onNavigateToEditRecord,
-                    onNavigateToPetProfile = onNavigateToPetProfile
-                )
+                    else -> RecordsTimeline(
+                        uiState = uiState,
+                        listState = listState,
+                        onAction = onAction,
+                        onDeleteRequest = { recordPendingDeletion = it },
+                        onNavigateToEditRecord = onNavigateToEditRecord,
+                        onNavigateToPetProfile = onNavigateToPetProfile
+                    )
+                }
             }
         }
     }
@@ -329,7 +336,7 @@ private fun RecordsTimeline(
                 selectedPetIds = uiState.selectedPetIds,
                 selectedTypes = uiState.selectedTypeFilters,
                 onAction = onAction,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp)
+                modifier = Modifier.padding(vertical = 12.dp)
             )
         }
 
@@ -386,8 +393,7 @@ private fun RecordsTimeline(
                             onDelete = {
                                 onDeleteRequest(record.id)
                             },
-                            onPetClick = { onNavigateToPetProfile(it.id) },
-                            modifier = Modifier.padding(horizontal = 8.dp)
+                            onPetClick = { onNavigateToPetProfile(it.id) }
                         )
                     }
                 }

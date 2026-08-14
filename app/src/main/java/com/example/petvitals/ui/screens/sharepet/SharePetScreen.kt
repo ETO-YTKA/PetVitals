@@ -3,7 +3,6 @@ package com.example.petvitals.ui.screens.sharepet
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +18,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,22 +27,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.domain.models.PermissionLevel
 import com.example.petvitals.ui.components.ButtonWithIcon
 import com.example.petvitals.ui.components.CenterAlignedTopBar
 import com.example.petvitals.ui.components.CustomIconButton
-import com.example.petvitals.ui.components.CustomOutlinedTextField
+import com.example.petvitals.ui.components.CustomTextField
 import com.example.petvitals.ui.components.DropDownOption
 import com.example.petvitals.ui.components.ResetTopBarWhenNotScrollable
-import com.example.petvitals.ui.components.ScreenLayout
 import com.example.petvitals.ui.components.ValueDropDown
 import com.example.petvitals.ui.components.rememberTopBarScrollBehavior
+import com.example.petvitals.ui.theme.Dimen
 
 @Composable
 fun SharePetScreen(
@@ -66,9 +67,8 @@ fun SharePetScreen(
         contentVisible = permissionErrorMessageRes == null
     )
 
-    ScreenLayout(
-        scrollBehavior = scrollBehavior,
-        horizontalAlignment = Alignment.Start,
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             CenterAlignedTopBar(
                 scrollBehavior = scrollBehavior,
@@ -82,81 +82,97 @@ fun SharePetScreen(
                 }
             )
         }
-    ) {
-        if (permissionErrorMessageRes != null) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = stringResource(permissionErrorMessageRes),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                state = listState,
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-            //Who has access
-            item {
-                SectionHeader(
-                    title = stringResource(R.string.who_has_access),
-                    icon = {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_group),
-                            contentDescription = null
-                        )
-                    }
-                )
-            }
-
-            if (uiState.isLoading) {
-                item {
-                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                }
-            } else if (uiState.userPermissions.isEmpty()) {
-                item {
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = Dimen.Screen.horizontalPadding)
+        ) {
+            if (permissionErrorMessageRes != null) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
-                        text = stringResource(R.string.only_you_have_access),
-                        style = MaterialTheme.typography.bodyMedium,
+                        text = stringResource(permissionErrorMessageRes),
+                        style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             } else {
-                items(
-                    items = uiState.userPermissions,
-                    key = { it.user.id }
-                ) { userPermission ->
-                    UserPermissionCard(
-                        username = userPermission.user.email,
-                        permissionLevel = userPermission.permissionLevel,
-                        onDeleteClick = { viewModel.onDeleteAccessClick(petId, userPermission.user.id) }
-                    )
-                }
-            }
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    state = listState,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    //Who has access
+                    item {
+                        SectionHeader(
+                            title = stringResource(R.string.who_has_access),
+                            icon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_group),
+                                    contentDescription = null
+                                )
+                            }
+                        )
+                    }
 
-            //Invite a new user
-            item {
-                SectionHeader(
-                    title = stringResource(R.string.invite_new_user),
-                    icon = { Icon(painter = painterResource(R.drawable.ic_person_add), contentDescription = null) },
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
+                    if (uiState.isLoading) {
+                        item {
+                            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
+                        }
+                    } else if (uiState.userPermissions.isEmpty()) {
+                        item {
+                            Text(
+                                text = stringResource(R.string.only_you_have_access),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
+                        items(
+                            items = uiState.userPermissions,
+                            key = { it.user.id }
+                        ) { userPermission ->
+                            UserPermissionCard(
+                                username = userPermission.user.email,
+                                permissionLevel = userPermission.permissionLevel,
+                                onDeleteClick = {
+                                    viewModel.onDeleteAccessClick(
+                                        petId,
+                                        userPermission.user.id
+                                    )
+                                }
+                            )
+                        }
+                    }
 
-                item {
-                    InviteUserForm(
-                        uiState = uiState,
-                        onEmailChange = viewModel::onEmailChange,
-                        onPermissionLevelChange = viewModel::onPermissionLevelChange,
-                        onShareClick = viewModel::onShareClick
-                    )
+                    //Invite a new user
+                    item {
+                        SectionHeader(
+                            title = stringResource(R.string.invite_new_user),
+                            icon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_person_add),
+                                    contentDescription = null
+                                )
+                            },
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+
+                    item {
+                        InviteUserForm(
+                            uiState = uiState,
+                            onEmailChange = viewModel::onEmailChange,
+                            onPermissionLevelChange = viewModel::onPermissionLevelChange,
+                            onShareClick = viewModel::onShareClick
+                        )
+                    }
                 }
             }
         }
@@ -238,13 +254,13 @@ private fun InviteUserForm(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            CustomOutlinedTextField(
+            CustomTextField(
                 value = uiState.email,
                 onValueChange = onEmailChange,
                 label = { Text(stringResource(R.string.email)) },
                 modifier = Modifier.fillMaxWidth(),
                 isError = uiState.shareErrorMessage != null,
-                supportingText = uiState.shareErrorMessage
+                supportingText = uiState.shareErrorMessage?.let { { Text(it) } }
             )
 
             ValueDropDown(
