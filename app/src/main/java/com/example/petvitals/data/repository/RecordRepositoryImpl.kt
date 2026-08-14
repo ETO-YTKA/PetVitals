@@ -33,45 +33,61 @@ class RecordRepositoryImpl @Inject constructor(
 
         return safeFirestoreCall {
             val currentPetIds = record.petIds.distinct()
-            val currentAnchor = currentPetIds.minOrNull()
-                ?: throw IllegalArgumentException("A record must be linked to a pet")
-            val previousAnchor = previousPetIds.distinct().minOrNull()
+            require(currentPetIds.isNotEmpty()) { "A record must be linked to a pet" }
+            val claimedPreviousPetIds = previousPetIds
+                .filter(String::isNotBlank)
+                .distinct()
 
             firestore.runTransaction { transaction ->
-                val previousRecord = previousAnchor?.let { anchorPetId ->
-                    transaction
-                        .get(recordReference(anchorPetId, record.id))
-                        .toObject<Record>()
-                        ?: throw recordTransactionException(
-                            "Record does not exist",
-                            FirebaseFirestoreException.Code.NOT_FOUND
+                if (claimedPreviousPetIds.isEmpty()) {
+                    val currentRecords = currentPetIds.associateWith { petId ->
+                        transaction
+                            .get(recordReference(petId, record.id))
+                            .toObject<Record>()
+                    }.filterValues { it != null }
+                        .mapValues { (_, storedRecord) -> requireNotNull(storedRecord) }
+
+                    when (classifyRecordCreate(record, currentRecords)) {
+                        RecordCreateState.IDEMPOTENT_RETRY -> {
+                            requireManageAccess(transaction, currentPetIds.toSet(), userId)
+                            return@runTransaction
+                        }
+                        RecordCreateState.CONFLICT -> throw recordTransactionException(
+                            "Record already exists",
+                            FirebaseFirestoreException.Code.ABORTED
                         )
+                        RecordCreateState.NEW -> Unit
+                    }
                 }
 
-                if (previousRecord == null) {
-                    val newRecordSnapshot = transaction.get(
-                        recordReference(currentAnchor, record.id)
+                val storedRecords = readKnownRecordCopies(
+                    transaction = transaction,
+                    recordId = record.id,
+                    initialPetIds = claimedPreviousPetIds
+                )
+                val previousRecord = storedRecords.maxByOrNull { it.revision }
+
+                if (claimedPreviousPetIds.isNotEmpty() && previousRecord == null) {
+                    throw recordTransactionException(
+                        "Record does not exist",
+                        FirebaseFirestoreException.Code.NOT_FOUND
                     )
-                    if (newRecordSnapshot.exists()) {
-                        throw recordTransactionException(
-                            "Record already exists",
-                            FirebaseFirestoreException.Code.ALREADY_EXISTS
-                        )
-                    }
-                } else if (previousRecord.revision != record.revision) {
+                } else if (previousRecord != null && (
+                    !recordCopiesMatchRevision(storedRecords, record.revision) ||
+                    !recordCopiesMatchIdentity(storedRecords, record.createdAt)
+                )) {
                     throw recordTransactionException(
                         "Record was changed by another client",
                         FirebaseFirestoreException.Code.ABORTED
                     )
                 }
 
-                val authoritativePreviousPetIds = previousRecord
-                    ?.petIds
-                    .orEmpty()
-                    .plus(previousAnchor)
-                    .filterNotNull()
+                val authoritativePreviousPetIds = collectKnownPreviousPetIds(
+                    claimedPetIds = claimedPreviousPetIds,
+                    storedRecords = storedRecords
+                )
                 val writePlan = createRecordWritePlan(
-                    previousPetIds = authoritativePreviousPetIds,
+                    previousPetIds = authoritativePreviousPetIds.toList(),
                     currentPetIds = currentPetIds
                 )
                 requireManageAccess(
@@ -164,6 +180,32 @@ class RecordRepositoryImpl @Inject constructor(
         }
     }
 
+    private fun readKnownRecordCopies(
+        transaction: Transaction,
+        recordId: String,
+        initialPetIds: List<String>
+    ): List<Record> {
+        val pendingPetIds = ArrayDeque(initialPetIds)
+        val visitedPetIds = mutableSetOf<String>()
+        val records = mutableListOf<Record>()
+
+        while (pendingPetIds.isNotEmpty()) {
+            val petId = pendingPetIds.removeFirst()
+            if (petId.isBlank() || !visitedPetIds.add(petId)) continue
+
+            val storedRecord = transaction
+                .get(recordReference(petId, recordId))
+                .toObject<Record>()
+                ?: continue
+            records += storedRecord
+            storedRecord.petIds.forEach { linkedPetId ->
+                if (linkedPetId !in visitedPetIds) pendingPetIds.add(linkedPetId)
+            }
+        }
+
+        return records
+    }
+
     private fun recordReference(petId: String, recordId: String): DocumentReference =
         firestore
             .collection(FirestoreCollections.PETS)
@@ -229,4 +271,54 @@ internal fun createRecordWritePlan(
         petIdsToDelete = previous - current,
         petIdsToSet = current
     )
+}
+
+internal fun collectKnownPreviousPetIds(
+    claimedPetIds: List<String>,
+    storedRecords: List<Record>
+): Set<String> = buildSet {
+    addAll(claimedPetIds.filter(String::isNotBlank))
+    storedRecords.forEach { record ->
+        addAll(record.petIds.filter(String::isNotBlank))
+    }
+}
+
+internal fun recordCopiesMatchRevision(
+    storedRecords: List<Record>,
+    expectedRevision: Long
+): Boolean = storedRecords.isNotEmpty() && storedRecords.all { it.revision == expectedRevision }
+
+internal fun recordCopiesMatchIdentity(
+    storedRecords: List<Record>,
+    incomingCreatedAt: java.util.Date
+): Boolean = storedRecords.isNotEmpty() && storedRecords.all {
+    it.createdAt == incomingCreatedAt
+}
+
+internal enum class RecordCreateState {
+    NEW,
+    IDEMPOTENT_RETRY,
+    CONFLICT
+}
+
+internal fun classifyRecordCreate(
+    incoming: Record,
+    storedRecordsByPetId: Map<String, Record>
+): RecordCreateState {
+    if (storedRecordsByPetId.isEmpty()) return RecordCreateState.NEW
+
+    val targetPetIds = incoming.petIds.filter(String::isNotBlank).toSet()
+    if (storedRecordsByPetId.keys != targetPetIds) return RecordCreateState.CONFLICT
+
+    val expected = incoming.copy(
+        petIds = targetPetIds.sorted(),
+        revision = 1
+    )
+    val matches = storedRecordsByPetId.values.all { stored ->
+        stored.copy(
+            id = incoming.id,
+            petIds = stored.petIds.filter(String::isNotBlank).toSet().sorted()
+        ) == expected
+    }
+    return if (matches) RecordCreateState.IDEMPOTENT_RETRY else RecordCreateState.CONFLICT
 }

@@ -9,5 +9,6 @@ fun FirestoreError.toMessageRes(): Int = when (this) {
     FirestoreError.Network -> R.string.network_error
     FirestoreError.PermissionDenied -> R.string.something_went_wrong_error
     FirestoreError.Unauthenticated -> R.string.session_expired_error
+    FirestoreError.Conflict -> R.string.unexpected_error
     FirestoreError.Unknown -> R.string.unexpected_error
 }

@@ -12,6 +12,15 @@
 
     <!-- PetsScreen -->
     <string name="pets">Питомцы</string>
+    <string name="add">Добавить</string>
+    <string name="change">Изменить</string>
+    <string name="no_pets_attached">Питомцы не прикреплены</string>
+    <plurals name="pets_attached_count">
+        <item quantity="one">Прикреплён %d питомец</item>
+        <item quantity="few">Прикреплено %d питомца</item>
+        <item quantity="many">Прикреплено %d питомцев</item>
+        <item quantity="other">Прикреплено %d питомца</item>
+    </plurals>
     <string name="add_pet">Добавить питомца</string>
     <string name="settings">Настройки</string>
 
@@ -92,6 +101,11 @@
     <string name="select_at_least_one_pet_error">Выберите хотя бы одного питомца.</string>
     <string name="record_save_failed">Не удалось сохранить запись. Повторите попытку.</string>
     <string name="record_changed_reloaded">Запись была изменена. Загружена последняя версия.</string>
+    <string name="record_changed_error">Запись была изменена в другом месте. Перед сохранением загрузите последнюю версию.</string>
+    <string name="record_not_found_error">Эта запись недоступна или у вас больше нет права её редактировать.</string>
+    <string name="reload_latest">Загрузить последнюю версию</string>
+    <string name="remove_pet">Убрать %1$s</string>
+    <string name="add_pet_to_record">Добавить %1$s</string>
 
     <!-- Errors -->
     <string name="password_short_error">Пароль должен содержать не менее 8 символов</string>

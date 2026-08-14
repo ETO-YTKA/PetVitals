@@ -62,6 +62,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,6 +83,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import coil3.compose.AsyncImage
 import com.example.petvitals.R
 import com.example.petvitals.domain.models.Pet
@@ -118,6 +120,16 @@ fun RecordsScreen(
     val scrollBehavior = rememberTopBarScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
     val resources = LocalResources.current
+    var hasResumedOnce by rememberSaveable { mutableStateOf(false) }
+
+    LifecycleResumeEffect(Unit) {
+        if (hasResumedOnce) {
+            viewModel.onAction(RecordsAction.OnRefresh)
+        } else {
+            hasResumedOnce = true
+        }
+        onPauseOrDispose { }
+    }
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {

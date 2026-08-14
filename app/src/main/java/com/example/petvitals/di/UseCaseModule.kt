@@ -6,6 +6,7 @@ import com.example.petvitals.data.usecase.GetCurrentUserRecordsImpl
 import com.example.petvitals.data.usecase.GetPetPermissionUseCaseImpl
 import com.example.petvitals.data.usecase.SaveFoodUseCaseImpl
 import com.example.petvitals.data.usecase.SaveMedicationUseCaseImpl
+import com.example.petvitals.data.usecase.SaveRecordUseCaseImpl
 import com.example.petvitals.data.usecase.SignUpUseCaseImpl
 import com.example.petvitals.domain.usecase.CreatePetUseCase
 import com.example.petvitals.domain.usecase.DeleteRecordUseCase
@@ -13,6 +14,7 @@ import com.example.petvitals.domain.usecase.GetCurrentUserRecords
 import com.example.petvitals.domain.usecase.GetPetPermissionUseCase
 import com.example.petvitals.domain.usecase.SaveFoodUseCase
 import com.example.petvitals.domain.usecase.SaveMedicationUseCase
+import com.example.petvitals.domain.usecase.SaveRecordUseCase
 import com.example.petvitals.domain.usecase.SignUpUseCase
 import dagger.Binds
 import dagger.Module
@@ -41,6 +43,11 @@ abstract class UseCaseModule {
     abstract fun bindSaveMedicationUseCase(
         saveMedication: SaveMedicationUseCaseImpl
     ): SaveMedicationUseCase
+
+    @Binds
+    abstract fun bindSaveRecordUseCase(
+        saveRecordUseCase: SaveRecordUseCaseImpl
+    ): SaveRecordUseCase
 
     @Binds
     abstract fun bindDeleteRecordUseCase(

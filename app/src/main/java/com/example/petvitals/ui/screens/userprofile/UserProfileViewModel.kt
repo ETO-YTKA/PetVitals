@@ -119,6 +119,7 @@ class UserProfileViewModel @Inject constructor(
                         FirestoreError.Network -> R.string.network_error
                         FirestoreError.PermissionDenied -> R.string.you_do_not_have_permission_to_access_this_data
                         FirestoreError.Unauthenticated -> R.string.session_expired_error
+                        FirestoreError.Conflict -> R.string.unexpected_error
                         FirestoreError.Unknown -> R.string.unexpected_error
                     }
                     _uiState.update { state ->

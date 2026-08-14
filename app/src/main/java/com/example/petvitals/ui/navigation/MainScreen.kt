@@ -24,7 +24,7 @@ import com.example.petvitals.R
 import com.example.petvitals.ui.screens.managefood.ManageFoodScreen
 import com.example.petvitals.ui.screens.managemedication.ManageMedicationScreen
 import com.example.petvitals.ui.screens.managepet.ManagePetScreen
-import com.example.petvitals.ui.screens.managerecord.AddEditRecordScreen
+import com.example.petvitals.ui.screens.managerecord.ManageRecordScreen
 import com.example.petvitals.ui.screens.petprofile.PetProfileScreen
 import com.example.petvitals.ui.screens.pets.PetsScreen
 import com.example.petvitals.ui.screens.records.RecordsScreen
@@ -103,9 +103,8 @@ fun MainAppScreen(
 
             composable<AddEditRecord> { backStackEntry ->
                 val addEditRecord: AddEditRecord = backStackEntry.toRoute()
-                AddEditRecordScreen(
+                ManageRecordScreen(
                     addEditRecord = addEditRecord,
-                    onNavigateToRecords = { navController.navigate(route = Records) },
                     onPopBackStack = { navController.popBackStack() }
                 )
             }

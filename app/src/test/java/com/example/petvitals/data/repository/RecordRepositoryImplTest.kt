@@ -31,6 +31,95 @@ class RecordRepositoryImplTest {
     }
 
     @Test
+    fun collectKnownPreviousPetIds_preservesClaimedAndStoredPaths() {
+        val petIds = collectKnownPreviousPetIds(
+            claimedPetIds = listOf("pet-a", "pet-b"),
+            storedRecords = listOf(
+                Record(petIds = listOf("pet-a")),
+                Record(petIds = listOf("pet-b", "pet-c"))
+            )
+        )
+
+        assertEquals(setOf("pet-a", "pet-b", "pet-c"), petIds)
+    }
+
+    @Test
+    fun recordCopiesMatchRevision_rejectsAnyDivergentRevision() {
+        assertEquals(
+            false,
+            recordCopiesMatchRevision(
+                storedRecords = listOf(Record(revision = 2), Record(revision = 3)),
+                expectedRevision = 3
+            )
+        )
+        assertEquals(
+            true,
+            recordCopiesMatchRevision(
+                storedRecords = listOf(Record(revision = 3), Record(revision = 3)),
+                expectedRevision = 3
+            )
+        )
+    }
+
+    @Test
+    fun classifyRecordCreate_identifiesNewIdempotentAndConflictingCreates() {
+        val incoming = Record(
+            id = "record-1",
+            title = "Checkup",
+            petIds = listOf("pet-a", "pet-b"),
+            createdAt = java.util.Date(1_000L),
+            revision = 0
+        )
+        val persisted = incoming.copy(revision = 1)
+
+        assertEquals(
+            RecordCreateState.NEW,
+            classifyRecordCreate(incoming, emptyMap())
+        )
+        assertEquals(
+            RecordCreateState.IDEMPOTENT_RETRY,
+            classifyRecordCreate(
+                incoming,
+                mapOf(
+                    "pet-a" to persisted.copy(id = "deserialized-a"),
+                    "pet-b" to persisted.copy(id = "deserialized-b")
+                )
+            )
+        )
+        assertEquals(
+            RecordCreateState.CONFLICT,
+            classifyRecordCreate(incoming, mapOf("pet-a" to persisted))
+        )
+        assertEquals(
+            RecordCreateState.CONFLICT,
+            classifyRecordCreate(
+                incoming,
+                mapOf(
+                    "pet-a" to persisted,
+                    "pet-b" to persisted.copy(title = "Different")
+                )
+            )
+        )
+    }
+
+    @Test
+    fun recordCopiesMatchIdentity_requiresIncomingCreationTimeToMatchEveryCopy() {
+        val stored = listOf(
+            Record(createdAt = java.util.Date(1_000L)),
+            Record(createdAt = java.util.Date(1_000L))
+        )
+
+        assertEquals(
+            true,
+            recordCopiesMatchIdentity(stored, incomingCreatedAt = java.util.Date(1_000L))
+        )
+        assertEquals(
+            false,
+            recordCopiesMatchIdentity(stored, incomingCreatedAt = java.util.Date(2_000L))
+        )
+    }
+
+    @Test
     fun mergeRecordCopies_usesContentFromHighestRevision() {
         val copies = listOf(
             Record(id = "record-1", title = "Original", revision = 1),

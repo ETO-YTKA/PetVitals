@@ -15,7 +15,9 @@ fun FirebaseFirestoreException.toFirestoreError(): FirestoreError {
         FirebaseFirestoreException.Code.DEADLINE_EXCEEDED ->
             FirestoreError.Network
 
-        else ->
-            FirestoreError.Unknown
+        FirebaseFirestoreException.Code.ABORTED ->
+            FirestoreError.Conflict
+
+        else -> FirestoreError.Unknown
     }
 }

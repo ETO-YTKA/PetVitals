@@ -390,6 +390,7 @@ class ManagePetViewModel @Inject constructor(
             )
             FirestoreError.PermissionDenied,
             FirestoreError.Unauthenticated,
+            FirestoreError.Conflict,
             FirestoreError.Unknown -> PopUpState(
                 type = PopUpType.ALERT,
                 title = context.getString(R.string.manage_pet_save_error_title),
