@@ -46,8 +46,8 @@ import com.example.petvitals.domain.models.User
 import com.example.petvitals.ui.components.CenterAlignedTopBar
 import com.example.petvitals.ui.components.CustomIconButton
 import com.example.petvitals.ui.components.CustomMediumButton
-import com.example.petvitals.ui.components.CustomOutlinedTextField
 import com.example.petvitals.ui.components.CustomSnackbarHost
+import com.example.petvitals.ui.components.CustomTextField
 import com.example.petvitals.ui.components.Loading
 import com.example.petvitals.ui.components.ResetTopBarWhenNotScrollable
 import com.example.petvitals.ui.components.rememberTopBarScrollBehavior
@@ -301,14 +301,14 @@ private fun DeleteAccountModal(
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center
                 )
-                CustomOutlinedTextField(
+                CustomTextField(
                     value = uiState.password,
                     onValueChange = onPasswordChange,
                     label = { Text(stringResource(R.string.password)) },
                     visualTransformation = PasswordVisualTransformation(),
                     singleLine = true,
                     isError = uiState.passwordErrorMessage != null,
-                    supportingText = uiState.passwordErrorMessage,
+                    supportingText = uiState.passwordErrorMessage?.let { { Text(it) } },
                     modifier = Modifier.fillMaxWidth()
                 )
             }

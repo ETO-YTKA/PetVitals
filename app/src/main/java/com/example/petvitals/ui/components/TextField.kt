@@ -7,10 +7,10 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -77,7 +77,7 @@ fun CustomTextField(
         maxLines = maxLines,
         minLines = minLines,
         interactionSource = interactionSource,
-        shape = CircleShape,
+        shape = MaterialTheme.shapes.extraLarge,
         colors = TextFieldDefaults.colors().copy(
             unfocusedIndicatorColor = Color.Transparent,
             focusedIndicatorColor = Color.Transparent
@@ -102,6 +102,11 @@ private fun CustomTextFieldPreview() {
                     modifier = Modifier.padding(16.dp),
                     isError = true,
                     supportingText = { Text("This is an error message.") }
+                )
+                CustomTextField(
+                    value = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                    onValueChange = {},
+                    modifier = Modifier.padding(16.dp)
                 )
             }
         }
