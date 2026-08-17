@@ -270,6 +270,37 @@
     <string name="invite_new_user">Пригласить пользователя</string>
     <string name="pet_sharing_add">Добавить</string>
     <string name="remove_access">Закрыть доступ</string>
+    <string name="remove_access_for">Удалить доступ для %1$s</string>
+    <string name="no_members_to_display">Нет участников для отображения.</string>
+    <plurals name="people_with_access_count">
+        <item quantity="one">%d человек</item>
+        <item quantity="few">%d человека</item>
+        <item quantity="many">%d человек</item>
+        <item quantity="other">%d человека</item>
+    </plurals>
+    <string name="create_invite">Создать приглашение</string>
+    <string name="invite_code_description">Выберите уровень доступа. Код действует один раз и истекает через 24 часа.</string>
+    <string name="generate_code">Создать код</string>
+    <string name="ready_to_share">Можно поделиться</string>
+    <string name="invite_code_shown_once">Скопируйте или отправьте код сейчас. Он показывается только один раз.</string>
+    <string name="copy_code">Копировать</string>
+    <string name="share_code">Поделиться</string>
+    <string name="active_invites">Активные приглашения</string>
+    <string name="invite_code">Код приглашения</string>
+    <string name="share_invite_code">Поделиться кодом приглашения</string>
+    <plurals name="active_invites_count">
+        <item quantity="one">%d приглашение</item>
+        <item quantity="few">%d приглашения</item>
+        <item quantity="many">%d приглашений</item>
+        <item quantity="other">%d приглашения</item>
+    </plurals>
+    <string name="created_on">Создано %1$s</string>
+    <string name="expires_on">Истекает %1$s</string>
+    <string name="revoke_invite">Отозвать приглашение</string>
+    <string name="invite_status_active">Активно</string>
+    <string name="invite_status_redeemed">Использовано</string>
+    <string name="invite_status_revoked">Отозвано</string>
+    <string name="invite_status_expired">Истекло</string>
     <string name="shared_with_user">Доступ успешно предоставлен!</string>
     <string name="something_went_wrong_error">Ой! Что-то пошло не так. Пожалуйста, попробуйте снова.</string>
     <string name="permission_level">Уровень доступа</string>

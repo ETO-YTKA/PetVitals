@@ -8,4 +8,6 @@ object FirestoreCollections {
     const val FOOD = "food"
     const val MEDICATIONS = "medications"
     const val RECORDS = "records"
+
+    const val INVITES = "invites"
 }

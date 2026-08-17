@@ -263,6 +263,33 @@
     <string name="invite_new_user">Invite Someone</string>
     <string name="pet_sharing_add">Add</string>
     <string name="remove_access">Remove Access</string>
+    <string name="remove_access_for">Remove access for %1$s</string>
+    <string name="no_members_to_display">No members to display.</string>
+    <plurals name="people_with_access_count">
+        <item quantity="one">%d person</item>
+        <item quantity="other">%d people</item>
+    </plurals>
+    <string name="create_invite">Create an invite</string>
+    <string name="invite_code_description">Choose what they can do. Each code works once and expires after 24 hours.</string>
+    <string name="generate_code">Generate code</string>
+    <string name="ready_to_share">Ready to share</string>
+    <string name="invite_code_shown_once">Copy or share this code now. It is shown only once.</string>
+    <string name="copy_code">Copy</string>
+    <string name="share_code">Share</string>
+    <string name="active_invites">Active invites</string>
+    <string name="invite_code">Invite code</string>
+    <string name="share_invite_code">Share invite code</string>
+    <plurals name="active_invites_count">
+        <item quantity="one">%d invite</item>
+        <item quantity="other">%d invites</item>
+    </plurals>
+    <string name="created_on">Created %1$s</string>
+    <string name="expires_on">Expires %1$s</string>
+    <string name="revoke_invite">Revoke invite</string>
+    <string name="invite_status_active">Active</string>
+    <string name="invite_status_redeemed">Redeemed</string>
+    <string name="invite_status_revoked">Revoked</string>
+    <string name="invite_status_expired">Expired</string>
     <string name="shared_with_user">Successfully shared!</string>
     <string name="something_went_wrong_error">Oops! Something went wrong. Please try again.</string>
     <string name="permission_level">Permission level</string>
@@ -330,4 +357,7 @@
     <string name="medication_history">Medication history (%1$d)</string>
     <string name="you_are_not_logged_in">You are not logged in</string>
     <string name="you_do_not_have_permission_to_access_this_data">You do not have permission to access this data</string>
+    <string name="share_pet_remove_access_for">Remove access for %1$s</string>
+    <string name="will_no_longer_be_able_to_view_this_pet_or_make_changes_to_it">%1$s will no longer be able to view this pet or make changes to it.</string>
+    <string name="keep_access">Keep access</string>
 </resources>
