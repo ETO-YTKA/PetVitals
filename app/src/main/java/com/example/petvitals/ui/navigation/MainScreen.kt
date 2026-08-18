@@ -21,6 +21,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.petvitals.R
+import com.example.petvitals.ui.screens.joinpet.JoinPetScreen
 import com.example.petvitals.ui.screens.managefood.ManageFoodScreen
 import com.example.petvitals.ui.screens.managemedication.ManageMedicationScreen
 import com.example.petvitals.ui.screens.managepet.ManagePetScreen
@@ -62,7 +63,8 @@ fun MainAppScreen(
                     onNavigateToPetProfile = { petId ->
                         navController.navigate(route = PetProfile(petId))
                     },
-                    onNavigateToUserProfile = { navController.navigate(route = UserProfile) }
+                    onNavigateToUserProfile = { navController.navigate(route = UserProfile) },
+                    onNavigateToJoinPet = { navController.navigate(route = JoinPet) }
                 )
             }
 
@@ -132,10 +134,17 @@ fun MainAppScreen(
                     onPopBackStack = { navController.popBackStack() }
                 )
             }
+
             composable<AddEditFood> { backStackEntry ->
                 val addEditFood: AddEditFood = backStackEntry.toRoute()
                 ManageFoodScreen(
                     addEditFood = addEditFood,
+                    onPopBackStack = { navController.popBackStack() }
+                )
+            }
+
+            composable<JoinPet> {
+                JoinPetScreen(
                     onPopBackStack = { navController.popBackStack() }
                 )
             }

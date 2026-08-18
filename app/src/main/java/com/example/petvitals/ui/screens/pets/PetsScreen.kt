@@ -18,22 +18,32 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButtonMenu
+import androidx.compose.material3.FloatingActionButtonMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleFloatingActionButton
+import androidx.compose.material3.ToggleFloatingActionButtonDefaults.animateIcon
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -62,6 +72,7 @@ fun PetsScreen(
     onNavigateToAddPet: () -> Unit,
     onNavigateToPetProfile: (String) -> Unit,
     onNavigateToUserProfile: () -> Unit,
+    onNavigateToJoinPet: () -> Unit,
     viewModel: PetsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -73,7 +84,8 @@ fun PetsScreen(
         onAction = { action -> viewModel.onAction(action) },
         onNavigateToAddPet = onNavigateToAddPet,
         onNavigateToPetProfile = onNavigateToPetProfile,
-        onNavigateToUserProfile = onNavigateToUserProfile
+        onNavigateToUserProfile = onNavigateToUserProfile,
+        onNavigateToJoinPet = onNavigateToJoinPet
     )
 }
 
@@ -85,10 +97,12 @@ private fun PetsScreenContent(
     onNavigateToAddPet: () -> Unit,
     onNavigateToPetProfile: (String) -> Unit,
     onNavigateToUserProfile: () -> Unit,
+    onNavigateToJoinPet: () -> Unit
 ) {
     val scrollBehavior = rememberTopBarScrollBehavior()
     val listState = rememberLazyListState()
     val pets = uiState.pets
+    val fabExpanded = remember { mutableStateOf(false) }
 
     ResetTopBarWhenNotScrollable(
         scrollBehavior = scrollBehavior,
@@ -109,15 +123,47 @@ private fun PetsScreenContent(
                         painter = painterResource(R.drawable.ic_person),
                         contentDescription = stringResource(R.string.user_profile)
                     )
-                },
-                actions = {
-                    CustomIconButton(
-                        onClick = onNavigateToAddPet,
-                        painter = painterResource(R.drawable.ic_add_circle),
-                        contentDescription = stringResource(R.string.add_pet)
-                    )
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButtonMenu(
+                expanded = fabExpanded.value,
+                button = {
+                    ToggleFloatingActionButton(
+                        checked = fabExpanded.value,
+                        onCheckedChange = { fabExpanded.value = !fabExpanded.value}
+                    ) {
+                        val imageVector by remember {
+                            derivedStateOf {
+                                if (checkedProgress > 0.5f) Icons.Filled.Close else Icons.Filled.Add
+                            }
+                        }
+                        Icon(
+                            painter = rememberVectorPainter(imageVector),
+                            contentDescription = null,
+                            modifier = Modifier.animateIcon({ checkedProgress }),
+                        )
+                    }
+                }
+            ) {
+                FloatingActionButtonMenuItem(
+                    onClick = onNavigateToJoinPet,
+                    text = { Text(stringResource(R.string.join_pet)) },
+                    icon = { Icon(
+                        painter = painterResource(R.drawable.ic_join),
+                        contentDescription = null
+                    ) }
+                )
+                FloatingActionButtonMenuItem(
+                    onClick = onNavigateToAddPet,
+                    text = { Text(stringResource(R.string.add_pet)) },
+                    icon = { Icon(
+                        painter = painterResource(R.drawable.ic_add_circle),
+                        contentDescription = null
+                    ) }
+                )
+            }
         }
     ) { paddingValues ->
         Column(
@@ -321,7 +367,8 @@ private fun PetsScreenContentEmptyPreview() {
             onAction = {},
             onNavigateToAddPet = {},
             onNavigateToPetProfile = {},
-            onNavigateToUserProfile = {}
+            onNavigateToUserProfile = {},
+            onNavigateToJoinPet = {}
         )
     }
 }
@@ -352,7 +399,8 @@ private fun PetsScreenContentListPreview() {
             onAction = {},
             onNavigateToAddPet = {},
             onNavigateToPetProfile = {},
-            onNavigateToUserProfile = {}
+            onNavigateToUserProfile = {},
+            onNavigateToJoinPet = {}
         )
     }
 }
@@ -366,7 +414,8 @@ private fun PetsScreenContentErrorPreview() {
             onAction = {},
             onNavigateToAddPet = {},
             onNavigateToPetProfile = {},
-            onNavigateToUserProfile = {}
+            onNavigateToUserProfile = {},
+            onNavigateToJoinPet = {}
         )
     }
 }

@@ -43,3 +43,6 @@ data class AddEditMedication(val petId: String, val medicationId: String? = null
 
 @Serializable
 data class AddEditFood(val petId: String, val foodId: String? = null)
+
+@Serializable
+object JoinPet

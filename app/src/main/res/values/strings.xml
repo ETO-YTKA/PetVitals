@@ -290,6 +290,15 @@
     <string name="invite_status_redeemed">Redeemed</string>
     <string name="invite_status_revoked">Revoked</string>
     <string name="invite_status_expired">Expired</string>
+    <string name="join_a_pet">Join a pet</string>
+    <string name="enter_invite_code">Enter your invite code</string>
+    <string name="use_invite_code">Use the 16-character code shared by the pet owner.</string>
+    <string name="invite_code_placeholder">XXXX-XXXX-XXXX-XXXX</string>
+    <string name="paste">Paste</string>
+    <string name="join_pet">Join pet</string>
+    <string name="joining_pet">Joining…</string>
+    <string name="invalid_invite_code">That invite code is invalid or no longer available.</string>
+    <string name="pet_details_hidden">Pet details stay hidden until the code is accepted.</string>
     <string name="shared_with_user">Successfully shared!</string>
     <string name="something_went_wrong_error">Oops! Something went wrong. Please try again.</string>
     <string name="permission_level">Permission level</string>

@@ -301,6 +301,15 @@
     <string name="invite_status_redeemed">Использовано</string>
     <string name="invite_status_revoked">Отозвано</string>
     <string name="invite_status_expired">Истекло</string>
+    <string name="join_a_pet">Добавить по коду</string>
+    <string name="enter_invite_code">Введите код приглашения</string>
+    <string name="use_invite_code">Используйте 16-символьный код, полученный от владельца питомца.</string>
+    <string name="invite_code_placeholder">XXXX-XXXX-XXXX-XXXX</string>
+    <string name="paste">Вставить</string>
+    <string name="join_pet">Добавить по коду</string>
+    <string name="joining_pet">Добавляем…</string>
+    <string name="invalid_invite_code">Код приглашения недействителен или больше недоступен.</string>
+    <string name="pet_details_hidden">Данные питомца будут скрыты, пока код не будет принят.</string>
     <string name="shared_with_user">Доступ успешно предоставлен!</string>
     <string name="something_went_wrong_error">Ой! Что-то пошло не так. Пожалуйста, попробуйте снова.</string>
     <string name="permission_level">Уровень доступа</string>
