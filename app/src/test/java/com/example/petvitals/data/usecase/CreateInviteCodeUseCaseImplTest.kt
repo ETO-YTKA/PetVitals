@@ -2,10 +2,10 @@ package com.example.petvitals.data.usecase
 
 import com.example.petvitals.data.utils.InviteCodeGenerator
 import com.example.petvitals.domain.AppResult
-import com.example.petvitals.domain.error.FirestoreError
-import com.example.petvitals.domain.models.Member
+import com.example.petvitals.domain.error.PetInviteError
 import com.example.petvitals.domain.models.PermissionLevel
 import com.example.petvitals.domain.models.PetInvite
+import com.example.petvitals.domain.models.User
 import com.example.petvitals.domain.repository.PetInviteRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -39,37 +39,37 @@ class CreateInviteCodeUseCaseImplTest {
     @Test
     fun invoke_whenRepositoryFails_propagatesFailure() = runTest {
         val repository = FakePetInviteRepository(
-            createResult = AppResult.Failure(FirestoreError.Network)
+            createResult = AppResult.Failure(PetInviteError.Network)
         )
         val useCase = CreateInviteCodeUseCaseImpl(repository, InviteCodeGenerator())
 
         val result = useCase(PET_ID, PermissionLevel.VIEWER)
 
         assertTrue(result is AppResult.Failure)
-        assertSame(FirestoreError.Network, (result as AppResult.Failure).error)
+        assertSame(PetInviteError.Network, (result as AppResult.Failure).error)
     }
 
     private class FakePetInviteRepository(
-        private val createResult: AppResult<FirestoreError, Unit> = AppResult.Success(Unit)
+        private val createResult: AppResult<PetInviteError, Unit> = AppResult.Success(Unit)
     ) : PetInviteRepository {
         val createdInvites = mutableListOf<PetInvite>()
 
-        override suspend fun createCode(invite: PetInvite): AppResult<FirestoreError, Unit> {
+        override suspend fun createCode(invite: PetInvite): AppResult<PetInviteError, Unit> {
             createdInvites += invite
             return createResult
         }
 
         override suspend fun redeemCode(
-            inviteId: String,
-            member: Member
-        ): AppResult<FirestoreError, Unit> = AppResult.Success(Unit)
+            rawCode: String,
+            user: User
+        ): AppResult<PetInviteError, Unit> = AppResult.Success(Unit)
 
-        override suspend fun revokeCode(code: String): AppResult<FirestoreError, Unit> =
+        override suspend fun revokeCode(code: String): AppResult<PetInviteError, Unit> =
             AppResult.Success(Unit)
 
         override suspend fun getCodes(
             petId: String
-        ): AppResult<FirestoreError, List<PetInvite>> = AppResult.Success(emptyList())
+        ): AppResult<PetInviteError, List<PetInvite>> = AppResult.Success(emptyList())
     }
 
     private companion object {

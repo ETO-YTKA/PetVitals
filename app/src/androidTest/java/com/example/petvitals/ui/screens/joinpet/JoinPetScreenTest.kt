@@ -74,7 +74,6 @@ class JoinPetScreenTest {
             PetVitalsTheme {
                 JoinPetScreenContent(
                     uiState = uiState,
-                    onCodeChange = {},
                     onNavigateBack = {},
                     onAction = {}
                 )

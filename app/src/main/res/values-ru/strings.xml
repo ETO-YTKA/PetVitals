@@ -261,6 +261,7 @@
     <string name="user_does_not_exist_error">Пользователь с такой почтой не найден. Проверьте адрес.</string>
     <string name="cannot_share_with_yourself_error">Вы не можете поделиться питомцем с самим собой.</string>
     <string name="already_shared_with_user_error">Доступ к этому питомцу уже предоставлен данному пользователю.</string>
+    <string name="already_pet_member_error">У вас уже есть доступ к этому питомцу.</string>
     <string name="permission_level_owner">Владелец</string>
     <string name="permission_level_editor">Редактор</string>
     <string name="permission_level_viewer">Только просмотр</string>

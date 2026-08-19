@@ -2,7 +2,7 @@ package com.example.petvitals.data.usecase
 
 import com.example.petvitals.data.utils.InviteCodeGenerator
 import com.example.petvitals.domain.AppResult
-import com.example.petvitals.domain.error.FirestoreError
+import com.example.petvitals.domain.error.PetInviteError
 import com.example.petvitals.domain.models.CreatedPetInvite
 import com.example.petvitals.domain.models.PermissionLevel
 import com.example.petvitals.domain.models.PetInvite
@@ -17,7 +17,7 @@ class CreateInviteCodeUseCaseImpl @Inject constructor(
     override suspend fun invoke(
         petId: String,
         permissionLevel: PermissionLevel
-    ): AppResult<FirestoreError, CreatedPetInvite> {
+    ): AppResult<PetInviteError, CreatedPetInvite> {
 
         val rawCode = inviteCodeGenerator.generate()
         val normalizedCode = inviteCodeGenerator.normalize(rawCode)

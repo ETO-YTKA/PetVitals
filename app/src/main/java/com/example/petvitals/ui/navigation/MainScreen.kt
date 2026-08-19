@@ -9,9 +9,13 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -27,7 +31,9 @@ import com.example.petvitals.ui.screens.managemedication.ManageMedicationScreen
 import com.example.petvitals.ui.screens.managepet.ManagePetScreen
 import com.example.petvitals.ui.screens.managerecord.ManageRecordScreen
 import com.example.petvitals.ui.screens.petprofile.PetProfileScreen
+import com.example.petvitals.ui.screens.pets.PetsAction
 import com.example.petvitals.ui.screens.pets.PetsScreen
+import com.example.petvitals.ui.screens.pets.PetsViewModel
 import com.example.petvitals.ui.screens.records.RecordsScreen
 import com.example.petvitals.ui.screens.sharepet.SharePetScreen
 import com.example.petvitals.ui.screens.userprofile.UserProfileScreen
@@ -56,8 +62,21 @@ fun MainAppScreen(
                 .padding(paddingValues)
                 .consumeWindowInsets(paddingValues)
         ) {
-            composable<Pets> {
+            composable<Pets> { backStackEntry ->
+                val viewModel: PetsViewModel = hiltViewModel()
+                val refreshRequested by backStackEntry.savedStateHandle
+                    .getStateFlow(PETS_REFRESH_REQUESTED_KEY, false)
+                    .collectAsState()
+
+                LaunchedEffect(refreshRequested) {
+                    if (refreshRequested) {
+                        viewModel.onAction(PetsAction.RefreshPets)
+                        backStackEntry.savedStateHandle[PETS_REFRESH_REQUESTED_KEY] = false
+                    }
+                }
+
                 PetsScreen(
+                    viewModel = viewModel,
                     onNavigateToSplash = onNavigateToSplash,
                     onNavigateToAddPet = { navController.navigate(route = AddEditPet()) },
                     onNavigateToPetProfile = { petId ->
@@ -145,12 +164,22 @@ fun MainAppScreen(
 
             composable<JoinPet> {
                 JoinPetScreen(
-                    onPopBackStack = { navController.popBackStack() }
+                    onPopBackStack = { navController.popBackStack() },
+                    onPetJoined = {
+                        if (navController.currentDestination?.hasRoute(JoinPet::class) == true) {
+                            navController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(PETS_REFRESH_REQUESTED_KEY, true)
+                            navController.popBackStack()
+                        }
+                    }
                 )
             }
         }
     }
 }
+
+private const val PETS_REFRESH_REQUESTED_KEY = "pets_refresh_requested"
 
 @Composable
 private fun BottomBar(

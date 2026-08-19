@@ -1,8 +1,9 @@
 package com.example.petvitals.data.usecase
 
 import com.example.petvitals.data.service.account.AccountService
+import com.example.petvitals.data.utils.toPetInviteError
 import com.example.petvitals.domain.AppResult
-import com.example.petvitals.domain.error.FirestoreError
+import com.example.petvitals.domain.error.PetInviteError
 import com.example.petvitals.domain.repository.PetInviteRepository
 import com.example.petvitals.domain.repository.UserRepository
 import com.example.petvitals.domain.usecase.RedeemCodeUseCase
@@ -13,13 +14,17 @@ class RedeemCodeUseCaseImpl @Inject constructor(
     private val userRepository: UserRepository,
     private val accountService: AccountService
 ) : RedeemCodeUseCase {
-    override suspend fun invoke(code: String): AppResult<FirestoreError, Unit> {
+    override suspend fun invoke(code: String): AppResult<PetInviteError, Unit> {
         val currentUserId = accountService.currentUserId
-            ?: return AppResult.Failure(FirestoreError.Unauthenticated)
+            ?: return AppResult.Failure(PetInviteError.Unauthenticated)
 
         val user = when (val result = userRepository.getUserById(currentUserId)) {
-            is AppResult.Success -> result.data ?: return AppResult.Failure(FirestoreError.Unauthenticated)
-            is AppResult.Failure -> return result
+            is AppResult.Success -> result.data
+                ?: return AppResult.Failure(PetInviteError.Unauthenticated)
+
+            is AppResult.Failure -> return AppResult.Failure(
+                result.error.toPetInviteError()
+            )
         }
 
         return petInviteRepository.redeemCode(code, user)

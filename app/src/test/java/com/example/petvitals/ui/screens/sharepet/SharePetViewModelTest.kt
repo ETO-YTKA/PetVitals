@@ -3,10 +3,12 @@ package com.example.petvitals.ui.screens.sharepet
 import com.example.petvitals.R
 import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.error.FirestoreError
+import com.example.petvitals.domain.error.PetInviteError
 import com.example.petvitals.domain.models.CreatedPetInvite
 import com.example.petvitals.domain.models.Member
 import com.example.petvitals.domain.models.PermissionLevel
 import com.example.petvitals.domain.models.PetInvite
+import com.example.petvitals.domain.models.User
 import com.example.petvitals.domain.repository.PetInviteRepository
 import com.example.petvitals.domain.repository.PetMemberRepository
 import com.example.petvitals.domain.usecase.CreateInviteCodeUseCase
@@ -87,7 +89,7 @@ class SharePetViewModelTest {
         val viewModel = createViewModel(
             memberRepository = FakePetMemberRepository(mutableListOf(OWNER)),
             inviteRepository = FakePetInviteRepository(
-                getCodesResult = AppResult.Failure(FirestoreError.Network)
+                getCodesResult = AppResult.Failure(PetInviteError.Network)
             )
         )
 
@@ -133,7 +135,7 @@ class SharePetViewModelTest {
     @Test
     fun createInviteCode_onFailure_preservesCodesAndShowsError() = runTest(dispatcher) {
         val createInvite = FakeCreateInviteCodeUseCase(
-            result = AppResult.Failure(FirestoreError.Network)
+            result = AppResult.Failure(PetInviteError.Network)
         )
         val inviteRepository = FakePetInviteRepository(codes = listOf(VIEWER_INVITE))
         val viewModel = createViewModel(
@@ -172,7 +174,7 @@ class SharePetViewModelTest {
     fun revokeInviteCode_onFailure_preservesInvitesAndShowsError() = runTest(dispatcher) {
         val inviteRepository = FakePetInviteRepository(
             codes = listOf(EDITOR_INVITE),
-            revokeResult = AppResult.Failure(FirestoreError.PermissionDenied)
+            revokeResult = AppResult.Failure(PetInviteError.PermissionDenied)
         )
         val viewModel = createViewModel(inviteRepository = inviteRepository)
         viewModel.getInitialData(PET_ID)
@@ -278,36 +280,36 @@ class SharePetViewModelTest {
 
     private class FakePetInviteRepository(
         codes: List<PetInvite> = emptyList(),
-        private val getCodesResult: AppResult<FirestoreError, List<PetInvite>> =
+        private val getCodesResult: AppResult<PetInviteError, List<PetInvite>> =
             AppResult.Success(codes),
-        private val revokeResult: AppResult<FirestoreError, Unit> = AppResult.Success(Unit)
+        private val revokeResult: AppResult<PetInviteError, Unit> = AppResult.Success(Unit)
     ) : PetInviteRepository {
         var getCodesCalls = 0
         val revokedCodeIds = mutableListOf<String>()
 
-        override suspend fun createCode(invite: PetInvite): AppResult<FirestoreError, Unit> =
+        override suspend fun createCode(invite: PetInvite): AppResult<PetInviteError, Unit> =
             AppResult.Success(Unit)
 
         override suspend fun redeemCode(
-            inviteId: String,
-            member: Member
-        ): AppResult<FirestoreError, Unit> = AppResult.Success(Unit)
+            rawCode: String,
+            user: User
+        ): AppResult<PetInviteError, Unit> = AppResult.Success(Unit)
 
-        override suspend fun revokeCode(code: String): AppResult<FirestoreError, Unit> {
+        override suspend fun revokeCode(code: String): AppResult<PetInviteError, Unit> {
             revokedCodeIds += code
             return revokeResult
         }
 
         override suspend fun getCodes(
             petId: String
-        ): AppResult<FirestoreError, List<PetInvite>> {
+        ): AppResult<PetInviteError, List<PetInvite>> {
             getCodesCalls++
             return getCodesResult
         }
     }
 
     private class FakeCreateInviteCodeUseCase(
-        private val result: AppResult<FirestoreError, CreatedPetInvite> = AppResult.Success(
+        private val result: AppResult<PetInviteError, CreatedPetInvite> = AppResult.Success(
             CreatedPetInvite(RAW_CODE, VIEWER_INVITE)
         )
     ) : CreateInviteCodeUseCase {
@@ -316,7 +318,7 @@ class SharePetViewModelTest {
         override suspend fun invoke(
             petId: String,
             permissionLevel: PermissionLevel
-        ): AppResult<FirestoreError, CreatedPetInvite> {
+        ): AppResult<PetInviteError, CreatedPetInvite> {
             calls += petId to permissionLevel
             return result
         }

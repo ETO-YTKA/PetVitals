@@ -133,8 +133,12 @@ class SharePetViewModel @Inject constructor(
     }
 
     private fun onRemoveMember(userId: String) {
+        val currentState = _uiState.value
+        val member = currentState.petMembers.firstOrNull { it.userId == userId } ?: return
+        if (member.permissionLevel == PermissionLevel.OWNER) return
+
         viewModelScope.launch {
-            when (val result = petMemberRepository.deletePetMember(uiState.value.petId, userId)) {
+            when (val result = petMemberRepository.deletePetMember(currentState.petId, userId)) {
                 is AppResult.Failure -> {
                     _uiState.update { state ->
                         state.copy(
