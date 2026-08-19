@@ -64,7 +64,7 @@ class CreateInviteCodeUseCaseImplTest {
             member: Member
         ): AppResult<FirestoreError, Unit> = AppResult.Success(Unit)
 
-        override suspend fun revokeCode(inviteId: String): AppResult<FirestoreError, Unit> =
+        override suspend fun revokeCode(code: String): AppResult<FirestoreError, Unit> =
             AppResult.Success(Unit)
 
         override suspend fun getCodes(

@@ -1,5 +1,6 @@
 package com.example.petvitals.ui.screens.joinpet
 
+import android.content.ClipboardManager
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,12 +23,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.petvitals.R
 import com.example.petvitals.ui.components.CenterAlignedTopBar
 import com.example.petvitals.ui.components.CustomIconButton
@@ -49,32 +50,31 @@ import com.example.petvitals.ui.components.CustomTextField
 import com.example.petvitals.ui.theme.Dimen
 import com.example.petvitals.ui.theme.PetVitalsTheme
 import com.example.petvitals.ui.utils.InviteCodeVisualTransformation
-import com.example.petvitals.ui.utils.normalizeInviteCodeInput
 
 @Composable
 fun JoinPetScreen(
-    onPopBackStack: () -> Unit
+    onPopBackStack: () -> Unit,
+    viewModel: JoinPetViewModel = hiltViewModel()
 ) {
-    var code by rememberSaveable { mutableStateOf("") }
+    val uiState by viewModel.uiState.collectAsState()
 
     JoinPetScreenContent(
-        uiState = JoinPetUiState(code = code),
-        onCodeChange = { code = it },
-        onNavigateBack = onPopBackStack,
-        onAction = {} //TODO
+        uiState = uiState,
+        onAction = { viewModel.onAction(it) },
+        onNavigateBack = onPopBackStack
     )
 }
 
 @Composable
 internal fun JoinPetScreenContent(
     uiState: JoinPetUiState,
-    onCodeChange: (String) -> Unit,
-    onNavigateBack: () -> Unit,
     onAction: (JoinPetAction) -> Unit,
-    modifier: Modifier = Modifier
+    onNavigateBack: () -> Unit
 ) {
+    val context = LocalContext.current
+    val clipboardManager = context.getSystemService(ClipboardManager::class.java)
+
     Scaffold(
-        modifier = modifier,
         topBar = {
             CenterAlignedTopBar(
                 title = { Text(stringResource(R.string.join_a_pet)) },
@@ -140,9 +140,7 @@ internal fun JoinPetScreenContent(
                 ) {
                     CustomTextField(
                         value = uiState.code,
-                        onValueChange = {
-                            onCodeChange(normalizeInviteCodeInput(it))
-                        },
+                        onValueChange = { onAction(JoinPetAction.OnCodeChange(it)) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !uiState.isSubmitting,
                         singleLine = true,
@@ -155,7 +153,17 @@ internal fun JoinPetScreenContent(
                         },
                         trailingIcon = {
                             TextButton(
-                                onClick = {}, //TODO
+                                onClick = {
+                                    val pastedText = clipboardManager.primaryClip
+                                        ?.takeIf { it.itemCount > 0 }
+                                        ?.getItemAt(0)
+                                        ?.coerceToText(context)
+                                        ?.toString()
+
+                                    if (!pastedText.isNullOrBlank()) {
+                                        onAction(JoinPetAction.OnCodeChange(pastedText))
+                                    }
+                                },
                                 enabled = !uiState.isSubmitting,
                                 modifier = Modifier.heightIn(min = 48.dp)
                             ) {
@@ -185,7 +193,7 @@ internal fun JoinPetScreenContent(
                     )
 
                     CustomMediumButton(
-                        onClick = {}, //TODO
+                        onClick = { onAction(JoinPetAction.OnJoinPetClick) },
                         enabled = uiState.isCodeComplete && !uiState.isSubmitting,
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -214,9 +222,8 @@ private fun JoinPetScreenPreview(
     PetVitalsTheme {
         JoinPetScreenContent(
             uiState = uiState,
-            onCodeChange = {},
-            onNavigateBack = {},
-            onAction = {}
+            onAction = {},
+            onNavigateBack = {}
         )
     }
 }

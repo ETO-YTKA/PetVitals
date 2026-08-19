@@ -293,8 +293,8 @@ class SharePetViewModelTest {
             member: Member
         ): AppResult<FirestoreError, Unit> = AppResult.Success(Unit)
 
-        override suspend fun revokeCode(inviteId: String): AppResult<FirestoreError, Unit> {
-            revokedCodeIds += inviteId
+        override suspend fun revokeCode(code: String): AppResult<FirestoreError, Unit> {
+            revokedCodeIds += code
             return revokeResult
         }
 

@@ -1,5 +1,6 @@
 package com.example.petvitals.ui.screens.joinpet
 
-interface JoinPetAction {
-
+sealed interface JoinPetAction {
+    data class OnCodeChange(val code: String) : JoinPetAction
+    object OnJoinPetClick : JoinPetAction
 }
