@@ -195,15 +195,9 @@ internal fun JoinPetScreenContent(
                                 strokeWidth = 2.dp
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(R.string.joining_pet),
-                                fontSize = Dimen.FontSize.mediumButton
-                            )
+                            Text(text = stringResource(R.string.joining_pet))
                         } else {
-                            Text(
-                                text = stringResource(R.string.join_pet),
-                                fontSize = Dimen.FontSize.mediumButton
-                            )
+                            Text(text = stringResource(R.string.join_pet))
                         }
                     }
                 }

@@ -236,10 +236,7 @@ private fun ResetPasswordForm(
                     modifier = Modifier.size(24.dp)
                 )
             } else {
-                Text(
-                    text = stringResource(R.string.send_password_reset_email),
-                    fontSize = Dimen.FontSize.mediumButton
-                )
+                Text(text = stringResource(R.string.send_password_reset_email))
             }
         }
     }

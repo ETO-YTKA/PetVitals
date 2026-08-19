@@ -270,10 +270,7 @@ private fun SignUpForm(
             onClick = { onAction(SignUpAction.SignUp) },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = stringResource(R.string.sign_up),
-                fontSize = Dimen.FontSize.mediumButton
-            )
+            Text(text = stringResource(R.string.sign_up))
         }
     }
 }

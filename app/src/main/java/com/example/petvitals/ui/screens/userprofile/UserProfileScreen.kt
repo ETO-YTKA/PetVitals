@@ -219,20 +219,14 @@ private fun ActionButtons(
             onClick = { onAction(UserProfileAction.SendPasswordResetEmail) },
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text(
-                text = stringResource(R.string.reset_password),
-                fontSize = Dimen.FontSize.mediumButton
-            )
+            Text(text = stringResource(R.string.reset_password))
         }
 
         CustomMediumButton(
             onClick = { onAction(UserProfileAction.Logout) },
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text(
-                text = stringResource(R.string.logout),
-                fontSize = Dimen.FontSize.mediumButton
-            )
+            Text(text = stringResource(R.string.logout))
         }
 
         CustomMediumButton(
@@ -241,10 +235,7 @@ private fun ActionButtons(
             colors = ButtonDefaults.buttonColors()
                 .copy(containerColor = MaterialTheme.colorScheme.error)
         ) {
-            Text(
-                text = stringResource(R.string.delete_account),
-                fontSize = Dimen.FontSize.mediumButton
-            )
+            Text(text = stringResource(R.string.delete_account))
         }
     }
 }

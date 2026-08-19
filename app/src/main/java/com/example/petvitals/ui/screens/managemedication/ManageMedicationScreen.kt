@@ -219,10 +219,7 @@ private fun MedicationLoadError(
         onClick = onRetry,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = stringResource(R.string.retry),
-            fontSize = Dimen.FontSize.mediumButton
-        )
+        Text(text = stringResource(R.string.retry))
     }
 }
 
@@ -298,10 +295,7 @@ private fun MedicationForm(
         onClick = onSave,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = stringResource(R.string.save),
-            fontSize = Dimen.FontSize.mediumButton
-        )
+        Text(text = stringResource(R.string.save))
     }
 }
 

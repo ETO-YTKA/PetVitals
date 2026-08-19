@@ -260,10 +260,7 @@ private fun LoginForm(
             onClick = { onAction(LoginAction.Authenticate) },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = stringResource(R.string.log_in),
-                fontSize = Dimen.FontSize.mediumButton
-            )
+            Text(text = stringResource(R.string.log_in))
         }
     }
 }

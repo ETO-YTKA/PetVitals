@@ -191,10 +191,7 @@ private fun ManageFoodScreenContent(
                     onClick = { onAction(ManageFoodAction.OnSave(onSuccess = onPopBackStack)) },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(
-                        text = stringResource(R.string.save),
-                        fontSize = Dimen.FontSize.mediumButton
-                    )
+                    Text(text = stringResource(R.string.save))
                 }
             }
         }

@@ -952,10 +952,7 @@ private fun RecordsStateMessage(
             if (actionLabel != null && onAction != null) {
                 Spacer(Modifier.height(4.dp))
                 CustomMediumButton(onClick = onAction) {
-                    Text(
-                        text = actionLabel,
-                        fontSize = Dimen.FontSize.mediumButton
-                    )
+                    Text(text = actionLabel)
                 }
             }
         }

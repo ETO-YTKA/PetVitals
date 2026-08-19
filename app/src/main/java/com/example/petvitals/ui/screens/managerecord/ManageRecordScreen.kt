@@ -202,7 +202,7 @@ private fun RecordLoadError(message: String, onRetry: () -> Unit) {
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
     CustomMediumButton(onClick = onRetry, modifier = Modifier.fillMaxWidth()) {
-        Text(stringResource(R.string.retry), fontSize = Dimen.FontSize.mediumButton)
+        Text(stringResource(R.string.retry))
     }
 }
 
@@ -297,7 +297,7 @@ private fun RecordForm(
             .fillMaxWidth()
             .padding(bottom = 16.dp)
     ) {
-        Text(stringResource(R.string.save), fontSize = Dimen.FontSize.mediumButton)
+        Text(stringResource(R.string.save))
     }
 }
 

@@ -217,10 +217,7 @@ private fun ManagePetScreenContent(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isSaving
             ) {
-                Text(
-                    text = stringResource(R.string.save),
-                    fontSize = Dimen.FontSize.mediumButton
-                )
+                Text(text = stringResource(R.string.save))
             }
         }
     }
