@@ -325,6 +325,7 @@ class ManageRecordViewModelTest {
                 }
 
                 override suspend fun savePet(pet: Pet) = AppResult.Success(Unit)
+                override suspend fun updatePet(pet: Pet) = AppResult.Success(Unit)
                 override suspend fun getPetById(petId: String) = AppResult.Success(null)
                 override suspend fun deletePet(petId: String) = AppResult.Success(Unit)
                 override suspend fun createPetWithOwner(pet: Pet, member: Member) =
@@ -369,6 +370,7 @@ class ManageRecordViewModelTest {
         }
 
         override suspend fun savePet(pet: Pet) = AppResult.Success(Unit)
+        override suspend fun updatePet(pet: Pet) = AppResult.Success(Unit)
         override suspend fun getPetById(petId: String) = AppResult.Success(null)
         override suspend fun deletePet(petId: String) = AppResult.Success(Unit)
         override suspend fun createPetWithOwner(pet: Pet, member: Member) = AppResult.Success(Unit)

@@ -2,6 +2,7 @@ package com.example.petvitals.data.repository
 
 import com.example.petvitals.data.service.account.AccountService
 import com.example.petvitals.data.utils.safeFirestoreCall
+import com.example.petvitals.data.utils.toUpdateMap
 import com.example.petvitals.domain.AppResult
 import com.example.petvitals.domain.error.FirestoreError
 import com.example.petvitals.domain.models.Member
@@ -25,6 +26,17 @@ class PetRepositoryImpl @Inject constructor(
                 .collection(FirestoreCollections.PETS)
                 .document(pet.id)
                 .set(pet)
+                .await()
+        }
+    }
+
+    override suspend fun updatePet(pet: Pet): AppResult<FirestoreError, Unit> {
+
+        return safeFirestoreCall {
+            firestore
+                .collection(FirestoreCollections.PETS)
+                .document(pet.id)
+                .update(pet.toUpdateMap())
                 .await()
         }
     }

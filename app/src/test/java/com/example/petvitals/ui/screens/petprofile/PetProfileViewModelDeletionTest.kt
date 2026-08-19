@@ -278,6 +278,62 @@ class PetProfileViewModelDeletionTest {
         assertEquals(R.string.network_error, viewModel.uiState.value.loadErrorMessageRes)
     }
 
+    @Test
+    fun saveHealthNote_whenRepositorySucceeds_updatesPersistedAndScreenPet() = runTest(dispatcher) {
+        val originalPet = Pet(
+            id = PET_ID,
+            healthNote = "Old health note",
+            foodNote = "Existing food note"
+        )
+        val petRepository = FakePetRepository(AppResult.Success(originalPet))
+        val viewModel = createViewModel(
+            medicationRepository = FakeMedicationRepository(AppResult.Success(Unit)),
+            permissionLevel = PermissionLevel.OWNER,
+            petRepository = petRepository
+        )
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.events.collect()
+        }
+        viewModel.onAction(PetProfileAction.LoadPet(PET_ID))
+        advanceUntilIdle()
+
+        viewModel.onAction(PetProfileAction.EditNote(PetNoteType.HEALTH))
+        viewModel.onAction(PetProfileAction.OnNoteChange("New health note"))
+        viewModel.onAction(PetProfileAction.SaveNote)
+        advanceUntilIdle()
+
+        assertEquals("New health note", petRepository.savedPet?.healthNote)
+        assertEquals("Existing food note", petRepository.savedPet?.foodNote)
+        assertEquals("New health note", viewModel.uiState.value.pet.healthNote)
+        assertEquals(null, viewModel.uiState.value.noteEditor.noteType)
+    }
+
+    @Test
+    fun saveFoodNote_whenRepositoryFails_preservesPetAndDraft() = runTest(dispatcher) {
+        val originalPet = Pet(id = PET_ID, foodNote = "Old food note")
+        val petRepository = FakePetRepository(
+            petResult = AppResult.Success(originalPet),
+            saveResult = AppResult.Failure(FirestoreError.Network)
+        )
+        val viewModel = createViewModel(
+            medicationRepository = FakeMedicationRepository(AppResult.Success(Unit)),
+            permissionLevel = PermissionLevel.EDITOR,
+            petRepository = petRepository
+        )
+        viewModel.onAction(PetProfileAction.LoadPet(PET_ID))
+        advanceUntilIdle()
+
+        viewModel.onAction(PetProfileAction.EditNote(PetNoteType.FOOD))
+        viewModel.onAction(PetProfileAction.OnNoteChange("New food note"))
+        viewModel.onAction(PetProfileAction.SaveNote)
+        advanceUntilIdle()
+
+        assertEquals("Old food note", viewModel.uiState.value.pet.foodNote)
+        assertEquals(PetNoteType.FOOD, viewModel.uiState.value.noteEditor.noteType)
+        assertEquals("New food note", viewModel.uiState.value.noteEditor.draft)
+        assertEquals(R.string.network_error, viewModel.uiState.value.noteEditor.errorMessageRes)
+    }
+
     private fun createViewModel(
         medicationRepository: FakeMedicationRepository,
         permissionLevel: PermissionLevel,
@@ -342,11 +398,17 @@ class PetProfileViewModelDeletionTest {
 
     private class FakePetRepository(
         private val petResult: AppResult<FirestoreError, Pet?>,
-        private val deleteResult: AppResult<FirestoreError, Unit> = AppResult.Success(Unit)
+        private val deleteResult: AppResult<FirestoreError, Unit> = AppResult.Success(Unit),
+        private val saveResult: AppResult<FirestoreError, Unit> = AppResult.Success(Unit)
     ) : PetRepository {
         var getPetCalls = 0
+        var savedPet: Pet? = null
 
-        override suspend fun savePet(pet: Pet): AppResult<FirestoreError, Unit> =
+        override suspend fun savePet(pet: Pet): AppResult<FirestoreError, Unit> {
+            savedPet = pet
+            return saveResult
+        }
+        override suspend fun updatePet(pet: Pet): AppResult<FirestoreError, Unit> =
             AppResult.Success(Unit)
         override suspend fun getPetById(petId: String): AppResult<FirestoreError, Pet?> {
             getPetCalls++

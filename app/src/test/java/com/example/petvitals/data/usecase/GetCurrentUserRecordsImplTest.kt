@@ -79,6 +79,8 @@ class GetCurrentUserRecordsImplTest {
     ) : PetRepository {
         override suspend fun savePet(pet: Pet) = AppResult.Success(Unit)
 
+        override suspend fun updatePet(pet: Pet) = AppResult.Success(Unit)
+
         override suspend fun getPetById(petId: String) = AppResult.Success<Pet?>(null)
 
         override suspend fun getCurrentUserPets() = AppResult.Success(pets)

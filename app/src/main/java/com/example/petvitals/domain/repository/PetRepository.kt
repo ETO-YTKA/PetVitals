@@ -7,6 +7,7 @@ import com.example.petvitals.domain.models.Pet
 
 interface PetRepository {
     suspend fun savePet(pet: Pet): AppResult<FirestoreError, Unit>
+    suspend fun updatePet(pet: Pet): AppResult<FirestoreError, Unit>
     suspend fun getPetById(petId: String): AppResult<FirestoreError, Pet?>
     suspend fun getCurrentUserPets(): AppResult<FirestoreError, List<Pet>>
     suspend fun deletePet(petId: String): AppResult<FirestoreError, Unit>

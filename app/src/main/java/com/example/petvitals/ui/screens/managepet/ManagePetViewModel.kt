@@ -310,7 +310,6 @@ class ManagePetViewModel @Inject constructor(
         onSuccess: () -> Unit
     ) {
         if (_uiState.value.isSaving || !isFormValid()) return
-        if (petId != null) return // TODO Update pet
 
         val uiState = uiState.value
         pendingSaveOnSuccess = onSuccess
@@ -331,7 +330,7 @@ class ManagePetViewModel @Inject constructor(
                 return@launch
             }
 
-            val basePet = Pet(
+            val pet = Pet(
                 name = uiState.name,
                 species = uiState.selectedSpecies!!,
                 breed = uiState.breed,
@@ -342,7 +341,13 @@ class ManagePetViewModel @Inject constructor(
                 avatar = avatar
             )
 
-            when (val result = createPetUseCase.invoke(pet = basePet)) {
+            val result = if (petId == null) {
+                createPetUseCase.invoke(pet = pet)
+            } else {
+                petRepository.updatePet(pet.copy(id = petId))
+            }
+
+            when (result) {
                 is AppResult.Success -> {
                     pendingSaveOnSuccess = null
                     _uiState.update { state -> state.copy(isSaving = false) }

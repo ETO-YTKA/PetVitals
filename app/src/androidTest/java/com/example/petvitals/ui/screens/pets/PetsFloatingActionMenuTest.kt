@@ -110,6 +110,9 @@ class PetsFloatingActionMenuTest {
         override suspend fun savePet(pet: Pet): AppResult<FirestoreError, Unit> =
             AppResult.Success(Unit)
 
+        override suspend fun updatePet(pet: Pet): AppResult<FirestoreError, Unit> =
+            AppResult.Success(Unit)
+
         override suspend fun getPetById(petId: String): AppResult<FirestoreError, Pet?> =
             AppResult.Success(null)
 
